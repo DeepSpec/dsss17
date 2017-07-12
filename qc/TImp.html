@@ -1,0 +1,680 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>TImp</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>Property-Based Testing </li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">TImp</h1>
+
+<div class="code code-tight">
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-extraction-opaque-accessed,-extraction".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Bool.Bool</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Arith.Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Arith.EqNat</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.omega.Omega</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Lists.List</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.omega.Omega</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+
+<br/>
+<span class="id" type="var">From</span> <span class="id" type="var">QuickChick</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick</span> <span class="id" type="var">Tactics</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">QcDefaultNotation</span>. <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">qc_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Bullet</span> <span class="id" type="var">Behavior</span> "Strict Subproofs".<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Atom</span> <span class="id" type="var">AtomGen</span> <span class="id" type="var">Maps</span> <span class="id" type="var">QC</span>.<br/>
+<span class="comment">(*&nbsp;/IMPORTS&nbsp;*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;The&nbsp;G&nbsp;(option...)&nbsp;monad&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">GOpt</span> <span class="id" type="var">A</span> := <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">gOptMonad</span> : `{<span class="id" type="var">Monad</span> <span class="id" type="var">GOpt</span>} :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> <span class="id" type="var">A</span> <span class="id" type="var">x</span> := <span class="id" type="var">returnGen</span> (<span class="id" type="var">Some</span> <span class="id" type="var">x</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span> <span class="id" type="var">m</span> <span class="id" type="var">k</span> := <span class="id" type="var">bindGenOpt</span> <span class="id" type="var">m</span> <span class="id" type="var">k</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Types&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> := <span class="id" type="var">TBool</span> | <span class="id" type="var">TNat</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;TODO:&nbsp;Actual&nbsp;Generators?&nbsp;Derived?&nbsp;How&nbsp;much&nbsp;have&nbsp;we&nbsp;said&nbsp;at&nbsp;this&nbsp;point?&nbsp;*)</span><br/>
+<span class="id" type="var">Derive</span> (<span class="id" type="var">Arbitrary</span>, <span class="id" type="keyword">Show</span>) <span class="id" type="keyword">for</span> <span class="id" type="var">ty</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">eq_dec_ty</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>; <span class="id" type="var">decide</span> <span class="id" type="var">equality</span>. <span class="id" type="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">AtomMap</span> := <span class="id" type="var">ListMap</span> (<span class="id" type="var">Atom</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">context</span> := @<span class="id" type="var">AtomMap.t</span> <span class="id" type="var">ty</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Wrapper&nbsp;-&nbsp;helpful&nbsp;for&nbsp;automation&nbsp;purposes&nbsp;later&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;bound_in?&nbsp;*)</span><br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">bind_in</span> {<span class="id" type="var">A</span>} : @<span class="id" type="var">AtomMap.t</span> <span class="id" type="var">A</span> → <span class="id" type="var">Atom.t</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="keyword">Bind</span> : ∀ <span class="id" type="var">x</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>, <span class="id" type="var">AtomMap.get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span> → <span class="id" type="var">bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Automation&nbsp;stuff&nbsp;for&nbsp;proofs&nbsp;-&nbsp;don't&nbsp;need&nbsp;to&nbsp;show?&nbsp;&nbsp;Or&nbsp;maybe&nbsp;put&nbsp;it<br/>
+&nbsp;&nbsp;&nbsp;in&nbsp;a&nbsp;magic&nbsp;Tactics.v&nbsp;*)</span><br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_left</span>  := <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="var">left</span>; <span class="id" type="var">constructor</span>; <span class="id" type="tactic">eauto</span>].<br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_right</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">Contra</span> := <span class="id" type="tactic">fresh</span> "Contra" <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="var">right</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">congruence</span>].<br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_sum</span> := <span class="id" type="var">solve_left</span>; <span class="id" type="var">solve_right</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bind_in</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) `{<span class="id" type="var">D</span> : ∀ (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)}<br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">AtomMap.get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Get</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">D</span> <span class="id" type="var">a</span> <span class="id" type="var">T</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Eq</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *; <span class="id" type="tactic">subst</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_atom_from_context</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">Atom.t</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">oneof</span> (<span class="id" type="var">ret</span> <span class="id" type="var">None</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">a</span>,<span class="id" type="var">T</span>) ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">Some</span> <span class="id" type="var">a</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.filter</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">a</span>,<span class="id" type="var">T'</span>) ⇒ <span class="id" type="var">T</span> = <span class="id" type="var">T'</span>?) <span class="id" type="var">Gamma</span>)).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Hide&nbsp;for&nbsp;lecture?&nbsp;--&nbsp;explain&nbsp;later&nbsp;*)</span><br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">genST_bind_in</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) <br/>
+&nbsp;&nbsp;: <span class="id" type="var">GenSuchThat</span> <span class="id" type="var">Atom.t</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>) :=<br/>
+&nbsp;&nbsp;{ <span class="id" type="var">arbitraryST</span> := <span class="id" type="var">gen_typed_atom_from_context</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> }.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Too&nbsp;many&nbsp;sigs&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_context</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) : <span class="id" type="var">G</span> <span class="id" type="var">context</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">domain</span> := <span class="id" type="var">get_fresh_atoms</span> <span class="id" type="var">n</span> [] <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">range</span> &lt;- <span class="id" type="var">vectorOf</span> <span class="id" type="var">n</span> <span class="id" type="var">arbitrary</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">List.fold_left</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">m</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">kv</span> : <span class="id" type="var">Atom.t</span> * <span class="id" type="var">ty</span>) ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">k</span>,<span class="id" type="var">v</span>) := <span class="id" type="var">kv</span> <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">AtomMap.set</span> <span class="id" type="var">m</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.combine</span> <span class="id" type="var">domain</span> <span class="id" type="var">range</span>) <span class="id" type="var">AtomMap.empty</span>).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Expressions&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">exp</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> : <span class="id" type="var">Atom.t</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span> : <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span> : <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span>.<br/>
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">exp</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Reformat&nbsp;for&nbsp;70&nbsp;columns&nbsp;*)</span><br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> := <br/>
+| <span class="id" type="var">Ty_Var</span> : ∀ <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>) <span class="id" type="var">T</span><br/>
+| <span class="id" type="var">Ty_Num</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">n</span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">ENum</span> <span class="id" type="var">n</span>) <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_Plus</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_Minus</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_Mult</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_True</span> : ∀ <span class="id" type="var">Gamma</span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">ETrue</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_False</span> : ∀ <span class="id" type="var">Gamma</span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">EFalse</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Eq</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Le</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Not</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">TBool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">ENot</span> <span class="id" type="var">e</span>) <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_And</span> : ∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TBool</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TBool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TBool</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Show&nbsp;this&nbsp;later&nbsp;*)</span><br/>
+<span class="id" type="var">Derive</span> <span class="id" type="var">ArbitrarySizedSuchThat</span> <span class="id" type="keyword">for</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;This&nbsp;is&nbsp;so&nbsp;pedantic&nbsp;I&nbsp;want&nbsp;to&nbsp;derive&nbsp;it&nbsp;:)&nbsp;*)</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">gen_exp_typed_sized</span> (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">exp</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">gen_typed_evar</span> : <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">exp</span>) := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> &lt;- <span class="id" type="var">gen_typed_atom_from_context</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>) <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">base</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2, <span class="id" type="var">gen_typed_evar</span>) ::<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span>  ⇒ [ (2, <span class="id" type="var">n</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">Some</span> (<span class="id" type="var">ENum</span> <span class="id" type="var">n</span>)))]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [ (1, <span class="id" type="var">ret</span> <span class="id" type="var">ETrue</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">ret</span> <span class="id" type="var">EFalse</span>) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">recs</span> <span class="id" type="var">size'</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ [ (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [ (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">ENot</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span> <span class="id" type="var">base</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span> (<span class="id" type="var">base</span> ++ <span class="id" type="var">recs</span> <span class="id" type="var">size'</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Move&nbsp;to&nbsp;after&nbsp;the&nbsp;first&nbsp;bug&nbsp;*)</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">shrink_exp_typed</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> <span class="id" type="var">_</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ [<span class="id" type="var">ENum</span> 0]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [<span class="id" type="var">ETrue</span> ; <span class="id" type="var">EFalse</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span> ⇒ [<span class="id" type="var">ETrue</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> :: (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> :: (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: (<span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: <span class="id" type="var">e</span> :: (<span class="id" type="var">List.map</span> <span class="id" type="var">ENot</span> (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: <span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Move&nbsp;to&nbsp;Tactics.v&nbsp;*)</span><br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_inductives</span> <span class="id" type="var">Gamma</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ <span class="id" type="var">IH</span> : ∀ <span class="id" type="var">_</span> <span class="id" type="var">_</span>, <span class="id" type="var">_</span> |- <span class="id" type="var">_</span> ] ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">H<sub>1</sub></span> := <span class="id" type="tactic">fresh</span> "H<sub>1</sub>" <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">IH</span> <span class="id" type="var">TNat</span> <span class="id" type="var">Gamma</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">H<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">H<sub>2</sub></span> := <span class="id" type="tactic">fresh</span> "H<sub>2</sub>" <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">IH</span> <span class="id" type="var">TBool</span> <span class="id" type="var">Gamma</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">H<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">IH</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="var">solve_sum</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Too&nbsp;much&nbsp;automation?&nbsp;*)</span><br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_has_type</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>) :=<br/>
+&nbsp;&nbsp;{ <span class="id" type="var">dec</span> := <span class="id" type="var">_</span> }.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;I&nbsp;need&nbsp;move:&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">T</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">e</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_sum</span>];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_inductives</span> <span class="id" type="var">Gamma</span>].<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;bind_in&nbsp;case&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Sanity&nbsp;checks&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Generation&nbsp;sanity&nbsp;check&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_has_type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                   <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">top_level_size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>)?<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span> <span class="comment">(*&nbsp;this&nbsp;should&nbsp;NEVER&nbsp;fail&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>))).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;gen_typed_has_type.&nbsp;*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;Shrinking&nbsp;sanity&nbsp;check&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">shrink_typed_has_type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                   <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">top_level_size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.forallb</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e'</span> ⇒ (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e'</span> <span class="id" type="var">T</span>)?) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span> <span class="comment">(*&nbsp;this&nbsp;should&nbsp;NEVER&nbsp;fail&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>))).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;shrink_typed_has_type.&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">value</span> := <span class="id" type="var">VNat</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">value</span> | <span class="id" type="var">VBool</span> : <span class="id" type="var">bool</span> → <span class="id" type="var">value</span>.<br/>
+
+<br/>
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">value</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type_value</span> : <span class="id" type="var">value</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TyVNat</span>  : ∀ <span class="id" type="var">n</span>, <span class="id" type="var">has_type_value</span> (<span class="id" type="var">VNat</span>  <span class="id" type="var">n</span>) <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TyVBool</span> : ∀ <span class="id" type="var">b</span>, <span class="id" type="var">has_type_value</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) <span class="id" type="var">TBool</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> : <span class="id" type="var">Dec</span> (<span class="id" type="var">has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">v</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_value</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">G</span> <span class="id" type="var">value</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">TNat</span>  ⇒ <span class="id" type="var">n</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ <span class="id" type="var">b</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">state</span> := @<span class="id" type="var">AtomMap.t</span> <span class="id" type="var">value</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Similar&nbsp;structure&nbsp;*)</span><br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">typed_state</span> : <span class="id" type="var">context</span> → <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">TS_Empty</span> : <span class="id" type="var">typed_state</span> <span class="id" type="var">AtomMap.empty</span> <span class="id" type="var">AtomMap.empty</span><br/>
+| <span class="id" type="var">TS_Elem</span>  : ∀ <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> <span class="id" type="var">st</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> → <span class="id" type="var">typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">typed_state</span> ((<span class="id" type="var">x</span>,<span class="id" type="var">T</span>)::<span class="id" type="var">Gamma</span>) ((<span class="id" type="var">x</span>,<span class="id" type="var">v</span>)::<span class="id" type="var">st</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> : <span class="id" type="var">Dec</span> (<span class="id" type="var">typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span>).<br/>
+<span class="comment">(*&nbsp;TODO:&nbsp;Fold&nbsp;all&nbsp;such&nbsp;stuff,&nbsp;like&nbsp;this:&nbsp;*)</span><br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">st</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">Gamma</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">a</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a</span> <span class="id" type="var">v</span>]; <span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a'</span> <span class="id" type="var">T</span>].<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">Atom.eq_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">a'</span>); <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">subst</span>; <span class="id" type="var">specialize</span> (<span class="id" type="var">IHst</span> <span class="id" type="var">Gamma</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHst</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_state</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) : <span class="id" type="var">G</span> <span class="id" type="var">state</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="var">sequenceGen</span> (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">x</span>, <span class="id" type="var">T</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v</span> &lt;- <span class="id" type="var">gen_typed_value</span> <span class="id" type="var">T</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">x</span>, <span class="id" type="var">v</span>)) <span class="id" type="var">Gamma</span>).<br/>
+<span class="comment">(*&nbsp;Use&nbsp;typeclasses?&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">genST_typed_state</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) : <br/>
+&nbsp;&nbsp;<span class="id" type="var">GenSuchThat</span> <span class="id" type="var">state</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span>) :=<br/>
+&nbsp;&nbsp;{ <span class="id" type="var">arbitraryST</span> := <span class="id" type="var">liftGen</span> <span class="id" type="var">Some</span> (<span class="id" type="var">gen_typed_state</span> <span class="id" type="var">Gamma</span>) }.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Monadify&nbsp;*)</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">eval</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">option</span> <span class="id" type="var">value</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">AtomMap.get</span> <span class="id" type="var">st</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> + <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> - <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> * <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span>       ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">true</span>  )<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span>      ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">false</span> )<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">n<sub>1</sub></span> =? <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">n<sub>1</sub></span> &lt;? <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">negb</span> <span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>  ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">andb</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">isNone</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Soundness&nbsp;for&nbsp;expressions&nbsp;*)</span><br/>
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">expression_soundness</span> : <br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>) = <span class="id" type="var">false</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lift_shrink</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">shr</span> : <span class="id" type="var">A</span> → <span class="id" type="var">list</span> <span class="id" type="var">A</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span>) : <span class="id" type="var">list</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">List.map</span> <span class="id" type="var">Some</span> (<span class="id" type="var">shr</span> <span class="id" type="var">x</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">expression_soundness_exec</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>)  (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_typed_state</span> <span class="id" type="var">Gamma</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                    <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="var">lift_shrink</span> (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span>)) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒ <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;expression_soundness_exec.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Try&nbsp;adding&nbsp;a&nbsp;bug&nbsp;and&nbsp;see&nbsp;if&nbsp;we&nbsp;can&nbsp;find&nbsp;it<br/>
+<br/>
+Do&nbsp;it&nbsp;first&nbsp;with&nbsp;forAll,&nbsp;not&nbsp;forAllShrink,&nbsp;then&nbsp;observe&nbsp;that&nbsp;the&nbsp;bug<br/>
+is&nbsp;hard&nbsp;to&nbsp;see.&nbsp;&nbsp;Show&nbsp;shrinking,&nbsp;redo&nbsp;the&nbsp;property,&nbsp;&nbsp;*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;Start&nbsp;exercise&nbsp;here&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">com</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSkip</span>  : <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CAss</span>   : <span class="id" type="var">Atom.t</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSeq</span>   : <span class="id" type="var">com</span>    → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CIf</span>    : <span class="id" type="var">exp</span>    → <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> : <span class="id" type="var">exp</span>    → <span class="id" type="var">com</span> → <span class="id" type="var">com</span>.<br/>
+
+<br/>
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">com</span>.<br/>
+</div>
+
+<div class="doc">
+As usual, we can use a few <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> declarations to make things
+    more readable.  To avoid conflicts with Coq's built-in notations,
+    we keep this light &mdash; in particular, we don't introduce any
+    notations for <span class="inlinecode"><span class="id" type="var">exps</span></span> and <span class="inlinecode"><span class="id" type="var">exps</span></span> to avoid confusion with the
+    numeric and boolean operators we've already defined. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Notation</span> "'SKIP'" :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">CSkip</span>.<br/>
+<span class="id" type="keyword">Notation</span> "x '::=' a" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/>
+<span class="id" type="keyword">Notation</span> "c<sub>1</sub> ;;; c<sub>2</sub>" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'WHILE' b 'DO' c 'END'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'IFB' c<sub>1</sub> 'THEN' c<sub>2</sub> 'ELSE' c<sub>3</sub> 'FI'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CIf</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">c<sub>3</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;This&nbsp;is&nbsp;so&nbsp;pedantic&nbsp;I&nbsp;want&nbsp;to&nbsp;derive&nbsp;it&nbsp;:)&nbsp;*)</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">gen_com_typed_sized</span> (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) : <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">com</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">assgn</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">x</span>,<span class="id" type="var">T</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1, <span class="id" type="var">e</span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">e</span>)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">skip</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> <span class="id" type="var">SKIP</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">recs</span> <span class="id" type="var">size'</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (1, <span class="id" type="var">c<sub>1</sub></span> &lt;- <span class="id" type="var">gen_com_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>2</sub></span> &lt;- <span class="id" type="var">gen_com_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">c</span> &lt;- <span class="id" type="var">gen_com_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">b</span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">b</span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>1</sub></span> &lt;- <span class="id" type="var">gen_com_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>2</sub></span> &lt;- <span class="id" type="var">gen_com_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;] <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">backtrack</span> ((1, <span class="id" type="var">skip</span>) :: <span class="id" type="var">assgn</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒ <span class="id" type="var">backtrack</span> ((1, <span class="id" type="var">skip</span>) :: (<span class="id" type="var">assgn</span> ++ <span class="id" type="var">recs</span> <span class="id" type="var">size'</span>))<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">shrink_com_typed</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) : <span class="id" type="var">list</span> <span class="id" type="var">com</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">AtomMap.get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T</span> ⇒ <span class="id" type="var">SKIP</span> :: <span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e'</span> ⇒ <span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">e</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>1</sub></span> :: <span class="id" type="var">c<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">c<sub>1</sub>'</span> ⇒ <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">c<sub>2</sub>'</span> ⇒ <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub>'</span>) (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>1</sub></span> :: <span class="id" type="var">c<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">c<sub>1</sub>'</span> ⇒ <span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">c<sub>2</sub>'</span> ⇒ <span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub>'</span>) (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">b'</span> ⇒ <span class="id" type="var">CIf</span> <span class="id" type="var">b'</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> :: (<span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> <span class="id" type="var">c</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">b'</span> ⇒ <span class="id" type="var">CWhile</span> <span class="id" type="var">b'</span> <span class="id" type="var">c</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">c'</span> ⇒ <span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c'</span>) (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span>))<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">result</span> := <br/>
+| <span class="id" type="var">Success</span> : <span class="id" type="var">state</span> → <span class="id" type="var">result</span><br/>
+| <span class="id" type="var">Fail</span> : <span class="id" type="var">result</span> <br/>
+| <span class="id" type="var">OutOfGas</span> : <span class="id" type="var">result</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;State&nbsp;monad&nbsp;like&nbsp;fuel,&nbsp;or&nbsp;depth-like?&nbsp;*)</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval</span> (<span class="id" type="var">fuel</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) : <span class="id" type="var">result</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">fuel</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">OutOfGas</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">fuel'</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">x</span> ::= <span class="id" type="var">e</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">v</span> ⇒ <span class="id" type="var">Success</span> (<span class="id" type="var">AtomMap.set</span> <span class="id" type="var">st</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Success</span> <span class="id" type="var">st'</span> ⇒  <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Bug&nbsp;:&nbsp;On&nbsp;OutOfGas&nbsp;should&nbsp;out&nbsp;of&nbsp;Gas&nbsp;:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;_&nbsp;=&gt;&nbsp;Fail&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">r</span> ⇒ <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">IFB</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> (<span class="id" type="keyword">if</span> <span class="id" type="var">b</span> <span class="id" type="keyword">then</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b'</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">b'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> (<span class="id" type="var">c</span> ;;; <span class="id" type="var">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <span class="id" type="keyword">else</span> <span class="id" type="var">Success</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">isFail</span> <span class="id" type="var">r</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Fail</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">well_typed_state_never_stuck</span> : <br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span>, <span class="id" type="var">typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">fuel</span> <span class="id" type="var">c</span>, <span class="id" type="var">isFail</span> (<span class="id" type="var">ceval</span> <span class="id" type="var">fuel</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span>) = <span class="id" type="var">false</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">well_typed_state_never_stuck_exec</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 5 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>)  (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_typed_state</span> <span class="id" type="var">Gamma</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> <span class="id" type="var">arbitrary</span> <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">fuel</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">gen_com_typed_sized</span> 3 <span class="id" type="var">Gamma</span>) (<span class="id" type="var">lift_shrink</span> (<span class="id" type="var">shrink_com_typed</span> <span class="id" type="var">Gamma</span>)) (<span class="id" type="keyword">fun</span> <span class="id" type="var">mc</span> ⇒ <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">mc</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">c</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isFail</span> (<span class="id" type="var">ceval</span> <span class="id" type="var">fuel</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;well_typed_state_never_stuck_exec.&nbsp;*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;Unreadable&nbsp;bug?&nbsp;<br/>
+QuickChecking&nbsp;well_typed_state_never_stuck_exec<br/>
+<span class="inlinecode">(1,<span class="id" type="var">TBool</span>),</span> <span class="inlinecode">(2,<span class="id" type="var">TBool</span>),</span> <span class="inlinecode">(3,<span class="id" type="var">TNat</span>),</span> <span class="inlinecode">(4,<span class="id" type="var">TBool</span>)</span><br/>
+<span class="inlinecode">(1,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">false</span>),</span> <span class="inlinecode">(2,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">false</span>),</span> <span class="inlinecode">(3,<span class="id" type="var">VNat</span></span> <span class="inlinecode">5),</span> <span class="inlinecode">(4,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">true</span>)</span><br/>
+6<br/>
+Some&nbsp;CWhile&nbsp;(EAnd&nbsp;(EEq&nbsp;(EPlus&nbsp;(ENum&nbsp;2)&nbsp;(ENum&nbsp;3))&nbsp;(ENum&nbsp;5))&nbsp;(ENot&nbsp;EFalse))&nbsp;(CIf&nbsp;(ELe&nbsp;(EMinus&nbsp;(ENum&nbsp;2)&nbsp;(EMinus&nbsp;(EVar&nbsp;3)&nbsp;(EVar&nbsp;3)))&nbsp;(ENum&nbsp;1))&nbsp;(CAss&nbsp;1&nbsp;(EVar&nbsp;4))&nbsp;(CAss&nbsp;2&nbsp;(EVar&nbsp;1)))<br/>
+***&nbsp;Failed&nbsp;after&nbsp;7&nbsp;tests&nbsp;and&nbsp;0&nbsp;shrinks<br/>
+*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;Really&nbsp;motivates&nbsp;shrinking...&nbsp;<br/>
+QuickChecking&nbsp;well_typed_state_never_stuck_exec<br/>
+<span class="inlinecode">(1,<span class="id" type="var">TBool</span>),</span> <span class="inlinecode">(2,<span class="id" type="var">TBool</span>),</span> <span class="inlinecode">(3,<span class="id" type="var">TNat</span>),</span> <span class="inlinecode">(4,<span class="id" type="var">TBool</span>)</span><br/>
+<span class="inlinecode">(1,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">false</span>),</span> <span class="inlinecode">(2,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">true</span>),</span> <span class="inlinecode">(3,<span class="id" type="var">VNat</span></span> <span class="inlinecode">0),</span> <span class="inlinecode">(4,<span class="id" type="var">VBool</span></span> <span class="inlinecode"><span class="id" type="var">false</span>)</span><br/>
+1<br/>
+Some&nbsp;CSeq&nbsp;CSkip&nbsp;CSkip<br/>
+*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;LEO:&nbsp;Fix&nbsp;in&nbsp;SF:&nbsp;it&nbsp;should&nbsp;be&nbsp;c&nbsp;;;&nbsp;WHILE&nbsp;...&nbsp;(double&nbsp;;)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+In a traditional functional programming language like OCaml or
+    Haskell we could add the <span class="inlinecode"><span class="id" type="var">WHILE</span></span> case as follows:
+
+<div class="paragraph"> </div>
+
+  Fixpoint ceval_fun (st : state) (c : com) : state :=
+    match c with
+      ...
+      | WHILE b DO c END =&gt;
+          if (eval st b)
+            then ceval_fun st (c; WHILE b DO c END)
+            else st
+    end.
+
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

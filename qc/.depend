@@ -1,0 +1,14 @@
+Introduction.vo Introduction.glob Introduction.v.beautified: Introduction.v
+Introduction.vio: Introduction.v
+Typeclasses.vo Typeclasses.glob Typeclasses.v.beautified: Typeclasses.v
+Typeclasses.vio: Typeclasses.v
+QC.vo QC.glob QC.v.beautified: QC.v
+QC.vio: QC.v
+Atom.vo Atom.glob Atom.v.beautified: Atom.v
+Atom.vio: Atom.v
+AtomGen.vo AtomGen.glob AtomGen.v.beautified: AtomGen.v Atom.vo
+AtomGen.vio: AtomGen.v Atom.vio
+Maps.vo Maps.glob Maps.v.beautified: Maps.v
+Maps.vio: Maps.v
+TImp.vo TImp.glob TImp.v.beautified: TImp.v Atom.vo AtomGen.vo Maps.vo QC.vo
+TImp.vio: TImp.v Atom.vio AtomGen.vio Maps.vio QC.vio
