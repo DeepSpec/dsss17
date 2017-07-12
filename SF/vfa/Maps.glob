@@ -1,0 +1,337 @@
+DIGEST d5cf30f316e46e8cebda627ad932f6c3
+FMaps
+R1536:1550 Coq.Arith.Arith <> <> lib
+R1568:1580 Coq.Bool.Bool <> <> lib
+R1598:1631 Coq.Logic.FunctionalExtensionality <> <> lib
+ind 2269:2270 <> id
+constr 2286:2287 <> Id
+R2294:2297 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R2298:2299 Maps <> id ind
+R2291:2293 Coq.Init.Datatypes <> nat ind
+def 2314:2319 <> beq_id
+R2344:2346 Maps <> id2 var
+R2340:2342 Maps <> id1 var
+R2359:2360 Maps <> Id constr
+R2366:2367 Maps <> Id constr
+R2375:2381 Coq.Arith.EqNat <> beq_nat syndef
+prf 2405:2415 <> beq_id_refl
+R2434:2436 Coq.Init.Logic <> :type_scope:x_'='_x not
+R2430:2433 Coq.Init.Datatypes <> true constr
+R2437:2442 Maps <> beq_id def
+R2447:2448 Maps <> id var
+R2444:2445 Maps <> id var
+R2490:2501 Coq.Arith.EqNat <> beq_nat_refl thm
+R2490:2501 Coq.Arith.EqNat <> beq_nat_refl thm
+R2490:2501 Coq.Arith.EqNat <> beq_nat_refl thm
+prf 2634:2648 <> beq_id_true_iff
+R2669:2670 Maps <> id ind
+R2696:2700 Coq.Init.Logic <> :type_scope:x_'<->'_x not
+R2689:2691 Coq.Init.Logic <> :type_scope:x_'='_x not
+R2675:2680 Maps <> beq_id def
+R2686:2688 Maps <> id2 var
+R2682:2684 Maps <> id1 var
+R2692:2695 Coq.Init.Datatypes <> true constr
+R2704:2706 Coq.Init.Logic <> :type_scope:x_'='_x not
+R2701:2703 Maps <> id1 var
+R2707:2709 Maps <> id2 var
+R2750:2755 Maps <> beq_id def
+R2769:2784 Coq.Arith.EqNat <> beq_nat_true_iff syndef
+R2769:2784 Coq.Arith.EqNat <> beq_nat_true_iff syndef
+R2769:2784 Coq.Arith.EqNat <> beq_nat_true_iff syndef
+prf 2928:2943 <> beq_id_false_iff
+R2960:2961 Maps <> id ind
+R2984:2990 Coq.Init.Logic <> :type_scope:x_'<->'_x not
+R2976:2978 Coq.Init.Logic <> :type_scope:x_'='_x not
+R2966:2971 Maps <> beq_id def
+R2975:2975 Maps <> y var
+R2973:2973 Maps <> x var
+R2979:2983 Coq.Init.Datatypes <> false constr
+R2992:2995 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R2991:2991 Maps <> x var
+R2996:2996 Maps <> y var
+R3031:3045 Maps <> beq_id_true_iff thm
+R3031:3045 Maps <> beq_id_true_iff thm
+R3031:3045 Maps <> beq_id_true_iff thm
+R3058:3075 Coq.Bool.Bool <> not_true_iff_false thm
+R3058:3075 Coq.Bool.Bool <> not_true_iff_false thm
+R3058:3075 Coq.Bool.Bool <> not_true_iff_false thm
+prf 3160:3171 <> false_beq_id
+R3188:3189 Maps <> id ind
+R3201:3207 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R3218:3220 Coq.Init.Logic <> :type_scope:x_'='_x not
+R3208:3213 Maps <> beq_id def
+R3217:3217 Maps <> y var
+R3215:3215 Maps <> x var
+R3221:3225 Coq.Init.Datatypes <> false constr
+R3196:3199 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R3195:3195 Maps <> x var
+R3200:3200 Maps <> y var
+R3257:3272 Maps <> beq_id_false_iff thm
+R3257:3272 Maps <> beq_id_false_iff thm
+R3257:3272 Maps <> beq_id_false_iff thm
+def 4237:4245 <> total_map
+R4261:4264 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R4265:4265 Maps <> A var
+R4259:4260 Maps <> id ind
+def 4569:4575 <> t_empty
+R4591:4591 Maps <> A var
+R4596:4604 Maps <> total_map def
+R4606:4606 Maps <> A var
+R4623:4623 Maps <> v var
+def 4852:4859 <> t_update
+R4875:4883 Maps <> total_map def
+R4885:4885 Maps <> A var
+R4913:4914 Maps <> id ind
+R4922:4922 Maps <> A var
+R4943:4948 Maps <> beq_id def
+R4952:4953 Maps <> x' var
+R4950:4950 Maps <> x var
+R4967:4967 Maps <> m var
+R4969:4970 Maps <> x' var
+R4960:4960 Maps <> v var
+def 5344:5353 <> examplemap
+R5360:5367 Maps <> t_update def
+R5427:5430 Coq.Init.Datatypes <> true constr
+R5421:5422 Maps <> Id constr
+R5370:5377 Maps <> t_update def
+R5402:5406 Coq.Init.Datatypes <> false constr
+R5396:5397 Maps <> Id constr
+R5380:5386 Maps <> t_empty def
+R5388:5392 Coq.Init.Datatypes <> false constr
+def 5598:5612 <> update_example1
+R5633:5635 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5616:5625 Maps <> examplemap def
+R5628:5629 Maps <> Id constr
+R5636:5640 Coq.Init.Datatypes <> false constr
+def 5677:5691 <> update_example2
+R5712:5714 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5695:5704 Maps <> examplemap def
+R5707:5708 Maps <> Id constr
+R5715:5719 Coq.Init.Datatypes <> false constr
+def 5756:5770 <> update_example3
+R5791:5793 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5774:5783 Maps <> examplemap def
+R5786:5787 Maps <> Id constr
+R5794:5798 Coq.Init.Datatypes <> false constr
+def 5835:5849 <> update_example4
+R5870:5872 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5853:5862 Maps <> examplemap def
+R5865:5866 Maps <> Id constr
+R5873:5876 Coq.Init.Datatypes <> true constr
+prf 6422:6434 <> t_apply_empty
+R6466:6468 Coq.Init.Logic <> :type_scope:x_'='_x not
+R6453:6459 Maps <> t_empty def
+R6465:6465 Maps <> x var
+R6463:6463 Maps <> v var
+R6461:6461 Maps <> A var
+R6469:6469 Maps <> v var
+prf 6739:6749 <> t_update_eq
+R6766:6774 Maps <> total_map def
+R6776:6776 Maps <> A var
+R6804:6806 Coq.Init.Logic <> :type_scope:x_'='_x not
+R6787:6794 Maps <> t_update def
+R6800:6800 Maps <> v var
+R6798:6798 Maps <> x var
+R6796:6796 Maps <> m var
+R6803:6803 Maps <> x var
+R6807:6807 Maps <> v var
+prf 7107:7118 <> t_update_neq
+R7176:7184 Maps <> total_map def
+R7186:7186 Maps <> X var
+R7200:7205 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R7226:7228 Coq.Init.Logic <> :type_scope:x_'='_x not
+R7207:7214 Maps <> t_update def
+R7221:7221 Maps <> v var
+R7218:7219 Maps <> x1 var
+R7216:7216 Maps <> m var
+R7224:7225 Maps <> x2 var
+R7229:7229 Maps <> m var
+R7231:7232 Maps <> x2 var
+R7194:7197 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R7192:7193 Maps <> x1 var
+R7198:7199 Maps <> x2 var
+prf 7653:7667 <> t_update_shadow
+R7684:7692 Maps <> total_map def
+R7694:7694 Maps <> A var
+R7741:7745 Coq.Init.Logic <> :type_scope:x_'='_x not
+R7710:7717 Maps <> t_update def
+R7739:7740 Maps <> v2 var
+R7737:7737 Maps <> x var
+R7720:7727 Maps <> t_update def
+R7733:7734 Maps <> v1 var
+R7731:7731 Maps <> x var
+R7729:7729 Maps <> m var
+R7746:7753 Maps <> t_update def
+R7759:7760 Maps <> v2 var
+R7757:7757 Maps <> x var
+R7755:7755 Maps <> m var
+prf 8232:8238 <> beq_idP
+R8254:8260 Coq.Bool.Bool <> reflect ind
+R8271:8276 Maps <> beq_id def
+R8280:8280 Maps <> y var
+R8278:8278 Maps <> x var
+R8264:8266 Coq.Init.Logic <> :type_scope:x_'='_x not
+R8263:8263 Maps <> x var
+R8267:8267 Maps <> y var
+prf 8886:8898 <> t_update_same
+R8918:8926 Maps <> total_map def
+R8928:8928 Maps <> X var
+R8952:8954 Coq.Init.Logic <> :type_scope:x_'='_x not
+R8934:8941 Maps <> t_update def
+R8948:8948 Maps <> m var
+R8950:8950 Maps <> x var
+R8945:8945 Maps <> x var
+R8943:8943 Maps <> m var
+R8955:8955 Maps <> m var
+prf 9259:9274 <> t_update_permute
+R9340:9348 Maps <> total_map def
+R9350:9350 Maps <> X var
+R9364:9371 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R9372:9372 Coq.Init.Logic <> :type_scope:x_'='_x not
+R9406:9412 Coq.Init.Logic <> :type_scope:x_'='_x not
+R9446:9446 Coq.Init.Logic <> :type_scope:x_'='_x not
+R9373:9380 Maps <> t_update def
+R9404:9405 Maps <> v1 var
+R9401:9402 Maps <> x1 var
+R9383:9390 Maps <> t_update def
+R9397:9398 Maps <> v2 var
+R9394:9395 Maps <> x2 var
+R9392:9392 Maps <> m var
+R9413:9420 Maps <> t_update def
+R9444:9445 Maps <> v2 var
+R9441:9442 Maps <> x2 var
+R9423:9430 Maps <> t_update def
+R9437:9438 Maps <> v1 var
+R9434:9435 Maps <> x1 var
+R9432:9432 Maps <> m var
+R9358:9361 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R9356:9357 Maps <> x2 var
+R9362:9363 Maps <> x1 var
+def 9800:9810 <> partial_map
+R9824:9832 Maps <> total_map def
+R9835:9840 Coq.Init.Datatypes <> option ind
+R9842:9842 Maps <> A var
+def 9858:9862 <> empty
+R9875:9885 Maps <> partial_map def
+R9887:9887 Maps <> A var
+R9894:9900 Maps <> t_empty def
+R9902:9905 Coq.Init.Datatypes <> None constr
+def 9920:9925 <> update
+R9941:9951 Maps <> partial_map def
+R9953:9953 Maps <> A var
+R9979:9980 Maps <> id ind
+R9988:9988 Maps <> A var
+R9996:10003 Maps <> t_update def
+R10010:10013 Coq.Init.Datatypes <> Some constr
+R10015:10015 Maps <> v var
+R10007:10007 Maps <> x var
+R10005:10005 Maps <> m var
+prf 10113:10123 <> apply_empty
+R10149:10151 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10140:10144 Maps <> empty def
+R10148:10148 Maps <> x var
+R10146:10146 Maps <> A var
+R10152:10155 Coq.Init.Datatypes <> None constr
+R10182:10186 Maps <> empty def
+R10197:10209 Maps <> t_apply_empty prfax
+R10197:10209 Maps <> t_apply_empty prfax
+R10197:10209 Maps <> t_apply_empty prfax
+prf 10239:10247 <> update_eq
+R10264:10274 Maps <> partial_map def
+R10276:10276 Maps <> A var
+R10302:10304 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10287:10292 Maps <> update def
+R10298:10298 Maps <> v var
+R10296:10296 Maps <> x var
+R10294:10294 Maps <> m var
+R10301:10301 Maps <> x var
+R10305:10308 Coq.Init.Datatypes <> Some constr
+R10310:10310 Maps <> v var
+R10337:10342 Maps <> update def
+R10353:10363 Maps <> t_update_eq prfax
+R10353:10363 Maps <> t_update_eq prfax
+R10353:10363 Maps <> t_update_eq prfax
+prf 10395:10404 <> update_neq
+R10460:10470 Maps <> partial_map def
+R10472:10472 Maps <> X var
+R10486:10491 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R10510:10512 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10493:10498 Maps <> update def
+R10505:10505 Maps <> v var
+R10502:10503 Maps <> x2 var
+R10500:10500 Maps <> m var
+R10508:10509 Maps <> x1 var
+R10513:10513 Maps <> m var
+R10515:10516 Maps <> x1 var
+R10480:10483 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R10478:10479 Maps <> x2 var
+R10484:10485 Maps <> x1 var
+R10559:10564 Maps <> update def
+R10575:10586 Maps <> t_update_neq prfax
+R10575:10586 Maps <> t_update_neq prfax
+R10575:10586 Maps <> t_update_neq prfax
+R10575:10586 Maps <> t_update_neq prfax
+prf 10625:10637 <> update_shadow
+R10654:10664 Maps <> partial_map def
+R10666:10666 Maps <> A var
+R10707:10709 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10680:10685 Maps <> update def
+R10705:10706 Maps <> v2 var
+R10703:10703 Maps <> x var
+R10688:10693 Maps <> update def
+R10699:10700 Maps <> v1 var
+R10697:10697 Maps <> x var
+R10695:10695 Maps <> m var
+R10710:10715 Maps <> update def
+R10721:10722 Maps <> v2 var
+R10719:10719 Maps <> x var
+R10717:10717 Maps <> m var
+R10762:10767 Maps <> update def
+R10778:10792 Maps <> t_update_shadow prfax
+R10778:10792 Maps <> t_update_shadow prfax
+R10778:10792 Maps <> t_update_shadow prfax
+prf 10824:10834 <> update_same
+R10856:10866 Maps <> partial_map def
+R10868:10868 Maps <> X var
+R10886:10891 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R10904:10906 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10892:10897 Maps <> update def
+R10903:10903 Maps <> v var
+R10901:10901 Maps <> x var
+R10899:10899 Maps <> m var
+R10907:10907 Maps <> m var
+R10877:10879 Coq.Init.Logic <> :type_scope:x_'='_x not
+R10874:10874 Maps <> m var
+R10876:10876 Maps <> x var
+R10880:10883 Coq.Init.Datatypes <> Some constr
+R10885:10885 Maps <> v var
+R10944:10949 Maps <> update def
+R10974:10986 Maps <> t_update_same prfax
+R10974:10986 Maps <> t_update_same prfax
+prf 11003:11016 <> update_permute
+R11085:11095 Maps <> partial_map def
+R11097:11097 Maps <> X var
+R11111:11118 Coq.Init.Logic <> :type_scope:x_'->'_x not
+R11119:11119 Coq.Init.Logic <> :type_scope:x_'='_x not
+R11149:11155 Coq.Init.Logic <> :type_scope:x_'='_x not
+R11185:11185 Coq.Init.Logic <> :type_scope:x_'='_x not
+R11120:11125 Maps <> update def
+R11147:11148 Maps <> v1 var
+R11144:11145 Maps <> x1 var
+R11128:11133 Maps <> update def
+R11140:11141 Maps <> v2 var
+R11137:11138 Maps <> x2 var
+R11135:11135 Maps <> m var
+R11156:11161 Maps <> update def
+R11183:11184 Maps <> v2 var
+R11180:11181 Maps <> x2 var
+R11164:11169 Maps <> update def
+R11176:11177 Maps <> v1 var
+R11173:11174 Maps <> x1 var
+R11171:11171 Maps <> m var
+R11105:11108 Coq.Init.Logic <> :type_scope:x_'<>'_x not
+R11103:11104 Maps <> x2 var
+R11109:11110 Maps <> x1 var
+R11228:11233 Maps <> update def
+R11244:11259 Maps <> t_update_permute prfax
+R11244:11259 Maps <> t_update_permute prfax

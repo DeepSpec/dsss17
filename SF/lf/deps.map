@@ -1,0 +1,21 @@
+<map id="deps" name="deps">
+<area shape="rect" id="node2" href="Preface.html" title="Preface" alt="" coords="352,34,423,81"/>
+<area shape="rect" id="node4" href="Basics.html" title="&lt;TABLE&gt;" alt="" coords="292,129,483,183"/>
+<area shape="rect" id="node3" href="Postscript.html" title="Postscript" alt="" coords="440,1145,511,1192"/>
+<area shape="rect" id="node18" href="Bib.html" title="&lt;TABLE&gt;" alt="" coords="420,1243,531,1297"/>
+<area shape="rect" id="node5" href="Induction.html" title="&lt;TABLE&gt;" alt="" coords="320,230,454,284"/>
+<area shape="rect" id="node6" href="Lists.html" title="&lt;TABLE&gt;" alt="" coords="297,331,478,385"/>
+<area shape="rect" id="node7" href="Poly.html" title="&lt;TABLE&gt;" alt="" coords="268,433,506,486"/>
+<area shape="rect" id="node8" href="Tactics.html" title="&lt;TABLE&gt;" alt="" coords="320,534,455,588"/>
+<area shape="rect" id="node10" href="Logic.html" title="&lt;TABLE&gt;" alt="" coords="332,635,443,689"/>
+<area shape="rect" id="node9" href="IndProp.html" title="&lt;TABLE&gt;" alt="" coords="291,736,484,790"/>
+<area shape="rect" id="node11" href="Maps.html" title="&lt;TABLE&gt;" alt="" coords="108,838,258,891"/>
+<area shape="rect" id="node12" href="ProofObjects.html" title="&lt;TABLE&gt;" alt="" coords="283,838,492,891"/>
+<area shape="rect" id="node17" href="Rel.html" title="&lt;TABLE&gt;" alt="" coords="516,838,667,891"/>
+<area shape="rect" id="node14" href="Imp.html" title="&lt;TABLE&gt;" alt="" coords="107,939,281,993"/>
+<area shape="rect" id="node13" href="IndPrinciples.html" title="&lt;TABLE&gt;" alt="" coords="315,939,460,993"/>
+<area shape="rect" id="node15" href="ImpParser.html" title="&lt;TABLE&gt;" alt="" coords="5,1040,172,1094"/>
+<area shape="rect" id="node16" href="ImpCEvalFun.html" title="&lt;TABLE&gt;" alt="" coords="197,1040,386,1094"/>
+<area shape="rect" id="node19" href="Auto.html" title="&lt;TABLE&gt;" alt="" coords="410,1040,540,1094"/>
+<area shape="rect" id="node20" href="Extraction.html" title="&lt;TABLE&gt;" alt="" coords="9,1141,168,1195"/>
+</map>
