@@ -405,25 +405,34 @@ Sample (genTreeSized' 3 (choose(0,3))).
            Node (0) (Leaf) (Node (0) (Node (2) (Leaf) (Leaf))
                                      (Node (0) (Leaf) (Leaf))),
            Node (1) (Node (2) (Leaf) (Node (0) (Leaf) (Leaf))) (Leaf),
-           Node (0) (Node (0) (Leaf) (Node (3) (Leaf) (Leaf))) (Node (2) (Leaf) (Leaf)),
-           Node (1) (Node (3) (Node (2) (Leaf) (Leaf)) (Node (3) (Leaf) (Leaf))) (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
-           Node (0) (Node (0) (Node (0) (Leaf) (Leaf)) (Node (1) (Leaf) (Leaf))) (Node (2) (Node (3) (Leaf) (Leaf)) (Node (0) (Leaf) (Leaf))),
-           Node (2) (Node (2) (Leaf) (Leaf)) (Node (1) (Node (2) (Leaf) (Leaf)) (Node (2) (Leaf) (Leaf))),
-           Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) (Node (0) (Node (2) (Leaf) (Leaf)) (Leaf)),
+           Node (0) (Node (0) (Leaf) (Node (3) (Leaf) (Leaf)))
+                    (Node (2) (Leaf) (Leaf)),
+           Node (1) (Node (3) (Node (2) (Leaf) (Leaf)) (Node (3) (Leaf) (Leaf)))
+                    (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (0) (Node (0) (Node (0) (Leaf) (Leaf)) (Node (1) (Leaf) (Leaf))) 
+                    (Node (2) (Node (3) (Leaf) (Leaf)) (Node (0) (Leaf) (Leaf))),
+           Node (2) (Node (2) (Leaf) (Leaf)) (Node (1) (Node (2) (Leaf) (Leaf))
+                                                       (Node (2) (Leaf) (Leaf))),
+           Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (0) (Node (2) (Leaf) (Leaf)) (Leaf)),
            Leaf,
            Node (2) (Node (3) (Node (3) (Leaf) (Leaf)) (Leaf)) (Leaf),
            Leaf,
            Node (1) (Leaf) (Leaf),
            Leaf,
-           Node (1) (Node (2) (Leaf) (Node (3) (Leaf) (Leaf))) (Node (0) (Leaf) (Node (1) (Leaf) (Leaf))),
+           Node (1) (Node (2) (Leaf) (Node (3) (Leaf) (Leaf))) 
+                    (Node (0) (Leaf) (Node (1) (Leaf) (Leaf))),
            Leaf,
-           Node (3) (Node (0) (Node (0) (Leaf) (Leaf)) (Leaf)) (Node (0) (Leaf) (Node (2) (Leaf) (Leaf))),
-           Node (2) (Node (2) (Node (0) (Leaf) (Leaf)) (Leaf)) (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (3) (Node (0) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (0) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (2) (Node (2) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
            Leaf ]
 *)
 
-(** To showcase this generator, we will use the notion of mirroring a
-    tree: swapping its left and right subtrees recursively. *)
+(** To showcase how this generator could be used in practice, consider
+    the operation of mirroring a tree -- swapping its left and right
+    subtrees recursively. *)
    
 Fixpoint mirror {A : Type} (t : Tree A) : Tree A :=
   match t with
@@ -431,7 +440,9 @@ Fixpoint mirror {A : Type} (t : Tree A) : Tree A :=
     | Node x l r => Node x (mirror r) (mirror l)
   end.
 
-(** We also need a simple structural equality on trees *)
+(** To formulate a property about [mirror], we also need a simple
+    structural equality on trees: *)
+
 Fixpoint eq_tree (t1 t2 : Tree nat) : bool :=
   match t1, t2 with
     | Leaf, Leaf => true
@@ -440,7 +451,7 @@ Fixpoint eq_tree (t1 t2 : Tree nat) : bool :=
     | _, _ => false
   end.
 
-(** One expects that [mirror] should be unipotent; mirroring a tree
+(** We expect that [mirror] should be "unipotent": mirroring a tree
     twice yields the original tree.  *)
 
 Definition mirrorP (t : Tree nat) := eq_tree (mirror (mirror t)) t.
@@ -452,14 +463,16 @@ Definition mirrorP (t : Tree nat) := eq_tree (mirror (mirror t)) t.
     property on random inputs of [g]. *)
 
 (* QuickChick (forAll (genTreeSized' 5 (choose (0,5))) mirrorP). *)
+(* STOPPED HERE *)
 
 (** QuickChick quickly responds that this property passed 10000 tests,
-    so we gain some confidence in its truth. But what would happend if
-    we had the *wrong* property? *)
+    so we gain some confidence in its truth.  What if we had defined
+    the *wrong* property? *)
 
 Definition faultyMirrorP (t : Tree nat) := eq_tree (mirror t) t.
 
-(* QuickChick (forAll (genTreeSized' 5 (choose (0,5))) faultyMirrorP). *)(** 
+(* QuickChick (forAll (genTreeSized' 5 (choose (0,5))) faultyMirrorP). *)
+(** 
       ===> 
   Node (3) (Node (0) (Leaf) (Node (0) (Node (1) (Leaf) (Leaf)) (Leaf)))
   (Node (5) (Node (0) (Node (1) (Leaf) (Node (4) (Leaf) (Leaf))) (Node (4) (Leaf)

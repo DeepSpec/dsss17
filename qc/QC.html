@@ -600,27 +600,36 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
            Node (0) (Leaf) (Node (0) (Node (2) (Leaf) (Leaf))
                                      (Node (0) (Leaf) (Leaf))),
            Node (1) (Node (2) (Leaf) (Node (0) (Leaf) (Leaf))) (Leaf),
-           Node (0) (Node (0) (Leaf) (Node (3) (Leaf) (Leaf))) (Node (2) (Leaf) (Leaf)),
-           Node (1) (Node (3) (Node (2) (Leaf) (Leaf)) (Node (3) (Leaf) (Leaf))) (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
-           Node (0) (Node (0) (Node (0) (Leaf) (Leaf)) (Node (1) (Leaf) (Leaf))) (Node (2) (Node (3) (Leaf) (Leaf)) (Node (0) (Leaf) (Leaf))),
-           Node (2) (Node (2) (Leaf) (Leaf)) (Node (1) (Node (2) (Leaf) (Leaf)) (Node (2) (Leaf) (Leaf))),
-           Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) (Node (0) (Node (2) (Leaf) (Leaf)) (Leaf)),
+           Node (0) (Node (0) (Leaf) (Node (3) (Leaf) (Leaf)))
+                    (Node (2) (Leaf) (Leaf)),
+           Node (1) (Node (3) (Node (2) (Leaf) (Leaf)) (Node (3) (Leaf) (Leaf)))
+                    (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (0) (Node (0) (Node (0) (Leaf) (Leaf)) (Node (1) (Leaf) (Leaf))) 
+                    (Node (2) (Node (3) (Leaf) (Leaf)) (Node (0) (Leaf) (Leaf))),
+           Node (2) (Node (2) (Leaf) (Leaf)) (Node (1) (Node (2) (Leaf) (Leaf))
+                                                       (Node (2) (Leaf) (Leaf))),
+           Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (0) (Node (2) (Leaf) (Leaf)) (Leaf)),
            Leaf,
            Node (2) (Node (3) (Node (3) (Leaf) (Leaf)) (Leaf)) (Leaf),
            Leaf,
            Node (1) (Leaf) (Leaf),
            Leaf,
-           Node (1) (Node (2) (Leaf) (Node (3) (Leaf) (Leaf))) (Node (0) (Leaf) (Node (1) (Leaf) (Leaf))),
+           Node (1) (Node (2) (Leaf) (Node (3) (Leaf) (Leaf))) 
+                    (Node (0) (Leaf) (Node (1) (Leaf) (Leaf))),
            Leaf,
-           Node (3) (Node (0) (Node (0) (Leaf) (Leaf)) (Leaf)) (Node (0) (Leaf) (Node (2) (Leaf) (Leaf))),
-           Node (2) (Node (2) (Node (0) (Leaf) (Leaf)) (Leaf)) (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (3) (Node (0) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (0) (Leaf) (Node (2) (Leaf) (Leaf))),
+           Node (2) (Node (2) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))),
            Leaf ]
 </pre>
 
 <div class="paragraph"> </div>
 
- To showcase this generator, we will use the notion of mirroring a
-    tree: swapping its left and right subtrees recursively. 
+ To showcase how this generator could be used in practice, consider
+    the operation of mirroring a tree &mdash; swapping its left and right
+    subtrees recursively. 
 </div>
 <div class="code code-tight">
 
@@ -633,9 +642,12 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 </div>
 
 <div class="doc">
-We also need a simple structural equality on trees 
+To formulate a property about <span class="inlinecode"><span class="id" type="var">mirror</span></span>, we also need a simple
+    structural equality on trees: 
 </div>
 <div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">eq_tree</span> (<span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> : <span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">bool</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t<sub>1</sub></span>, <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>, <span class="id" type="var">Leaf</span> ⇒ <span class="id" type="var">true</span><br/>
@@ -646,7 +658,7 @@ We also need a simple structural equality on trees
 </div>
 
 <div class="doc">
-One expects that <span class="inlinecode"><span class="id" type="var">mirror</span></span> should be unipotent; mirroring a tree
+We expect that <span class="inlinecode"><span class="id" type="var">mirror</span></span> should be "unipotent": mirroring a tree
     twice yields the original tree.  
 </div>
 <div class="code code-tight">
@@ -668,12 +680,13 @@ To test this assumption, we can use the <span class="inlinecode"><span class="id
 
 <br/>
 <span class="comment">(*&nbsp;QuickChick&nbsp;(forAll&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;mirrorP).&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;STOPPED&nbsp;HERE&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 QuickChick quickly responds that this property passed 10000 tests,
-    so we gain some confidence in its truth. But what would happend if
-    we had the *wrong* property? 
+    so we gain some confidence in its truth.  What if we had defined
+    the *wrong* property? 
 </div>
 <div class="code code-tight">
 
@@ -681,7 +694,8 @@ QuickChick quickly responds that this property passed 10000 tests,
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">faultyMirrorP</span> (<span class="id" type="var">t</span> : <span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>) := <span class="id" type="var">eq_tree</span> (<span class="id" type="var">mirror</span> <span class="id" type="var">t</span>) <span class="id" type="var">t</span>.<br/>
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;(forAll&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;faultyMirrorP).&nbsp;*)</span></div>
+<span class="comment">(*&nbsp;QuickChick&nbsp;(forAll&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;faultyMirrorP).&nbsp;*)</span><br/>
+</div>
 
 <div class="doc">
 <pre>
