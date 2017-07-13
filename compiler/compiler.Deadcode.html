@@ -1,0 +1,438 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Module Deadcode</title>
+<meta name="description" content="Documentation of Coq module Deadcode" />
+<link href="coq2html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="coq2html.js"> </script>
+</head>
+
+<body onload="hideAll('proofscript')">
+<h1 class="title">Module Deadcode</h1>
+<div class="coq">
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html">Bool</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Arith.Arith.html">Arith</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.omega.Omega.html">Omega</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Lists.List.html">List</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Program.Equality.html">Coq.Program.Equality</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSets.html">MSets</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="../SF/lf/Maps.html">Maps</a></span> <span class="id"><a href="../SF/lf/Imp.html">Imp</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="compiler.Sequences.html">Sequences</a></span> <span class="id"><a href="compiler.Semantics.html">Semantics</a></span>.<br/>
+<br/>
+<div class="doc">In this chapter: liveness analysis and its use for an optimization
+  called dead code elimination. </div>
+<br/>
+<h1> 1. Sets of variables </h1>
+<br/>
+<div class="doc">The static analysis we need -- liveness analysis -- operates over
+  sets of variables.  Coq's standard library provides a rich, efficient
+  implementation of finite sets.  Before being able to use it, however,
+  we must provide it with a Coq module equipping the type of identifiers
+  with a decidable equality.  The implementation of this module follows. </div>
+<br/>
+<span class="kwd">Module</span> <span class="id"><a name="Id_Decidable">Id_Decidable</a></span> &lt;: <span class="id"><a href="http://coq.inria.fr/library/Coq.Structures.Equalities.html#DecidableType">DecidableType</a></span> <span class="kwd">with</span> <span class="kwd">Definition</span> <span class="id">t</span> := <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>.<br/>
+&nbsp;&nbsp;<span class="kwd">Definition</span> <span class="id"><a name="Id_Decidable.t">t</a></span> := <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>.<br/>
+&nbsp;&nbsp;<span class="kwd">Definition</span> <span class="id"><a name="Id_Decidable.eq">eq</a></span> (<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Deadcode.html#Id_Decidable.t">t</a></span>) := <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> = <span class="id"><a href="compiler.Deadcode.html#y">y</a></span>.<br/>
+&nbsp;&nbsp;<span class="kwd">Lemma</span> <span class="id"><a name="Id_Decidable.eq_equiv">eq_equiv</a></span>: <span class="id"><a href="http://coq.inria.fr/library/Coq.Classes.RelationClasses.html#Equivalence">Equivalence</a></span> <span class="id"><a href="compiler.Deadcode.html#Id_Decidable.eq">eq</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof39')">Proof.</div>
+<div class="proofscript" id="proof39">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">constructor</span>; <span class="tactic">red</span>; <span class="tactic">unfold</span> <span class="id"><a href="compiler.Deadcode.html#Id_Decidable.eq">eq</a></span>; <span class="tactic">intros</span>; <span class="tactic">congruence</span>. <br/>
+&nbsp;&nbsp;Qed.</div>
+&nbsp;&nbsp;<span class="kwd">Definition</span> <span class="id"><a name="Id_Decidable.eq_dec">eq_dec</a></span>: <span class="kwd">forall</span> (<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Deadcode.html#Id_Decidable.t">t</a></span>), {<span class="id"><a href="compiler.Deadcode.html#Id_Decidable.eq">eq</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#y">y</a></span>} + {~<span class="id"><a href="compiler.Deadcode.html#Id_Decidable.eq">eq</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#y">y</a></span>}.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof40')">Proof.</div>
+<div class="proofscript" id="proof40">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span>  (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x</span> <span class="id">y</span>) <span class="id">eqn</span>:<span class="id">BEQ</span>.<br/>
+&nbsp;&nbsp;- <span class="id">left</span>; <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="id">right</span>; <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;Defined.</div>
+<span class="kwd">End</span> <span class="id"><a href="compiler.Deadcode.html#Id_Decidable">Id_Decidable</a></span>.<br/>
+<br/>
+<div class="doc">We then instantiate the finite sets modules from Coq's standard library
+  with this ordered type of integers. </div>
+<br/>
+<span class="kwd">Module</span> <span class="id"><a name="VS">VS</a></span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSetWeakList.html#Make">MSetWeakList.Make</a></span>(<span class="id"><a href="compiler.Deadcode.html#Id_Decidable">Id_Decidable</a></span>).<br/>
+<span class="kwd">Module</span> <span class="id"><a name="VSP">VSP</a></span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSetProperties.html#WProperties">MSetProperties.WProperties</a></span>(<span class="id"><a href="compiler.Deadcode.html#VS">VS</a></span>).<br/>
+<span class="kwd">Module</span> <span class="id"><a name="VSdecide">VSdecide</a></span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSetDecide.html#Decide">MSetDecide.Decide</a></span>(<span class="id"><a href="compiler.Deadcode.html#VS">VS</a></span>).<br/>
+<span class="kwd">Import</span> <span class="id">VSdecide</span>.<br/>
+<br/>
+<h1> 2. Liveness analysis </h1>
+<br/>
+<h2> Free variables </h2>
+<br/>
+<div class="doc">Computation of the set of variables appearing in an expression or command. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="fv_aexp">fv_aexp</a></span> (<span class="id">a</span>: <span class="id"><a href="../SF/lf/Imp.html#aexp">aexp</a></span>) : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#a">a</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#ANum">ANum</a></span> <span class="id">n</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id">v</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#singleton">VS.singleton</a></span> <span class="id">v</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#APlus">APlus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AMinus">AMinus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AMult">AMult</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="fv_bexp">fv_bexp</a></span> (<span class="id">b</span>: <span class="id"><a href="../SF/lf/Imp.html#bexp">bexp</a></span>) : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BTrue">BTrue</a></span> =&gt; <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BFalse">BFalse</a></span> =&gt; <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BEq">BEq</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BLe">BLe</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BNot">BNot</a></span> <span class="id">b1</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b1</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BAnd">BAnd</a></span> <span class="id">b1</span> <span class="id">b2</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b2</span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="fv_com">fv_com</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">SKIP</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span><br/>
+&nbsp;&nbsp;| <span class="id">x</span> ::= <span class="id">a</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a</span><br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id">c1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id">c2</span>)<br/>
+&nbsp;&nbsp;| <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id">c1</span> <span class="id">ELSE</span> <span class="id">c2</span> <span class="id">FI</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) (<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id">c1</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id">c2</span>))<br/>
+&nbsp;&nbsp;| <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<h2> Computing post-fixpoints. </h2>
+<br/>
+<span class="kwd">Section</span> <span class="id"><a name="FIXPOINT">FIXPOINT</a></span>.<br/>
+<br/>
+<span class="kwd">Variable</span> <span class="id"><a name="FIXPOINT.F">F</a></span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>.<br/>
+<span class="kwd">Variable</span> <span class="id"><a name="FIXPOINT.default">default</a></span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>.<br/>
+<br/>
+<div class="doc">Our goal is to find a set of variables <span class="bracket"><span class="id">x</span></span> such that <span class="bracket"><span class="id">F</span> <span class="id">x</span></span> is a subset of <span class="bracket"><span class="id">x</span></span>
+  (a post-fixpoint of F).  We use a naive algorithm: iterate <span class="bracket"><span class="id">F</span></span> at most <span class="bracket"><span class="id">n</span></span> times,
+  stopping as soon as a post-fixpoint is encountered.  If not,
+  we return a safe default result. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="iter">iter</a></span> (<span class="id">n</span>: <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">nat</a></span>) (<span class="id">x</span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>) : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#n">n</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#O">O</a></span> =&gt; <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#S">S</a></span> <span class="id">n</span>' =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">x</span>' := <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#subset">VS.subset</a></span> <span class="id">x</span>' <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="kwd">then</span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="kwd">else</span> <span class="id"><a href="compiler.Deadcode.html#iter">iter</a></span> <span class="id">n</span>' <span class="id">x</span>'<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="niter">niter</a></span> := 10%<span class="id">nat</span>.<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="fixpoint">fixpoint</a></span> : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> := <span class="id"><a href="compiler.Deadcode.html#iter">iter</a></span> <span class="id"><a href="compiler.Deadcode.html#niter">niter</a></span> <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="fixpoint_charact">fixpoint_charact</a></span>:<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span>) <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span> \/ <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span> = <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof41')">Proof.</div>
+<div class="proofscript" id="proof41">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span>. <span class="tactic">generalize</span> <span class="id"><a href="compiler.Deadcode.html#niter">niter</a></span>, <span class="id"><a href="compiler.Deadcode.html#empty">VS.empty</a></span>. <span class="tactic">induction</span> <span class="id">n</span>; <span class="tactic">intros</span>; <span class="tactic">simpl</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#subset">VS.subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#FIXPOINT.F">F</a></span> <span class="id">t</span>) <span class="id">t</span>) <span class="id">eqn</span>:<span class="id">SUBSET</span>.<br/>
++ <span class="id">left</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#subset_spec">VS.subset_spec</a></span>; <span class="tactic">auto</span>.<br/>
++ <span class="tactic">apply</span> <span class="id">IHn</span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Hypothesis</span> <span class="id"><a name="FIXPOINT.F_stable">F_stable</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span>) <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="fixpoint_upper_bound">fixpoint_upper_bound</a></span>:<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span> <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof42')">Proof.</div>
+<div class="proofscript" id="proof42">
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="kwd">forall</span> <span class="id">n</span> <span class="id">x</span>, <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#iter">iter</a></span> <span class="id"><a href="compiler.Deadcode.html#n">n</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span>) <span class="id"><a href="compiler.Deadcode.html#FIXPOINT.default">default</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">induction</span> <span class="id">n</span>; <span class="tactic">intros</span>; <span class="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;- <span class="tactic">red</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#subset">VS.subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#FIXPOINT.F">F</a></span> <span class="id">x</span>) <span class="id">x</span>) <span class="id">eqn</span>:<span class="id">SUBSET</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="tactic">apply</span> <span class="id">IHn</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;} <br/>
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span>. <span class="tactic">apply</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#subset_empty">VSP.subset_empty</a></span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">End</span> <span class="id"><a href="compiler.Deadcode.html#FIXPOINT">FIXPOINT</a></span>.<br/>
+<br/>
+<h2> Liveness analysis. </h2>
+<br/>
+<div class="doc"><span class="bracket"><span class="id">L</span></span> is the set of variables live "after" command <span class="bracket"><span class="id">c</span></span>.
+  The result of <span class="bracket"><span class="id">live</span> <span class="id">c</span> <span class="id">L</span></span> is the set of variables live "before" <span class="bracket"><span class="id">c</span></span>. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="live">live</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>) : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">SKIP</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#L">L</a></span><br/>
+&nbsp;&nbsp;| <span class="id">x</span> ::= <span class="id">a</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#mem">VS.mem</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">then</span> <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#remove">VS.remove</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">else</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span><br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id">c1</span> <span class="id">ELSE</span> <span class="id">c2</span> <span class="id">FI</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) (<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c1</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>))<br/>
+&nbsp;&nbsp;| <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">L</span>' := <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">default</span> := <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> (<span class="id"><a href="../SF/lf/Imp.html#CWhile">CWhile</a></span> <span class="id">b</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span>)) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#fixpoint">fixpoint</a></span> (<span class="kwd">fun</span> <span class="id">x</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> <span class="id">L</span>' (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span>)) <span class="id"><a href="compiler.Deadcode.html#default">default</a></span><br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="live_upper_bound">live_upper_bound</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">L</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) (<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof43')">Proof.</div>
+<div class="proofscript" id="proof43">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">c</span>; <span class="tactic">intros</span>; <span class="tactic">simpl</span>.<br/>
+- <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#mem">VS.mem</a></span> <span class="id">i</span> <span class="id">L</span>) <span class="id">eqn</span>:<span class="id">MEM</span>. <span class="id">fsetdec</span>. <span class="id">fsetdec</span>.<br/>
+- <span class="id">specialize</span> (<span class="id">IHc1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id">L</span>)). <span class="id">specialize</span> (<span class="id">IHc2</span> <span class="id">L</span>). <span class="id">fsetdec</span>.<br/>
+- <span class="id">specialize</span> (<span class="id">IHc1</span> <span class="id">L</span>). <span class="id">specialize</span> (<span class="id">IHc2</span> <span class="id">L</span>). <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#fixpoint_upper_bound">fixpoint_upper_bound</a></span>. <span class="tactic">intro</span> <span class="id">x</span>. <span class="id">specialize</span> (<span class="id">IHc</span> <span class="id">x</span>). <span class="id">fsetdec</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="live_while_charact">live_while_charact</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>,<br/>
+&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">L</span>' := <span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id">END</span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span>) <span class="id">L</span>' /\ <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id">L</span>' /\ <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id">L</span>') <span class="id">L</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof44')">Proof.</div>
+<div class="proofscript" id="proof44">
+&nbsp;&nbsp;<span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id">specialize</span> (<span class="id"><a href="compiler.Deadcode.html#fixpoint_charact">fixpoint_charact</a></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="kwd">fun</span> <span class="id">x</span> : <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span> =&gt; <span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) <span class="id">L</span>) (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c</span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) (<span class="id"><a href="compiler.Deadcode.html#fv_com">fv_com</a></span> <span class="id">c</span>)) <span class="id">L</span>)).<br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">L</span>'. <span class="id">fold</span> <span class="id">L</span>'. <span class="tactic">intros</span> [<span class="id">A</span>|<span class="id">A</span>].<br/>
+- <span class="tactic">split</span>. <span class="id">fsetdec</span>. <span class="tactic">split</span>; <span class="id">fsetdec</span>. <br/>
+- <span class="tactic">split</span>. <span class="tactic">rewrite</span> <span class="id">A</span>. <span class="id">fsetdec</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">split</span>. <span class="tactic">rewrite</span> <span class="id">A</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#subset_trans">VSP.subset_trans</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#live_upper_bound">live_upper_bound</a></span>. <span class="tactic">rewrite</span> <span class="id">A</span>. <span class="id">fsetdec</span>.<br/>
+Qed.</div>
+<br/>
+<h1> 3. Dead code elimination </h1>
+<br/>
+<h2> Code transformation </h2>
+<br/>
+<div class="doc">The code transformation turns assignments <span class="bracket"><span class="id">x</span> ::= <span class="id">a</span></span> to dead variables <span class="bracket"><span class="id">x</span></span>
+  into <span class="bracket"><span class="id">SKIP</span></span> statements. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="dce">dce</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>): <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">SKIP</span> =&gt; <span class="id">SKIP</span><br/>
+&nbsp;&nbsp;| <span class="id">x</span> ::= <span class="id">a</span> =&gt; <span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#mem">VS.mem</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="kwd">then</span> <span class="id">x</span> ::= <span class="id">a</span> <span class="kwd">else</span> <span class="id">SKIP</span><br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt; (<span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) ;; <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id">c1</span> <span class="id">ELSE</span> <span class="id">c2</span> <span class="id">FI</span> =&gt; <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c1</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id">FI</span><br/>
+&nbsp;&nbsp;| <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span> =&gt; <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id">END</span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id">END</span><br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<div class="doc">Example of optimization. </div>
+<br/>
+<span class="kwd">Notation</span> <span class="id"><a name="va">va</a></span> := (<span class="id"><a href="../SF/lf/Maps.html#Id">Id</a></span> "<span class="id">a</span>").<br/>
+<span class="kwd">Notation</span> <span class="id"><a name="vb">vb</a></span> := (<span class="id"><a href="../SF/lf/Maps.html#Id">Id</a></span> "<span class="id">b</span>").<br/>
+<span class="kwd">Notation</span> <span class="id"><a name="vq">vq</a></span> := (<span class="id"><a href="../SF/lf/Maps.html#Id">Id</a></span> "<span class="id">q</span>").<br/>
+<span class="kwd">Notation</span> <span class="id"><a name="vr">vr</a></span> := (<span class="id"><a href="../SF/lf/Maps.html#Id">Id</a></span> "<span class="id">r</span>").<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="prog">prog</a></span> :=<br/>
+&nbsp;&nbsp;( <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span> ::= <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#va">va</a></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#vq">vq</a></span> ::= <span class="id"><a href="../SF/lf/Imp.html#ANum">ANum</a></span> 0 ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">WHILE</span> <span class="id"><a href="../SF/lf/Imp.html#BLe">BLe</a></span> (<span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#vb">vb</a></span>) (<span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>) <span class="id">DO</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span> ::= <span class="id"><a href="../SF/lf/Imp.html#AMinus">AMinus</a></span> (<span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>) (<span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#vb">vb</a></span>) ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#vq">vq</a></span> ::= <span class="id"><a href="../SF/lf/Imp.html#APlus">APlus</a></span> (<span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Deadcode.html#vq">vq</a></span>) (<span class="id"><a href="../SF/lf/Imp.html#ANum">ANum</a></span> 1)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">END</span> ).<br/>
+<br/>
+<span class="id">Compute</span> (<span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Result is:
+<pre>
+   r := a;                 ===&gt;   r := a;
+   q := 0;                        skip;
+   while b &lt;= r do                while b &lt;= r do
+     r := r - b;                    r := r - b;
+     q := q + 1;                    skip;
+   done                           done</pre>
+</div>
+<br/>
+<span class="id">Compute</span> (<span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vq">vq</a></span>)).<br/>
+<br/>
+<div class="doc">Program is unchanged. </div>
+<br/>
+<h2> Semantic correctness </h2>
+<br/>
+<div class="doc">Two states agree on a set <span class="bracket"><span class="id">L</span></span> of live variables if they assign
+  the same values to each live variable. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="agree">agree</a></span> (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#t">VS.t</a></span>) (<span class="id">s1</span> <span class="id">s2</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Deadcode.html#In">VS.In</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> = <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span>.<br/>
+<br/>
+<div class="doc">Monotonicity property. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_mon">agree_mon</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">L</span>' <span class="id">s1</span> <span class="id">s2</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id">L</span>' <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id">L</span>' -&gt; <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof45')">Proof.</div>
+<div class="proofscript" id="proof45">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span>, <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span>; <span class="tactic">intros</span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement on the free variables of an expression implies that this
+    expression evaluates identically in both states. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="aeval_agree">aeval_agree</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>, <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id"><a href="compiler.Deadcode.html#a">a</a></span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#a">a</a></span> = <span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> <span class="id"><a href="compiler.Deadcode.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof46')">Proof.</div>
+<div class="proofscript" id="proof46">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">a</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">H</span>. <span class="id">fsetdec</span>. <br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>. <br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="beval_agree">beval_agree</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>, <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">b</span>, <span class="id"><a href="compiler.Deadcode.html#Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span>) <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span> = <span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> <span class="id"><a href="compiler.Deadcode.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof47')">Proof.</div>
+<div class="proofscript" id="proof47">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">b</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">repeat</span> <span class="tactic">rewrite</span> (<span class="id"><a href="compiler.Deadcode.html#aeval_agree">aeval_agree</a></span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>); <span class="tactic">auto</span>; <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">repeat</span> <span class="tactic">rewrite</span> (<span class="id"><a href="compiler.Deadcode.html#aeval_agree">aeval_agree</a></span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>); <span class="tactic">auto</span>; <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">f_equal</span>; <span class="tactic">apply</span> <span class="id">IHb</span>; <span class="tactic">auto</span>.<br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHb1</span>; <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHb2</span>; <span class="id">fsetdec</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement is preserved by simultaneous assignment to a live variable. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_live">agree_update_live</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">v</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#remove">VS.remove</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#v">v</a></span>) (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#v">v</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof48')">Proof.</div>
+<div class="proofscript" id="proof48">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x</span> <span class="id">x0</span>) <span class="id">eqn</span>:<span class="id">BEQ</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#remove_spec">VS.remove_spec</a></span>. <span class="tactic">split</span>; <span class="tactic">auto</span>. <span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#sym_not_equal">sym_not_equal</a></span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement is also preserved by unilateral assignment to a dead variable. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_dead">agree_update_dead</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">v</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span> -&gt; ~<span class="id"><a href="compiler.Deadcode.html#In">VS.In</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Deadcode.html#s1">s1</a></span> <span class="id"><a href="compiler.Deadcode.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#v">v</a></span>) <span class="id"><a href="compiler.Deadcode.html#s2">s2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof49')">Proof.</div>
+<div class="proofscript" id="proof49">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x</span> <span class="id">x0</span>) <span class="id">eqn</span>:<span class="id">BEQ</span>. <br/>
+- <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">BEQ</span>. <span class="tactic">subst</span> <span class="id">x0</span>. <span class="id">contradiction</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">H</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">We now show that dead code elimination preserves semantics for terminating
+  source program.  We use big-step semantics to show the following diagram:
+<pre>
+                agree (live c L) st st1
+     c / st ----------------------------- dce C L / st1
+       |                                          |
+       |                                          |
+       |                                          |
+       v                                          v
+      st' -------------------------------------- st1'
+                    agree L st' st1'</pre>
+  The proof is a simple induction on the big-step evaluation derivation on the left. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="dce_correct_terminating">dce_correct_terminating</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st</span> <span class="id">c</span> <span class="id">st</span>', <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> / <span class="id"><a href="compiler.Deadcode.html#st">st</a></span> \\ <span class="id">st</span>' -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">st1</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id"><a href="compiler.Deadcode.html#st">st</a></span> <span class="id"><a href="compiler.Deadcode.html#st1">st1</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>', <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> / <span class="id"><a href="compiler.Deadcode.html#st1">st1</a></span> \\ <span class="id">st1</span>' /\ <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> <span class="id">st</span>' <span class="id">st1</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof50')">Proof.</div>
+<div class="proofscript" id="proof50">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span>; <span class="tactic">simpl</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;skip&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>. <span class="id">constructor</span>. <span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;:=&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">H0</span>. <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#mem">VS.mem</a></span> <span class="id">x</span> <span class="id">L</span>) <span class="id">eqn</span>:<span class="id">LIVE_AFTER</span>. <br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&nbsp;is&nbsp;live&nbsp;after&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id">st1</span> <span class="id">a1</span> = <span class="id">n</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#aeval_agree">aeval_agree</a></span>. <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id">st1</span> <span class="id">x</span> <span class="id">n</span>); <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Ass">E_Ass</a></span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#agree_update_live">agree_update_live</a></span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#agree_mon">agree_mon</a></span>. <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&nbsp;is&nbsp;dead&nbsp;after&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#agree_update_dead">agree_update_dead</a></span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id"><a href="compiler.Deadcode.html#mem_spec">VS.mem_spec</a></span>. <span class="tactic">congruence</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">H1</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval1</span> <span class="id">_</span> <span class="id">_</span> <span class="id">H1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E1</span> <span class="id">A1</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval2</span> <span class="id">_</span> <span class="id">_</span> <span class="id">A1</span>) <span class="kwd">as</span> [<span class="id">st2</span>' [<span class="id">E2</span> <span class="id">A2</span>]].<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st2</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Seq">E_Seq</a></span> <span class="kwd">with</span> <span class="id">st1</span>'; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">H1</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> <span class="id">b</span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval</span> <span class="id">L</span> <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E</span> <span class="id">A</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfTrue">E_IfTrue</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">H1</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> <span class="id">b</span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval</span> <span class="id">L</span> <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E</span> <span class="id">A</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfFalse">E_IfFalse</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;while&nbsp;end&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#live_while_charact">live_while_charact</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>) <span class="kwd">as</span> [<span class="id">P</span> [<span class="id">Q</span> <span class="id">R</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> <span class="id">b</span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. }<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileFalse">E_WhileFalse</a></span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <br/>
+<br/>
+- <span class="comment">(*&nbsp;while&nbsp;loop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#live_while_charact">live_while_charact</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>) <span class="kwd">as</span> [<span class="id">P</span> [<span class="id">Q</span> <span class="id">R</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> <span class="id">b</span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span>) <span class="id">L</span>) <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st2</span> [<span class="id">E1</span> <span class="id">A1</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval2</span> <span class="id">L</span> <span class="id">st2</span>) <span class="kwd">as</span> [<span class="id">st3</span> [<span class="id">E2</span> <span class="id">A2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st3</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileTrue">E_WhileTrue</a></span> <span class="kwd">with</span> <span class="id">st2</span>; <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<br/>
+<h3> Exercise (3 stars, optional) </h3>
+<br/>
+<div class="doc">To prove semantic preservation both for terminating and diverging programs.
+  complete the following simulation proof, which uses the small-step semantics
+  of Imp, without continuations. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="kwd">measure</span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">nat</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| (<span class="id">x</span> ::= <span class="id">a</span>) =&gt; 1<br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt; <span class="kwd">measure</span> <span class="id">c1</span><br/>
+&nbsp;&nbsp;| <span class="id">_</span> =&gt; 0<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="dce_simulation">dce_simulation</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">c</span>' <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#c">c</a></span> / <span class="id"><a href="compiler.Deadcode.html#st">st</a></span> ==&gt; <span class="id">c</span>' / <span class="id">st</span>' -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">st1</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id"><a href="compiler.Deadcode.html#st">st</a></span> <span class="id"><a href="compiler.Deadcode.html#st1">st1</a></span> -&gt;<br/>
+&nbsp;&nbsp;(<span class="id">exists</span> <span class="id">st1</span>',<br/>
+&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> / <span class="id"><a href="compiler.Deadcode.html#st1">st1</a></span> ==&gt; <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c</span>' <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> / <span class="id">st1</span>' /\<br/>
+&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c</span>' <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id">st</span>' <span class="id">st1</span>')<br/>
+&nbsp;&nbsp;\/<br/>
+&nbsp;&nbsp;(<span class="kwd">measure</span> <span class="id">c</span>' &lt; <span class="kwd">measure</span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> /\ <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id"><a href="compiler.Deadcode.html#c">c</a></span> <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> = <span class="id"><a href="compiler.Deadcode.html#dce">dce</a></span> <span class="id">c</span>' <span class="id"><a href="compiler.Deadcode.html#L">L</a></span> /\ <span class="id"><a href="compiler.Deadcode.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c</span>' <span class="id"><a href="compiler.Deadcode.html#L">L</a></span>) <span class="id">st</span>' <span class="id"><a href="compiler.Deadcode.html#st1">st1</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof51')">Proof.</div>
+<div class="proofscript" id="proof51">
+&nbsp;&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">until</span> <span class="id">st</span>'. <span class="tactic">intro</span> <span class="id">STEP</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">STEP</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+
+</div>
+<div class="footer"><hr/>Generated by <a href="https://github.com/xavierleroy/coq2html/">coq2html</div>
+</body>
+</html>

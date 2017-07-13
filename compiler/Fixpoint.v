@@ -1,0 +1,385 @@
+Require Import Bool Arith Omega List Wellfounded Coq.Program.Wf.
+Require Import MSets.
+Require Import Maps Imp.
+Require Import Sequences Semantics Deadcode.
+Import VSdecide.
+
+(** Advanced topic: computing fixpoints using Knaster-Tarski's theorem,
+   with applications to liveness analysis. *)
+
+(** * 1. Fixpoints *)
+
+Section FIXPOINT.
+
+(** Consider a type [A] equipped with a decidable equality [eq] and a
+    transitive ordering [le]. *)
+
+Variable A: Type.
+
+Variable eq: A -> A -> Prop.
+Variable beq: A -> A -> bool.
+Hypothesis beq_correct: forall x y, if beq x y then eq x y else ~eq x y.
+
+Variable le: A -> A -> Prop.
+Hypothesis le_trans: forall x y z, le x y -> le y z -> le x z.
+
+(** This is the strict order induced by [le].  We assume it is well-founded:
+  all strictly ascending chains are finite. *)
+
+Definition gt (x y: A) := le y x /\ ~eq y x.
+Hypothesis gt_wf: well_founded gt.
+
+(** Let [bot] be a smallest element of [A]. *)
+Variable bot: A.
+Hypothesis bot_smallest: forall x, le bot x.
+
+(** Let [F] be a monotonic function from [A] to [A]. *)
+
+Variable F: A -> A.
+Hypothesis F_mon: forall x y, le x y -> le (F x) (F y).
+
+(** We iterate [F] starting from a pre-fixpoint [x]. 
+
+The [iterate] function takes as argument not just [x], but also two proofs:
+- that [x] is a pre-fixpoint, i.e. [le x (F x)]
+- that [x] is below any post-fixpoint [z].
+
+Likewise, it returns as result not just the fixpoint [y], but also two proofs:
+- that [y] is a fixpoint, i.e. [eq y (F y)]
+- that [y] is below any post-fixpoint [z].
+*)
+
+Program Fixpoint iterate 
+    (x: A) (PRE: le x (F x)) (SMALL: forall z, le (F z) z -> le x z)
+    {wf gt x} 
+    : {y : A | eq y (F y) /\ forall z, le (F z) z -> le y z } :=
+  let x' := F x in
+  match beq x x' with
+  | true  => x
+  | false => iterate x' _ _
+  end.
+Next Obligation.
+  split.
+  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto. 
+  auto.
+Qed.
+Next Obligation.
+  apply le_trans with (F z); auto. 
+Qed.
+Next Obligation.
+  red. split. auto. 
+  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto.
+Qed.
+
+(** The fixpoint is obtained by iterating from [bot]. *)
+
+Program Definition fixpoint : A := iterate bot _ _.
+
+(** It is therefore both a fixpoint and the smallest post-fixpoint. *)
+
+Theorem fixpoint_correct:
+  eq fixpoint (F fixpoint) /\ forall z, le (F z) z -> le fixpoint z.
+Proof.
+  unfold fixpoint. apply proj2_sig. 
+Qed.
+
+End FIXPOINT.
+
+(** *** Exercise (3 stars, optional) *)
+(** The code above computes the smallest fixpoint of the functional [F].
+    How would you modify it so that it computes the greatest fixpoint instead?
+    Hint: you need to iterate starting from post-fixpoints [x] (such that
+    [le (F x) x]), creating a descending chain.  Hence, you need to make
+    sure that all strictly descending chains are finite. *)
+
+(** * 2. Subsets of a finite set of variables. *)
+
+Section VARS.
+
+(** Let [U] be the ``universe'' of variables: all variables appearing in the
+  program we analyze. *)
+
+Variable U: VS.t.
+
+(** Define [vset] as the type of subsets of [U].  It is a dependent pair
+  of a set [S] of variables and a proof that [S] is a subset of [U]. *)
+
+Definition vset : Type := { S: VS.t | VS.Subset S U }.
+
+(** This type comes with a constructor and two projections: *)
+
+Definition make_vset (S: VS.t) (CONTAINED: VS.Subset S U) : vset := exist _ S CONTAINED.
+
+Definition carrier (x: vset) : VS.t := proj1_sig x.
+
+Definition contained (x: vset) : VS.Subset (carrier x) U := proj2_sig x.
+
+(** Defining operations over [vset] is painful because we have to
+- write [carrier] projections
+- provide proof terms witnessing that the result is a subset of [U].
+*)
+
+(*
+Definition vset_union(x y: vset) : vset := make_vset (VS.union (carrier x) (carrier y)) ???.
+*)
+
+(* The [Program] mechanism helps:
+- by automatically inserting projections and constructors for subset types;
+- by letting us write [_] (underscore) for the proof terms and dropping us
+  into interactive proof mode to fill these holes ("proof obligations").
+*)
+
+Program Definition vset_union(x y: vset) : vset := VS.union x y.
+Next Obligation.
+  (** Proving [forall x y : vset, VS.Subset (VS.union (proj1_sig x) (proj1_sig y)) U] *)
+  intros. apply VSP.union_subset_3; apply contained.
+Qed.
+
+(** We equip the type [vset] with a decidable equality (= same elements)
+  and the subset ordering. *)
+
+Program Definition vset_eq (x y: vset) : Prop := VS.Equal x y.
+
+Program Definition vset_beq (x y: vset) : bool := VS.equal x y.
+
+Lemma vset_beq_correct: forall x y, if vset_beq x y then vset_eq x y else ~vset_eq x y.
+Proof.
+  unfold vset_beq, vset_eq; intros. destruct (VS.equal (proj1_sig x) (proj1_sig y)) eqn:EQ.
+  apply VS.equal_spec; auto.
+  rewrite <- VS.equal_spec. congruence.
+Qed.
+
+Program Definition vset_le (x y: vset) : Prop := VS.Subset x y.
+
+Lemma vset_le_trans: forall x y z, vset_le x y -> vset_le y z -> vset_le x z.
+Proof.
+  unfold vset_le; intros. eapply VSP.subset_trans; eauto.
+Qed.
+
+(** The empty set is a smallest element. *)
+
+Program Definition vset_empty : vset := VS.empty.
+Next Obligation.
+  apply VSP.subset_empty.
+Qed.
+
+Lemma vset_empty_le: forall x, vset_le vset_empty x.
+Proof.
+  unfold vset_le, vset_empty. simpl. intros. apply VSP.subset_empty. 
+Qed.
+
+(** To show that the strict order induced by [vset_eq] and [vset_le] is well-founded,
+  we first define a nonnegative measure over the type [vset], which is the cardinal
+  of the complement of the set. *)
+
+Program Definition vset_measure (x: vset) : nat := VS.cardinal (VS.diff U x).
+
+Lemma vset_measure_decreases:
+  forall x y, vset_le x y -> ~vset_eq x y -> vset_measure y < vset_measure x.
+Proof.
+  intros. unfold vset_measure. red in H. 
+  set (X := proj1_sig x) in *. set (Y := proj1_sig y) in *. 
+  (** Find an element that is in [y] but not in [x]. *)
+  destruct (VS.choose (VS.diff Y X)) as [a | ] eqn:CHOICE.
+- assert (VS.In a (VS.diff Y X)) by (apply VS.choose_spec1; auto).
+  assert (VS.In a Y) by (eapply VS.diff_spec; eauto).
+  assert (~VS.In a X) by (eapply VS.diff_spec; eauto).
+  apply VSP.subset_cardinal_lt with a.
+  fsetdec.
+  apply VS.diff_spec. split; auto. eapply contained; eauto.
+  fsetdec.
+- (** Show contradiction if no such element exists *)
+  assert (VS.Empty (VS.diff Y X)) by (apply VS.choose_spec2; auto). 
+  elim H0. red. rewrite VSP.double_inclusion. split; auto.
+  fold X Y. fsetdec.
+Qed.
+
+(** It follows that the induced strict order is well-founded, because the
+  [>] ordering over natural numbers is well-founded. *)
+
+Lemma vset_measure_wf:
+  well_founded (fun x y : vset => vset_measure x < vset_measure y).
+Proof.
+  apply well_founded_ltof.
+Qed.
+
+Lemma vset_gt_incl_measure:
+  forall x y, gt _ vset_eq vset_le x y -> vset_measure x < vset_measure y.
+Proof.
+  intros. destruct H. apply vset_measure_decreases; auto.
+Qed.
+
+Lemma vset_gt_wf:
+  well_founded (gt _ vset_eq vset_le).
+Proof.
+  eapply wf_incl. red. apply vset_gt_incl_measure. apply vset_measure_wf.
+Qed.
+
+(** We can therefore take fixpoints of monotone operators over [vset]. *)
+
+Definition monotone (F: vset -> vset) : Prop :=
+  forall x y, vset_le x y -> vset_le (F x) (F y).
+
+Definition vset_fixpoint (F: vset -> vset) (M: monotone F) : vset :=
+  fixpoint vset vset_eq vset_beq vset_beq_correct
+           vset_le vset_le_trans 
+           vset_gt_wf vset_empty vset_empty_le F M.
+
+Lemma vset_fixpoint_correct:
+  forall F (M: monotone F), 
+  vset_eq (vset_fixpoint F M) (F (vset_fixpoint F M))
+  /\ forall z, vset_le (F z) z -> vset_le (vset_fixpoint F M) z.
+Proof.
+  intros. unfold vset_fixpoint; apply fixpoint_correct. 
+Qed.
+
+(** Moreover, if an operator [F1] is pointwise below another operator [F2],
+  [F1]'s fixpoint is below [F2]'s fixpoint. *)
+
+Lemma vset_fixpoint_le:
+  forall F1 F2 (M1: monotone F1) (M2: monotone F2),
+  (forall x, vset_le (F1 x) (F2 x)) ->
+  vset_le (vset_fixpoint F1 M1) (vset_fixpoint F2 M2).
+Proof.
+  intros. 
+  destruct (vset_fixpoint_correct F1 M1) as [EQ1 LEAST1].
+  destruct (vset_fixpoint_correct F2 M2) as [EQ2 LEAST2].
+  unfold vset_le, vset_eq in *.
+  apply LEAST1. 
+  eapply VSP.subset_trans. apply H. apply VSP.subset_equal. apply VSP.equal_sym. apply EQ2.
+Qed.
+
+(** * 3. IMP programs whose free variables are in [U]. *)
+
+(** We redefine the abstract syntax of IMP to ensure that all
+  variables mentioned in the program are taken from [U]. *)
+
+Inductive aexp : Type := 
+  | ANum : nat -> aexp
+  | AId : forall (x: id), VS.In x U -> aexp        (**r <--- NEW *)
+  | APlus : aexp -> aexp -> aexp
+  | AMinus : aexp -> aexp -> aexp
+  | AMult : aexp -> aexp -> aexp.
+
+Inductive bexp : Type := 
+  | BTrue : bexp
+  | BFalse : bexp
+  | BEq : aexp -> aexp -> bexp
+  | BLe : aexp -> aexp -> bexp
+  | BNot : bexp -> bexp
+  | BAnd : bexp -> bexp -> bexp.
+
+Inductive com : Type :=
+  | CSkip : com
+  | CAss : forall (x: id), VS.In x U -> aexp -> com   (**r <--- NEW *)
+  | CSeq : com -> com -> com
+  | CIf : bexp -> com -> com -> com
+  | CWhile : bexp -> com -> com.
+
+(** As a consequence, the [fv_] operations always return an element of type [vset]. *)
+
+Program Fixpoint fv_aexp (a: aexp) : vset :=
+  match a with
+  | ANum n => vset_empty
+  | AId v _ => VS.singleton v
+  | APlus a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
+  | AMinus a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
+  | AMult a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
+  end.
+Next Obligation.
+  red; intros. apply VS.singleton_spec in H. congruence. 
+Qed.
+
+Fixpoint fv_bexp (b: bexp) : vset :=
+  match b with
+  | BTrue => vset_empty
+  | BFalse => vset_empty
+  | BEq a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
+  | BLe a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
+  | BNot b1 => fv_bexp b1
+  | BAnd b1 b2 => vset_union (fv_bexp b1) (fv_bexp b2)
+  end.
+
+(** * 4. Application to liveness analysis *)
+
+(** We now define (by structural induction on [c]) a function [dlive c]
+  that returns a function from [L], the set of variables live "after"
+  command [c], to the set of variables live "before" [c].
+  In order to be able to take fixpoints within its definition, we
+  must also return a proof that [dlive c] is a monotone function. *)
+
+Program Fixpoint dlive (c: com) : { f: vset -> vset | monotone f } :=
+  match c with
+  | CSkip =>
+      fun (L: vset) => L
+  | CAss x _ a =>
+      fun (L: vset) =>
+        if VS.mem x L
+        then vset_union (VS.remove x L) (fv_aexp a)
+        else L
+  | CSeq c1 c2 =>
+      fun (L: vset) => dlive c1 (dlive c2 L)
+  | CIf b c1 c2 =>
+      fun (L: vset) => vset_union (fv_bexp b) (vset_union (dlive c1 L) (dlive c2 L))
+  | CWhile b c =>
+      fun (L: vset) =>
+        let L' := vset_union (fv_bexp b) L in
+        vset_fixpoint (fun x => vset_union L' (dlive c x)) _
+  end.
+Next Obligation.
+  red; intros; auto.
+Qed.
+Next Obligation.
+  apply VSP.subset_remove_3. apply contained.
+Qed.
+Next Obligation.
+  red; intros. unfold vset_le in *. set (X := proj1_sig x0) in *. set (Y := proj1_sig y) in *.
+  destruct (VS.mem x X) eqn:xlive1.
+- replace (VS.mem x Y) with true.
++ simpl. fsetdec. 
++ symmetry; apply VS.mem_spec. apply VS.mem_spec in xlive1. fsetdec.
+- destruct (VS.mem x Y) eqn:xlive2; simpl.
++ fold X. eapply VSP.subset_trans. 2: apply VSP.union_subset_1.
+  apply VS.mem_spec in xlive2. red; intros. apply VS.remove_spec. split. fsetdec. apply VS.mem_spec in H0. congruence.
++ auto.
+Qed.
+Next Obligation.
+  red; auto.
+Defined.
+Next Obligation.
+  red; intros. unfold vset_le, vset_union; simpl.
+  apply VSP.union_subset_5. 
+  eapply VSP.subset_trans. apply VSP.union_subset_4. apply m. eauto. 
+  apply VSP.union_subset_5. apply m0. auto.
+Defined.
+Next Obligation.
+  red; intros. unfold vset_le, vset_union; simpl. 
+  apply VSP.union_subset_5. apply m; auto.
+Defined.
+Next Obligation.
+  red; intros. apply vset_fixpoint_le. 
+  intros. unfold vset_le, vset_union; simpl. apply VSP.union_subset_4. 
+  apply VSP.union_subset_5. auto.
+Defined.
+
+(** [live c L] returns the set of variables live "before" command [c],
+  given the set [L] of variables live "after". *)
+
+Definition live (c: com) (L: vset) : vset := proj1_sig (dlive c) L.
+
+(** The [live] function satisfies the dataflow equations for liveness analysis,
+  in particular: *)
+
+Lemma live_while:
+  forall b c L,
+  vset_eq (live (CWhile b c) L)
+         (vset_union (vset_union (fv_bexp b) L) (live c (live (CWhile b c) L))).
+Proof.
+  intros. unfold live. simpl. apply vset_fixpoint_correct.
+Qed.
+
+End VARS.
+
+
+
+

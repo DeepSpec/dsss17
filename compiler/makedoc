@@ -1,0 +1,8 @@
+#!/bin/sh
+
+coq2html \
+  -base compiler \
+  -external ../SF/lf LF \
+  -short-names \
+  *.glob *.v
+sed -i 's|/LF\.|/|g' *.html

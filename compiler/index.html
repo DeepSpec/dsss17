@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Proving a Compiler</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<style>
+body {
+  color: black; background: white;
+  margin-left: 5%; margin-right: 5%;
+}
+h1,h2,h3,h4,h5,h6 { 
+  font-family: Verdana,Arial,Sans-serif;
+  /*letter-spacing: 0.1em; */
+}
+h2 { margin-left: -5%;}
+h3 { margin-left: -3%; }
+hr { margin-left: -5%; margin-right:-5%; }
+li,dd { margin-bottom: 0.5em; }
+</style>
+</HEAD>
+<BODY>
+
+<H1 align="center">The formal verification of compilers</H1>
+<H2 align="center">Coq development</H2>
+
+<P>This is the Coq part of Xavier Leroy's lecture
+<A HREF="http://gallium.inria.fr/~xleroy/courses/DSSS-2017/">The formal verification of compilers</A> from the
+<A HREF="https://deepspec.org/event/dsss17/index.html">DeepSpec Summer School 2017</A>.</P>
+
+<H3>Table of contents</H3>
+
+<UL>
+<LI><A HREF="compiler.Semantics.html">Semantics</A>: various forms of semantics for IMP.
+<LI><A HREF="compiler.Compiler.html">Compil</A>: compilation from IMP to a virtual machine, proofs of correctness for this compiler.
+<LI><A HREF="compiler.Deadcode.html">Deadcode</A>: liveness analysis and dead code optimization.
+<LI><A HREF="compiler.Regalloc.html">Regalloc</A>: extension to register allocation.
+<LI>Library <A HREF="compiler.Sequences.html">Sequences</A>: transition sequences and their properties.
+<LI>Appendix <A HREF="compiler.Fixpoint.html">Fixpoint</A>: computing fixpoints in well-founded lattices, with applications to liveness analysis.
+</UL>
+
+</BODY>
+

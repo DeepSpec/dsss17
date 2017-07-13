@@ -1,0 +1,775 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Module Semantics</title>
+<meta name="description" content="Documentation of Coq module Semantics" />
+<link href="coq2html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="coq2html.js"> </script>
+</head>
+
+<body onload="hideAll('proofscript')">
+<h1 class="title">Module Semantics</h1>
+<div class="coq">
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Program.Equality.html">Coq.Program.Equality</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="../SF/lf/Maps.html">Maps</a></span> <span class="id"><a href="../SF/lf/Imp.html">Imp</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="compiler.Sequences.html">Sequences</a></span>.<br/>
+<br/>
+<div class="doc">In this chapter: various styles of semantics for the Imp language
+  from "Software Foundations", and equivalence results between these
+  semantics. </div>
+<br/>
+<h1> 1. Big-step semantics for termination. </h1>
+<br/>
+<div class="doc">The starting point is the big-step semantics defined in file <span class="bracket"><span class="id">sf</span>/<span class="id">Imp.v</span></span>,
+  recalled here for reference.
+<pre>
+Inductive ceval : com -&gt; state -&gt; state -&gt; Prop :=
+  | E_Skip : forall st,
+      SKIP / st \\ st
+  | E_Ass  : forall st a1 n x,
+      aeval st a1 = n -&gt;
+      (x ::= a1) / st \\ (t_update st x n)
+  | E_Seq : forall c1 c2 st st' st'',
+      c1 / st  \\ st' -&gt;
+      c2 / st' \\ st'' -&gt;
+      (c1 ;; c2) / st \\ st''
+  | E_IfTrue : forall st st' b c1 c2,
+      beval st b = true -&gt;
+      c1 / st \\ st' -&gt;
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+  | E_IfFalse : forall st st' b c1 c2,
+      beval st b = false -&gt;
+      c2 / st \\ st' -&gt;
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+  | E_WhileFalse : forall b st c,
+      beval st b = false -&gt;
+      (WHILE b DO c END) / st \\ st
+  | E_WhileTrue : forall st st' st'' b c,
+      beval st b = true -&gt;
+      c / st \\ st' -&gt;
+      (WHILE b DO c END) / st' \\ st'' -&gt;
+      (WHILE b DO c END) / st \\ st''
+
+  where "c1 '/' st '\\' st'" := (ceval c1 st st').</pre>
+<span class="bracket"> <span class="id">c</span> / <span class="id">st</span> \\ <span class="id">st</span>' </span> means "executed in initial state <span class="bracket"><span class="id">st</span></span>, command <span class="bracket"><span class="id">c</span></span>
+terminates in final state <span class="bracket"><span class="id">st</span>'</span>".
+</div>
+<br/>
+<br/>
+<h1> 2. Small-step semantics.  </h1>
+<br/>
+<span class="kwd">Reserved</span> <span class="kwd">Notation</span> " <span class="id">c</span> '/' <span class="id">st</span> '==&gt;' <span class="id">c</span>' '/' <span class="id">st</span>' " (<span class="tactic">at</span> <span class="id">level</span> 40, <span class="id">st</span> <span class="tactic">at</span> <span class="id">level</span> 39, <span class="id">c</span>' <span class="tactic">at</span> <span class="id">level</span> 39).<br/>
+<br/>
+<div class="doc">In small-step style, the semantics is presented as a one-step reduction
+  relation <span class="bracket"> <span class="id">c</span> / <span class="id">st</span> --&gt; <span class="id">c</span>' / <span class="id">st</span>' </span>, meaning that the command <span class="bracket"><span class="id">c</span></span>,
+  executed in initial state <span class="bracket"><span class="id">st</span>'</span>, performs one elementary step of computation.
+  <span class="bracket"><span class="id">st</span>'</span> is the updated state after this step.
+  <span class="bracket"><span class="id">c</span>'</span> is the residual command, capturing all the computations that
+  remain to be done.
+  A small-step semantics for Imp is given in file <span class="bracket"><span class="id">sf</span>/<span class="id">Smallstep.v</span></span>, where
+  not only the execution of commands is broken in individual steps,
+  but also the evaluation of arithmetic and boolean expressions.
+  We depart from this semantics by still treating the evaluation
+  of arithmetic and boolean expressions as one atomic "big-step"
+  (cf. rules <span class="bracket"><span class="id">CS_Ass</span></span>, <span class="bracket"><span class="id">CS_IfTrue</span></span> and <span class="bracket"><span class="id">CS_IfFalse</span></span> below).
+  Non-atomic evaluation of expressions makes a difference in the case
+  of parallel (interleaved) execution of several commands.  In a purely
+  sequential setting, it is equivalent (and much simpler) to
+  evaluate expressions in one atomic step, since their evaluations
+  always terminate.
+</div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="cstep">cstep</a></span> : (<span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> * <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) -&gt; (<span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> * <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_Ass">CS_Ass</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">i</span> <span class="id">a</span> <span class="id">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#a">a</a></span> = <span class="id"><a href="compiler.Semantics.html#n">n</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="compiler.Semantics.html#i">i</a></span> ::= <span class="id"><a href="compiler.Semantics.html#a">a</a></span>) / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id">SKIP</span> / (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#i">i</a></span> <span class="id"><a href="compiler.Semantics.html#n">n</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_SeqStep">CS_SeqStep</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">c1</span> <span class="id">c1</span>' <span class="id">st</span>' <span class="id">c2</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id">c1</span>' / <span class="id">st</span>' -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> ;; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>) / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; (<span class="id">c1</span>' ;; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>) / <span class="id">st</span>'<br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_SeqFinish">CS_SeqFinish</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">c2</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">SKIP</span> ;; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>) / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_IfTrue">CS_IfTrue</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">IFB</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">THEN</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id">FI</span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_IfFalse">CS_IfFalse</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">IFB</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">THEN</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id">FI</span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="CS_While">CS_While</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c1</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">END</span>) / <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;==&gt; (<span class="id">IFB</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">THEN</span> (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> ;; (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">END</span>)) <span class="id">ELSE</span> <span class="id">SKIP</span> <span class="id">FI</span>) / <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+<br/>
+&nbsp;&nbsp;<span class="kwd">where</span> " <span class="id">c</span> '/' <span class="id">st</span> '==&gt;' <span class="id">c</span>' '/' <span class="id">st</span>' " := (<span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id">c</span>,<span class="id">st</span>) (<span class="id">c</span>',<span class="id">st</span>')).<br/>
+<br/>
+<div class="doc">An important property of this reduction relation is that it is functional,
+  in the sense that a given configuration can reduce to at most one configuration. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="cstep_functional">cstep_functional</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">cs</span> <span class="id">cs1</span>, <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> <span class="id"><a href="compiler.Semantics.html#cs">cs</a></span> <span class="id"><a href="compiler.Semantics.html#cs1">cs1</a></span> -&gt; <span class="kwd">forall</span> <span class="id">cs2</span>, <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> <span class="id"><a href="compiler.Semantics.html#cs">cs</a></span> <span class="id"><a href="compiler.Semantics.html#cs2">cs2</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cs1">cs1</a></span> = <span class="id"><a href="compiler.Semantics.html#cs2">cs2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof88')">Proof.</div>
+<div class="proofscript" id="proof88">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span> <span class="id">cs2</span> <span class="id">CSTEP</span>; <span class="tactic">inversion</span> <span class="id">CSTEP</span>; <span class="tactic">subst</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">generalize</span> (<span class="id">IHcstep</span> <span class="id">_</span> <span class="id">H4</span>). <span class="tactic">congruence</span>.<br/>
+- <span class="tactic">inversion</span> <span class="id">H</span>.<br/>
+- <span class="tactic">inversion</span> <span class="id">H3</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">congruence</span>.<br/>
+- <span class="tactic">congruence</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">In small-step style, the semantics of a command <span class="bracket"><span class="id">c</span></span> in a state <span class="bracket"><span class="id">st</span></span>
+  is determined by forming sequences of reductions starting from <span class="bracket"><span class="id">c</span>, <span class="id">st</span></span>.
+<ul>
+<li>
+ Finite sequences: zero, one or several reductions (reflexive transitive closure)
+</li>
+<li>
+ Infinite sequences: infinitely many reductions.
+</li>
+</ul>
+These sequences are defined using the generic <span class="bracket"><span class="id">star</span></span> and <span class="bracket"><span class="id">infseq</span></span> operators
+over binary relations, which are defined in module <span class="bracket"><span class="id">Sequences</span></span>, along
+with useful lemmas. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="terminates">terminates</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">st</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) (<span class="id">st</span>': <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id">st</span>').<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="diverges">diverges</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">st</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>).<br/>
+<br/>
+<h3> Exercise (2 stars, optional) </h3>
+<div class="doc">Show that the final state of a terminating program is unique,
+  and that a program cannot both terminate and diverge.
+  Hint: use the generic determinism properties found at the end of module <span class="bracket"><span class="id">Sequence</span></span>,
+  plus the following useful remark. </div>
+<br/>
+<span class="kwd">Remark</span> <span class="id"><a name="irred_SKIP">irred_SKIP</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st</span>, <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof89')">Proof.</div>
+<div class="proofscript" id="proof89">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span>; <span class="tactic">intros</span> <span class="id">st</span> <span class="id">st</span>' <span class="id">STEP</span>.<br/>
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="terminates_unique">terminates_unique</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st1</span> <span class="id">st2</span>, <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> = <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof90')">Proof.</div>
+<div class="proofscript" id="proof90">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span>; <span class="tactic">intros</span>. <br/>
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="terminates_diverges_exclusive">terminates_diverges_exclusive</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st</span>', <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">st</span>' -&gt; <span class="id"><a href="compiler.Semantics.html#diverges">diverges</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> -&gt; <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#False">False</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof91')">Proof.</div>
+<div class="proofscript" id="proof91">
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<h3> Exercise (3 stars, recommended) </h3>
+<div class="doc">Show that Imp programs cannot go wrong.  Hint: first prove the following
+  "progress" result for non-<span class="bracket"><span class="id">SKIP</span></span> commands. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="cstep_progress">cstep_progress</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span>, <span class="id"><a href="compiler.Semantics.html#c">c</a></span> = <span class="id">SKIP</span> \/ <span class="id">exists</span> <span class="id">c</span>', <span class="id">exists</span> <span class="id">st</span>', <span class="id"><a href="compiler.Semantics.html#c">c</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> ==&gt; <span class="id">c</span>' / <span class="id">st</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof92')">Proof.</div>
+<div class="proofscript" id="proof92">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">c</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="goes_wrong">goes_wrong</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">st</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>', <span class="id">exists</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">c</span>', <span class="id">st</span>') /\ <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id">c</span>', <span class="id">st</span>') /\ <span class="id">c</span>' &lt;&gt; <span class="id">SKIP</span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="not_goes_wrong">not_goes_wrong</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span>, ~(<span class="id"><a href="compiler.Semantics.html#goes_wrong">goes_wrong</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof93')">Proof.</div>
+<div class="proofscript" id="proof93">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#not">not</a></span>, <span class="id"><a href="compiler.Semantics.html#goes_wrong">goes_wrong</a></span>, <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span>; <span class="tactic">intros</span>.<br/>
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<div class="doc">As a corollary, using the <span class="bracket"><span class="id">infseq_or_finseq</span></span> theorem from module <span class="bracket"><span class="id">Sequence</span></span>, we obtain that any IMP program either terminates safely or diverges. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="terminates_or_diverges">terminates_or_diverges</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span>, (<span class="id">exists</span> <span class="id">st</span>', <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">st</span>') \/ <span class="id"><a href="compiler.Semantics.html#diverges">diverges</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof94')">Proof.</div>
+<div class="proofscript" id="proof94">
+&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
+<br/>
+<div class="doc">Sequences of reductions can go under a sequence context, generalizing
+  rule <span class="bracket"><span class="id">CS_SeqStep</span></span>. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="star_CS_SeqStep">star_CS_SeqStep</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c2</span> <span class="id">st</span> <span class="id">c</span> <span class="id">st</span>' <span class="id">c</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">c</span>', <span class="id">st</span>') -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> ((<span class="id"><a href="compiler.Semantics.html#c">c</a></span>;;<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>), <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) ((<span class="id">c</span>';;<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>), <span class="id">st</span>').<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof95')">Proof.</div>
+<div class="proofscript" id="proof95">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">H</span>.<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_refl">star_refl</a></span>.<br/>
+- <span class="tactic">destruct</span> <span class="id">b</span> <span class="kwd">as</span> [<span class="id">c1</span> <span class="id">st1</span>].<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span> <span class="kwd">with</span> (<span class="id">c1</span>;;<span class="id">c2</span>, <span class="id">st1</span>). <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqStep">CS_SeqStep</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.  <br/>
+Qed.</div>
+<br/>
+<div class="doc">We now recall the equivalence result between 
+<ul>
+<li>
+ termination according to the big-step semantics
+</li>
+<li>
+ existence of a finite sequence of reductions to <span class="bracket"><span class="id">SKIP</span></span>
+  according to the small-step semantics.
+</li>
+</ul>
+We start with the implication big-step ==&gt; small-step, which is
+a straightforward induction on the big-step evaluation derivation. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="ceval_to_csteps">ceval_to_csteps</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c">c</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> \\ <span class="id">st</span>' -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id">st</span>').<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof96')">Proof.</div>
+<div class="proofscript" id="proof96">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1.<br/>
+- <span class="comment">(*&nbsp;SKIP&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_refl">star_refl</a></span>.<br/>
+- <span class="comment">(*&nbsp;x&nbsp;:=&nbsp;a1&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_Ass">CS_Ass</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;sequence&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#star_CS_SeqStep">star_CS_SeqStep</a></span>. <span class="tactic">apply</span> <span class="id">IHceval1</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqFinish">CS_SeqFinish</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfTrue">CS_IfTrue</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfFalse">CS_IfFalse</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;while&nbsp;stop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_While">CS_While</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfFalse">CS_IfFalse</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;while&nbsp;loop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_While">CS_While</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfTrue">CS_IfTrue</a></span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#star_CS_SeqStep">star_CS_SeqStep</a></span>. <span class="tactic">apply</span> <span class="id">IHceval1</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqFinish">CS_SeqFinish</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">The reverse implication, from small-step to big-step, is more subtle.
+The key lemma is the following, showing that one step of reduction
+followed by a big-step evaluation to a final state can be collapsed
+into a single big-step evaluation to that final state. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="cstep_append_ceval">cstep_append_ceval</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c1</span> <span class="id">st1</span> <span class="id">c2</span> <span class="id">st2</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> / <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> ==&gt; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> / <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> / <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> \\ <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> / <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> \\ <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof97')">Proof.</div>
+<div class="proofscript" id="proof97">
+&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">until</span> <span class="id">st2</span>; <span class="tactic">intros</span> <span class="id">STEP</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">STEP</span>; <span class="tactic">intros</span>.<br/>
+- <span class="comment">(*&nbsp;CS_Ass&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Ass">E_Ass</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;CS_SeqStep&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Seq">E_Seq</a></span> <span class="kwd">with</span> <span class="id">st</span>'. <span class="tactic">eauto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;CS_SeqFinish&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Seq">E_Seq</a></span> <span class="kwd">with</span> <span class="id">st2</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;CS_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfTrue">E_IfTrue</a></span>; <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;CS_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfFalse">E_IfFalse</a></span>; <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;CS_While&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;while&nbsp;loop&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H6</span>; <span class="tactic">subst</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileTrue">E_WhileTrue</a></span> <span class="kwd">with</span> <span class="id">st</span>'; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;while&nbsp;stop&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H6</span>; <span class="tactic">subst</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileFalse">E_WhileFalse</a></span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">As a consequence, a term that reduces to <span class="bracket"><span class="id">SKIP</span></span> evaluates in big-step
+  with the same final state. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="csteps_to_ceval">csteps_to_ceval</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st</span> <span class="id">c</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id">st</span>') -&gt; <span class="id"><a href="compiler.Semantics.html#c">c</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> \\ <span class="id">st</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof98')">Proof.</div>
+<div class="proofscript" id="proof98">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">H</span>.<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>.<br/>
+- <span class="tactic">destruct</span> <span class="id">b</span> <span class="kwd">as</span> [<span class="id">c1</span> <span class="id">st1</span>]. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_append_ceval">cstep_append_ceval</a></span> <span class="kwd">with</span> <span class="id">c1</span> <span class="id">st1</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<h1> 3. Small-step semantics with continuations. </h1>
+<br/>
+<div class="doc">We now introduce an alternate form of the small-step semantics above
+  where the command to be reduced is explicitly decomposed into:
+<ul>
+<li>
+ a sub-command under focus, where computation takes place;
+</li>
+<li>
+ a continuation (or context) describing the position of this sub-command
+  in the whole command, or, equivalently, describing the parts of the
+  whole command that remain to be reduced once the sub-command is done.
+</li>
+</ul>
+As a consequence, the small-step semantics is presented as a transition relation
+between triples (subcommand-under-focus, continuation, state).
+Previously, we had transitions between pairs (whole-command, state).
+The syntax of continuations is as follows:
+</div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="cont">cont</a></span> : <span class="kwd">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="Kstop">Kstop</a></span> : <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="Kseq">Kseq</a></span> : <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="Kwhile">Kwhile</a></span> : <span class="id"><a href="../SF/lf/Imp.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span>.<br/>
+<br/>
+<div class="doc">Intuitive meaning of these constructors:
+<ul>
+<li>
+ <span class="bracket"><span class="id">Kstop</span></span> means that, after the sub-command under focus terminates, nothing remains to
+  be done, and execution can stop.  In other words, the sub-command under
+  focus is the whole command.
+</li>
+<li>
+ <span class="bracket"><span class="id">Kseq</span> <span class="id">c</span> <span class="id">k</span></span> means that, after the sub-command terminates, we still need
+  to execute command <span class="bracket"><span class="id">c</span></span> in sequence, then continue as described by <span class="bracket"><span class="id">k</span></span>.
+</li>
+<li>
+ <span class="bracket"><span class="id">Kwhile</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span></span> means that, after the sub-command terminates, we still need
+  to execute a loop <span class="bracket"><span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span></span>, then continue as described by <span class="bracket"><span class="id">k</span></span>.
+</li>
+</ul>
+</div>
+<br/>
+<div class="doc">Another way to forge intuitions about continuations is to ponder the following
+  <span class="bracket"><span class="id">apply_cont</span> <span class="id">k</span> <span class="id">c</span></span> function, which takes a sub-command <span class="bracket"><span class="id">c</span></span> under focus
+  and a continuation <span class="bracket"><span class="id">k</span></span>, and rebuilds the whole command.  It simply
+  puts <span class="bracket"><span class="id">c</span></span> in lefmost position in a nest of sequences as described by <span class="bracket"><span class="id">k</span></span>.
+</div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="apply_cont">apply_cont</a></span> (<span class="id">k</span>: <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span>) (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) : <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span> =&gt; <span class="id"><a href="compiler.Semantics.html#c">c</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id">c1</span> <span class="id">k1</span> =&gt; <span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k1</span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span> ;; <span class="id">c1</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id">b1</span> <span class="id">c1</span> <span class="id">k1</span> =&gt; <span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k1</span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span> ;; <span class="id">WHILE</span> <span class="id">b1</span> <span class="id">DO</span> <span class="id">c1</span> <span class="id">END</span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<div class="doc">Transitions between (subcommand-under-focus, continuation, state) triples
+  perform conceptually different kinds of actions:
+<ul>
+<li>
+ Computation: evaluate an arithmetic expression or boolean expression
+  and modify the triple according to the result of the evaluation.
+</li>
+<li>
+ Focusing: replace the sub-command by a sub-sub-command that is to be
+  evaluated next, possibly enriching the continuation as a consequence.
+</li>
+<li>
+ Resumption: when the sub-command is <span class="bracket"><span class="id">SKIP</span></span> and therefore fully executed,
+  look at the head of the continuation to see what to do next.
+</li>
+</ul>
+Here are the transition rules, classified by the kinds of actions they implement.
+</div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="kstep">kstep</a></span> : (<span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> * <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> * <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) -&gt; (<span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> * <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> * <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) -&gt; <span class="kwd">Prop</span> :=<br/>
+<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_Ass">KS_Ass</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">i</span> <span class="id">a</span> <span class="id">k</span> <span class="id">n</span>,            <span class="docright">(* Computation for assignments  *)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#a">a</a></span> = <span class="id"><a href="compiler.Semantics.html#n">n</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> ((<span class="id"><a href="compiler.Semantics.html#i">i</a></span> ::= <span class="id"><a href="compiler.Semantics.html#a">a</a></span>), <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#i">i</a></span> <span class="id"><a href="compiler.Semantics.html#n">n</a></span>)<br/>
+<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_Seq">KS_Seq</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">c1</span> <span class="id">c2</span> <span class="id">k</span>,  <span class="docright">(* Focusing on the left part of a sequence  *)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> ((<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> ;; <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>), <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_IfTrue">KS_IfTrue</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span> <span class="id">k</span>,  <span class="docright">(* Computation for conditionals  *)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">IFB</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">THEN</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id">FI</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_IfFalse">KS_IfFalse</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span> <span class="id">k</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">IFB</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">THEN</span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id">FI</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_WhileTrue">KS_WhileTrue</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span>,  <span class="docright">(* Computation and focusing for loops  *)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id">END</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_WhileFalse">KS_WhileFalse</a></span> : <span class="kwd">forall</span> <span class="id">st</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id">END</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_SkipSeq">KS_SkipSeq</a></span>: <span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,  <span class="docright">(* Resumption on <span class="bracket"><span class="id">SKIP</span></span>  *)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KS_SkipWhile">KS_SkipWhile</a></span>: <span class="kwd">forall</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id">END</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>).<br/>
+<br/>
+<div class="doc">Note: the <span class="bracket"><span class="id">kstep</span></span> relation is not inductive, in the sense that the premises
+  of the rules never involve the <span class="bracket"><span class="id">kstep</span></span> relation itself.  Contrast with
+  the <span class="bracket"><span class="id">cstep</span></span> relation, which is recursive in the <span class="bracket"><span class="id">CS_SeqStep</span></span> case:
+<pre>
+  | CS_SeqStep : forall st c1 c1' st' c2,
+      c1 / st ==&gt; c1' / st' -&gt;
+      (c1 ; c2) / st ==&gt; (c1' ; c2) / st'</pre>
+  For <span class="bracket"><span class="id">cstep</span></span>, this rule enables us to reduce "deep" within a sequence.
+  In contrast, <span class="bracket"><span class="id">kstep</span></span> always reduce at the top of the given <span class="bracket">(<span class="id">c</span>,<span class="id">k</span>,<span class="id">st</span>)</span> triple.
+  Reducting within a sequence is achieved by first focusing on the left
+  part of the sequence (rule <span class="bracket"><span class="id">KS_Seq</span></span>), bringing it to the top of the triple,
+  then working on this left part.
+</div>
+<br/>
+<div class="doc">As in section 2, we can define the behavior of a command in terms of
+  sequences of <span class="bracket"><span class="id">kstep</span></span> reductions.  
+  Initial configurations are of the form (whole-command, <span class="bracket"><span class="id">Kstop</span></span>, initial-state).
+  Final configurations are (<span class="bracket"><span class="id">SKIP</span></span>, <span class="bracket"><span class="id">Kstop</span></span>, final-state).  </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="kterminates">kterminates</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">st</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) (<span class="id">st</span>': <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span>, <span class="id">st</span>').<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="kdiverges">kdiverges</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">st</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>).<br/>
+<br/>
+<h2> Extensions to other control structures </h2>
+<br/>
+<div class="doc">A remarkable feature of continuation semantics is that they extend very easily
+  to other control structures besides "if-then-else" and "while" loops.
+  Consider for instance the "break" construct of C, C++ and Java, which
+  immediately terminates the nearest enclosing "while" loop.  Assume we
+  extend the type of commands with a <span class="bracket"><span class="id">BREAK</span></span> constructor.  Then, all we need
+  to give "break" a semantics is to add two resumption rules:
+<pre>
+  | KS_BreakSeq: forall c k st,
+      kstep (BREAK, Kseq c k, st) (BREAK, k, st)
+  | KS_BreakWhile: forall b c k st,
+      kstep (BREAK, Kwhile b c k, st) (SKIP, k, st)</pre>
+  The first rule says that a <span class="bracket"><span class="id">BREAK</span></span> statement "floats up" pending sequences,
+  skipping over the computations they contain.  Eventually, a <span class="bracket"><span class="id">Kwhile</span></span>
+  continuation is encountered, meaning that the <span class="bracket"><span class="id">BREAK</span></span> found its enclosing
+  loop.  Then, the second rule discards the <span class="bracket"><span class="id">Kwhile</span></span> continuation and
+  turns the <span class="bracket"><span class="id">BREAK</span></span> into a <span class="bracket"><span class="id">SKIP</span></span>, effectively terminating the loop.
+  That's all there is to it!
+*</div>
+<br/>
+<div class="doc">If you're curious about adding "break" to the big-step semantics of
+  section 1, see exercise <span class="bracket"><span class="id">BreakImp</span></span> in the <span class="bracket"><span class="id">Imp</span></span> module of 
+  Software Foundations. </div>
+<br/>
+<h3> Exercise (2 stars, recommended) </h3>
+<div class="doc">Besides "break", C, C++ and Java also have a "continue" statement
+  that terminates the current iteration of the enclosing loop,
+  then resumes the loop at its next iteration (instead of stopping
+  the loop like "break" does). Give the transition rules
+  for the "continue" statement. </div>
+<br/>
+<h3> Exercise (3 stars, optional) </h3>
+<div class="doc">In Java, loops as well as "break" and "continue" statements carry
+  an optional label.  "break" without a label exits out of the immediately
+  enclosing loop, but "break lbl" exits out of the first enclosing loop
+  that carries the label "lbl".  Similarly for "continue".
+  Give the transition rules for "break lbl" and "continue lbl". </div>
+<br/>
+<h2> Relating the continuation semantics with the other semantics </h2>
+<br/>
+<div class="doc">As in section 2, we show that termination according to the continuation semantics
+  (predicate <span class="bracket"><span class="id">kterminates</span></span>) is equivalent to big-step evaluation.
+  The first implication, from big-step evaluation to termination, is a
+  straightforward induction on the structure of the big-step
+  evaluation derivation. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="ceval_to_ksteps">ceval_to_ksteps</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c">c</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> \\ <span class="id">st</span>' -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">k</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">SKIP</span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id">st</span>').<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof99')">Proof.</div>
+<div class="proofscript" id="proof99">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span>.<br/>
+- <span class="comment">(*&nbsp;SKIP&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_refl">star_refl</a></span>.<br/>
+- <span class="comment">(*&nbsp;x&nbsp;:=&nbsp;a1&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_Ass">KS_Ass</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;sequence&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_Seq">KS_Seq</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>. <span class="tactic">apply</span> <span class="id">IHceval1</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_SkipSeq">KS_SkipSeq</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">IHceval2</span>.<br/>
+- <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_IfTrue">KS_IfTrue</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_IfFalse">KS_IfFalse</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;while&nbsp;stop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_WhileFalse">KS_WhileFalse</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;while&nbsp;loop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_WhileTrue">KS_WhileTrue</a></span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>. <span class="tactic">apply</span> <span class="id">IHceval1</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_SkipWhile">KS_SkipWhile</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">IHceval2</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">For the reverse implication, we adapt lemma <span class="bracket"><span class="id">cstep_append_ceval</span></span> to show
+  that one step of reduction <span class="bracket"><span class="id">kstep</span> (<span class="id">c1</span>, <span class="id">k1</span>, <span class="id">st1</span>) (<span class="id">c2</span>, <span class="id">k2</span>, <span class="id">st2</span>)</span> 
+  followed by big-step evaluation of <span class="bracket">(<span class="id">c2</span>, <span class="id">k2</span>, <span class="id">st2</span>)</span> is equivalent to
+  big-step evaluation of <span class="bracket">(<span class="id">c1</span>, <span class="id">k1</span>, <span class="id">st1</span>)</span>.  However, we now need to define
+  big-step evaluation of a pair <span class="bracket">(<span class="id">c</span>, <span class="id">k</span>)</span> of a subcommand and a continuation.
+  We define this notion as first evaluating <span class="bracket"><span class="id">c</span></span>, obtaining a modified state,
+  then performing the latent computations described by <span class="bracket"><span class="id">k</span></span>, obtaining the final
+  state. </div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="keval">keval</a></span> : <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="KE_stop">KE_stop</a></span>: <span class="kwd">forall</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="KE_seq">KE_seq</a></span>: <span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st1</span> <span class="id">st2</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#ceval">ceval</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> (<span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>) <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="KE_while">KE_while</a></span>: <span class="kwd">forall</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st1</span> <span class="id">st2</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#ceval">ceval</a></span> (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id">END</span>) <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> (<span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>) <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span>.<br/>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="ckeval">ckeval</a></span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="CKE_intro">CKE_intro</a></span>: <span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st1</span> <span class="id">st2</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#ceval">ceval</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> -&gt; <span class="id"><a href="compiler.Semantics.html#keval">keval</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="kstep_append_ckeval">kstep_append_ckeval</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c1</span> <span class="id">k1</span> <span class="id">st1</span> <span class="id">c2</span> <span class="id">k2</span> <span class="id">st2</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#k1">k1</a></span>, <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span>) (<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#k2">k2</a></span>, <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id"><a href="compiler.Semantics.html#k2">k2</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id"><a href="compiler.Semantics.html#k1">k1</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof100')">Proof.</div>
+<div class="proofscript" id="proof100">
+&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">until</span> <span class="id">st2</span>. <span class="tactic">intro</span> <span class="id">STEP</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">STEP</span>; <span class="tactic">intros</span>.<br/>
+- <span class="comment">(*&nbsp;KS_Ass&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Ass">E_Ass</a></span>. <span class="tactic">reflexivity</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">subst</span>.  <span class="id">econstructor</span>. <span class="tactic">eapply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Seq">E_Seq</a></span>; <span class="tactic">eauto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfTrue">E_IfTrue</a></span>; <span class="tactic">eauto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfFalse">E_IfFalse</a></span>; <span class="tactic">eauto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">subst</span>. <span class="tactic">inversion</span> <span class="id">H2</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">eapply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileTrue">E_WhileTrue</a></span>; <span class="tactic">eauto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_WhileFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">subst</span>. <span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileFalse">E_WhileFalse</a></span>; <span class="tactic">auto</span>. <span class="tactic">auto</span>. <br/>
+- <span class="comment">(*&nbsp;KS_SkipSeq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Semantics.html#KE_seq">KE_seq</a></span>; <span class="tactic">eauto</span>.<br/>
+- <span class="comment">(*&nbsp;KS_SkipWhile&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Semantics.html#KE_while">KE_while</a></span>; <span class="tactic">eauto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">We can, then, extend this result to sequences of <span class="bracket"><span class="id">kstep</span></span> transitions, 
+  and conclude. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="ksteps_append_ckeval">ksteps_append_ckeval</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c1</span> <span class="id">k1</span> <span class="id">st1</span> <span class="id">c2</span> <span class="id">k2</span> <span class="id">st2</span> <span class="id">st3</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#k1">k1</a></span>, <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span>) (<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#k2">k2</a></span>, <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span> <span class="id"><a href="compiler.Semantics.html#k2">k2</a></span> <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id"><a href="compiler.Semantics.html#k1">k1</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> <span class="id"><a href="compiler.Semantics.html#st3">st3</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof101')">Proof.</div>
+<div class="proofscript" id="proof101">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">H</span>.<br/>
+- <span class="tactic">auto</span>. <br/>
+- <span class="tactic">destruct</span> <span class="id">b</span> <span class="kwd">as</span> [[<span class="id">c</span>' <span class="id">k</span>'] <span class="id">st</span>']. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Semantics.html#kstep_append_ckeval">kstep_append_ckeval</a></span>; <span class="tactic">eauto</span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="kterminates_to_ceval">kterminates_to_ceval</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#kterminates">kterminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">st</span>' -&gt; <span class="id"><a href="compiler.Semantics.html#c">c</a></span> / <span class="id"><a href="compiler.Semantics.html#st">st</a></span> \\ <span class="id">st</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof102')">Proof.</div>
+<div class="proofscript" id="proof102">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Semantics.html#kterminates">kterminates</a></span>; <span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">CKEV</span>: <span class="id"><a href="compiler.Semantics.html#ckeval">ckeval</a></span> <span class="id">c</span> <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span> <span class="id">st</span> <span class="id">st</span>').<br/>
+&nbsp;&nbsp;{ <span class="tactic">eapply</span> <span class="id"><a href="compiler.Semantics.html#ksteps_append_ckeval">ksteps_append_ckeval</a></span>; <span class="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">econstructor</span>. <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KE_stop">KE_stop</a></span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">CKEV</span>; <span class="tactic">subst</span>. <span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">subst</span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">From the theorems above, it follows that the two small-step semantics
+  capture the same notion of termination. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="kterminates_iff_terminates">kterminates_iff_terminates</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span> <span class="id">st</span>', <span class="id"><a href="compiler.Semantics.html#kterminates">kterminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">st</span>' &lt;-&gt; <span class="id"><a href="compiler.Semantics.html#terminates">terminates</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">st</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof103')">Proof.</div>
+<div class="proofscript" id="proof103">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">split</span>; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#ceval_to_csteps">ceval_to_csteps</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#kterminates_to_ceval">kterminates_to_ceval</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#ceval_to_ksteps">ceval_to_ksteps</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#csteps_to_ceval">csteps_to_ceval</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">For additional confidence, we can show that the two small-step semantics
+  (with and without continuations) capture the same notion of divergence.
+  The proof is surprisingly involved and consists in relating infinite
+  sequences of <span class="bracket"><span class="id">kstep</span></span> transitions from an initial state <span class="bracket">(<span class="id">c</span>, <span class="id">k</span>, <span class="id">st</span>)</span>
+  with infinite sequences of <span class="bracket"><span class="id">cstep</span></span> transitions from the corresponding
+  initial state <span class="bracket">(<span class="id">apply_cont</span> <span class="id">k</span> <span class="id">c</span>, <span class="id">st</span>)</span>.  The proofs are included below
+  for completeness, but can be skipped on first reading. </div>
+<br/>
+<span class="kwd">Remark</span> <span class="id"><a name="cstep_apply_cont">cstep_apply_cont</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">k</span> <span class="id">c1</span> <span class="id">st1</span> <span class="id">c2</span> <span class="id">st2</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span>) (<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span>) (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof104')">Proof.</div>
+<div class="proofscript" id="proof104">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">k</span>; <span class="tactic">intros</span>; <span class="tactic">simpl</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">IHk</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqStep">CS_SeqStep</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">IHk</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqStep">CS_SeqStep</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="kinfseq_cinfseq">kinfseq_cinfseq</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>', <span class="id">exists</span> <span class="id">k</span>', <span class="id">exists</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span>' <span class="id">c</span>', <span class="id">st</span>')<br/>
+&nbsp;&nbsp;/\ <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id">c</span>', <span class="id">k</span>', <span class="id">st</span>').<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof105')">Proof.</div>
+<div class="proofscript" id="proof105">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">c</span>; <span class="tactic">intros</span>; <span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">clear</span> <span class="id">H</span>; <span class="tactic">subst</span>.<br/>
+- <span class="comment">(*&nbsp;skip&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
++ <span class="comment">(*&nbsp;skip&nbsp;seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqFinish">CS_SeqFinish</a></span>. <span class="tactic">auto</span>.<br/>
++ <span class="comment">(*&nbsp;skip&nbsp;while&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_SeqFinish">CS_SeqFinish</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;assign&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_Ass">CS_Ass</a></span>. <span class="tactic">reflexivity</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id">change</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span> (<span class="id">c1</span>;;<span class="id">c2</span>)) <span class="kwd">with</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> (<span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id">c2</span> <span class="id">k</span>) <span class="id">c1</span>). <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id">IHc1</span>; <span class="tactic">eauto</span>. <br/>
+- <span class="comment">(*&nbsp;if&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
++ <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span> <br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfTrue">CS_IfTrue</a></span>; <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
++ <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span> <br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfFalse">CS_IfFalse</a></span>; <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;while&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
++ <span class="comment">(*&nbsp;while&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>; <span class="id">exists</span> (<span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span>); <span class="id">exists</span> <span class="id">st</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#plus_left">plus_left</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_While">CS_While</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfTrue">CS_IfTrue</a></span>; <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
++ <span class="comment">(*&nbsp;while&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#plus_left">plus_left</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_While">CS_While</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cstep_apply_cont">cstep_apply_cont</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#CS_IfFalse">CS_IfFalse</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">We now prepare for the reverse diagram: decomposing infinite sequences of
+  <span class="bracket"><span class="id">cstep</span></span> transitions in terms of <span class="bracket"><span class="id">kstep</span></span> transitions.  First, a technical
+  inversion lemma on <span class="bracket"><span class="id">cstep</span></span> reductions over commands of the form <span class="bracket"><span class="id">apply_cont</span> <span class="id">k</span> <span class="id">c</span></span>. </div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="cstep_apply_cont_cases">cstep_apply_cont_cases</a></span>: <span class="id"><a href="compiler.Semantics.html#cont">cont</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="cacc_base">cacc_base</a></span>: <span class="kwd">forall</span> <span class="id">c1</span> <span class="id">st1</span> <span class="id">c2</span> <span class="id">st2</span> <span class="id">k</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c1">c1</a></span>, <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span>) (<span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>, <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span>) -&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep_apply_cont_cases">cstep_apply_cont_cases</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c1">c1</a></span> <span class="id"><a href="compiler.Semantics.html#st1">st1</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c2">c2</a></span>) <span class="id"><a href="compiler.Semantics.html#st2">st2</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="cacc_skip_seq">cacc_skip_seq</a></span>: <span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep_apply_cont_cases">cstep_apply_cont_cases</a></span> (<span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>) <span class="id">SKIP</span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span>) <span class="id"><a href="compiler.Semantics.html#st">st</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="cacc_skip_while">cacc_skip_while</a></span>: <span class="kwd">forall</span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep_apply_cont_cases">cstep_apply_cont_cases</a></span> (<span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span>) <span class="id">SKIP</span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> (<span class="id">WHILE</span> <span class="id"><a href="compiler.Semantics.html#b">b</a></span> <span class="id">DO</span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id">END</span>)) <span class="id"><a href="compiler.Semantics.html#st">st</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="invert_cstep_apply_cont">invert_cstep_apply_cont</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">k</span> <span class="id">c</span> <span class="id">st</span> <span class="id">c</span>' <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">c</span>', <span class="id">st</span>') -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#cstep_apply_cont_cases">cstep_apply_cont_cases</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> <span class="id">c</span>' <span class="id">st</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof106')">Proof.</div>
+<div class="proofscript" id="proof106">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">k</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>. <br/>
+- <span class="comment">(*&nbsp;Kstop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">change</span> <span class="id">c</span>' <span class="kwd">with</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span> <span class="id">c</span>'). <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cacc_base">cacc_base</a></span>; <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;Kseq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">specialize</span> (<span class="id">IHk</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">H</span>). <span class="tactic">inversion</span> <span class="id">IHk</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;base&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;seq&nbsp;step&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">change</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span> (<span class="id">c1</span>';;<span class="id">c</span>)) <span class="kwd">with</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> (<span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id">c</span> <span class="id">k</span>) <span class="id">c1</span>'). <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cacc_base">cacc_base</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;seq&nbsp;finish&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cacc_skip_seq">cacc_skip_seq</a></span>.<br/>
+- <span class="comment">(*&nbsp;Kwhile&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">specialize</span> (<span class="id">IHk</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">H</span>). <span class="tactic">inversion</span> <span class="id">IHk</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;base&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H0</span>; <span class="tactic">clear</span> <span class="id">H0</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;seq&nbsp;step&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">change</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span> (<span class="id">c1</span>';;<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span>)) <span class="kwd">with</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> (<span class="id"><a href="compiler.Semantics.html#Kwhile">Kwhile</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">k</span>) <span class="id">c1</span>'). <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cacc_base">cacc_base</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;seq&nbsp;finish&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#cacc_skip_while">cacc_skip_while</a></span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="cinfseq_kinfseq">cinfseq_kinfseq</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">k</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>', <span class="id">exists</span> <span class="id">k</span>', <span class="id">exists</span> <span class="id">st</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) (<span class="id">c</span>', <span class="id">k</span>', <span class="id">st</span>')<br/>
+&nbsp;&nbsp;/\ <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span>' <span class="id">c</span>', <span class="id">st</span>').<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof107')">Proof.</div>
+<div class="proofscript" id="proof107">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">clear</span> <span class="id">H</span>; <span class="tactic">subst</span>. <span class="tactic">destruct</span> <span class="id">b</span> <span class="kwd">as</span> [<span class="id">c</span>' <span class="id">st</span>'].<br/>
+&nbsp;&nbsp;<span class="id">specialize</span> (<span class="id"><a href="compiler.Semantics.html#invert_cstep_apply_cont">invert_cstep_apply_cont</a></span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">H0</span>). <span class="tactic">intros</span> <span class="id">CASES</span>; <span class="tactic">inversion</span> <span class="id">CASES</span>; <span class="tactic">subst</span>.<br/>
+- <span class="comment">(*&nbsp;base&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">clear</span> <span class="id">H0</span> <span class="id">CASES</span>. <span class="id">revert</span> <span class="id">k</span> <span class="id">H1</span>. <span class="tactic">dependent</span> <span class="tactic">induction</span> <span class="id">H</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;assign&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_Ass">KS_Ass</a></span>. <span class="tactic">reflexivity</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;seq&nbsp;step&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHcstep</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#eq_refl">eq_refl</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#eq_refl">eq_refl</a></span> (<span class="id"><a href="compiler.Semantics.html#Kseq">Kseq</a></span> <span class="id">c0</span> <span class="id">k</span>) <span class="id">H1</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">as</span> [<span class="id">c</span>'' [<span class="id">k</span>'' [<span class="id">st</span>'' [<span class="id">A</span> <span class="id">B</span>]]]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>''; <span class="id">exists</span> <span class="id">k</span>''; <span class="id">exists</span> <span class="id">st</span>''; <span class="tactic">split</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#plus_left">plus_left</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_Seq">KS_Seq</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_star">plus_star</a></span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;seq&nbsp;finish&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#plus_left">plus_left</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_Seq">KS_Seq</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_one">star_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_SkipSeq">KS_SkipSeq</a></span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_IfTrue">KS_IfTrue</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_IfFalse">KS_IfFalse</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;while&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">clear</span> <span class="id">H1</span>; <span class="tactic">subst</span>. <span class="tactic">destruct</span> <span class="id">b0</span> <span class="kwd">as</span> [<span class="id">c</span>'' <span class="id">st</span>'']. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">specialize</span> (<span class="id"><a href="compiler.Semantics.html#invert_cstep_apply_cont">invert_cstep_apply_cont</a></span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">H</span>). <span class="tactic">intros</span> <span class="id">CASES</span>; <span class="tactic">inversion</span> <span class="id">CASES</span>; <span class="tactic">clear</span> <span class="id">CASES</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">clear</span> <span class="id">H1</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;while&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_WhileTrue">KS_WhileTrue</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;while&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_WhileFalse">KS_WhileFalse</a></span>. <span class="tactic">auto</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;skip&nbsp;seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_SkipSeq">KS_SkipSeq</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;skip&nbsp;while&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">do</span> 3 <span class="id">econstructor</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Semantics.html#KS_SkipWhile">KS_SkipWhile</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">The desired equivalence between the two notions of divergence then follows
+  from the coinduction principles given in module <span class="bracket"><span class="id">Sequence</span></span>. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="kdiverges_iff_diverges">kdiverges_iff_diverges</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">c</span> <span class="id">st</span>, <span class="id"><a href="compiler.Semantics.html#kdiverges">kdiverges</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span> &lt;-&gt; <span class="id"><a href="compiler.Semantics.html#diverges">diverges</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span> <span class="id"><a href="compiler.Semantics.html#st">st</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof108')">Proof.</div>
+<div class="proofscript" id="proof108">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">split</span>; <span class="tactic">intros</span>.<br/>
+- <span class="comment">(*&nbsp;kdiverges&nbsp;-&gt;&nbsp;diverges&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Semantics.html#diverges">diverges</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_coinduction_principle_2">infseq_coinduction_principle_2</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">X</span> := <span class="kwd">fun</span> <span class="id">c_st</span> =&gt; <span class="id">exists</span> <span class="id">c</span>, <span class="id">exists</span> <span class="id">k</span>, <span class="id">exists</span> <span class="id">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Semantics.html#c_st">c_st</a></span> = (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id"><a href="compiler.Semantics.html#k">k</a></span> <span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>) /\ <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#kstep">kstep</a></span> (<span class="id"><a href="compiler.Semantics.html#c">c</a></span>, <span class="id"><a href="compiler.Semantics.html#k">k</a></span>, <span class="id"><a href="compiler.Semantics.html#st">st</a></span>)).<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> <span class="id">H0</span> <span class="kwd">as</span> [<span class="id">c1</span> [<span class="id">k1</span> [<span class="id">st1</span> [<span class="id">EQ</span> <span class="id">ISEQ</span>]]]].<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Semantics.html#kinfseq_cinfseq">kinfseq_cinfseq</a></span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">ISEQ</span>) <span class="kwd">as</span> [<span class="id">c2</span> [<span class="id">k2</span> [<span class="id">st2</span> [<span class="id">CSTEPS</span> <span class="id">ISEQ</span>']]]]. <br/>
+&nbsp;&nbsp;<span class="id">exists</span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k2</span> <span class="id">c2</span>, <span class="id">st2</span>); <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">subst</span> <span class="id">a</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c2</span>; <span class="id">exists</span> <span class="id">k2</span>; <span class="id">exists</span> <span class="id">st2</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">c</span>; <span class="id">exists</span> <span class="id"><a href="compiler.Semantics.html#Kstop">Kstop</a></span>; <span class="id">exists</span> <span class="id">st</span>; <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;diverges&nbsp;-&gt;&nbsp;kdiverges&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Semantics.html#kdiverges">kdiverges</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_coinduction_principle_2">infseq_coinduction_principle_2</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">X</span> := <span class="kwd">fun</span> <span class="id">c_k_st</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Semantics.html#c_k_st">c_k_st</a></span> <span class="kwd">with</span> (<span class="id">c</span>, <span class="id">k</span>, <span class="id">st</span>) =&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Semantics.html#cstep">cstep</a></span> (<span class="id"><a href="compiler.Semantics.html#apply_cont">apply_cont</a></span> <span class="id">k</span> <span class="id">c</span>, <span class="id">st</span>) <span class="kwd">end</span>).<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span> [[<span class="id">c1</span> <span class="id">k1</span>] <span class="id">st1</span>] <span class="id">ISEQ</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Semantics.html#cinfseq_kinfseq">cinfseq_kinfseq</a></span> <span class="id">_</span> <span class="id">_</span> <span class="id">_</span> <span class="id">ISEQ</span>) <span class="kwd">as</span> [<span class="id">c2</span> [<span class="id">k2</span> [<span class="id">st2</span> [<span class="id">KSTEPS</span> <span class="id">ISEQ</span>']]]].<br/>
+&nbsp;&nbsp;<span class="id">exists</span> (<span class="id">c2</span>, <span class="id">k2</span>, <span class="id">st2</span>); <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+
+</div>
+<div class="footer"><hr/>Generated by <a href="https://github.com/xavierleroy/coq2html/">coq2html</div>
+</body>
+</html>

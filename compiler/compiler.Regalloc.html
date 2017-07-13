@@ -1,0 +1,487 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Module Regalloc</title>
+<meta name="description" content="Documentation of Coq module Regalloc" />
+<link href="coq2html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="coq2html.js"> </script>
+</head>
+
+<body onload="hideAll('proofscript')">
+<h1 class="title">Module Regalloc</h1>
+<div class="coq">
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html">Bool</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Arith.Arith.html">Arith</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.omega.Omega.html">Omega</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Lists.List.html">List</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Program.Equality.html">Coq.Program.Equality</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSets.html">MSets</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="../SF/lf/Maps.html">Maps</a></span> <span class="id"><a href="../SF/lf/Imp.html">Imp</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="compiler.Sequences.html">Sequences</a></span> <span class="id"><a href="compiler.Semantics.html">Semantics</a></span> <span class="id"><a href="compiler.Deadcode.html">Deadcode</a></span>.<br/>
+<span class="kwd">Import</span> <span class="id">VSdecide</span>.<br/>
+<br/>
+<div class="doc">In this chapter: a study of register allocation viewed as
+  renaming the variables of an IMP program in a semantic-preserving
+  manner.</div>
+<br/>
+<h1> 1. Renaming variables in a program </h1>
+<br/>
+<div class="doc">Recognition of expressions that are just variables. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="expr_is_var">expr_is_var</a></span> (<span class="id">a</span>: <span class="id"><a href="../SF/lf/Imp.html#aexp">aexp</a></span>): <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#option">option</a></span> <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span> <span class="kwd">with</span> <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id">x</span> =&gt; <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some">Some</a></span> <span class="id">x</span> | <span class="id">_</span> =&gt; <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#None">None</a></span> <span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="expr_is_var_correct">expr_is_var_correct</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">x</span>, <span class="id"><a href="compiler.Regalloc.html#expr_is_var">expr_is_var</a></span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some">Some</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#a">a</a></span> = <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof76')">Proof.</div>
+<div class="proofscript" id="proof76">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Regalloc.html#expr_is_var">expr_is_var</a></span>; <span class="tactic">intros</span>. <span class="tactic">destruct</span> <span class="id">a</span>; <span class="tactic">congruence</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Section</span> <span class="id"><a name="RENAMING">RENAMING</a></span>.<br/>
+<br/>
+<span class="kwd">Variable</span> <span class="id"><a name="RENAMING.f">f</a></span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span> -&gt; <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>.<br/>
+<br/>
+<div class="doc">Renaming variables in an expression. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="rename_aexp">rename_aexp</a></span> (<span class="id">a</span>: <span class="id"><a href="../SF/lf/Imp.html#aexp">aexp</a></span>) : <span class="id"><a href="../SF/lf/Imp.html#aexp">aexp</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#ANum">ANum</a></span> <span class="id">n</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#ANum">ANum</a></span> <span class="id">n</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> <span class="id">x</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#AId">AId</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#APlus">APlus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#APlus">APlus</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AMinus">AMinus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#AMinus">AMinus</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#AMult">AMult</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#AMult">AMult</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="rename_bexp">rename_bexp</a></span> (<span class="id">b</span>: <span class="id"><a href="../SF/lf/Imp.html#bexp">bexp</a></span>) : <span class="id"><a href="../SF/lf/Imp.html#bexp">bexp</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#b">b</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BTrue">BTrue</a></span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BTrue">BTrue</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BFalse">BFalse</a></span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BFalse">BFalse</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BEq">BEq</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BEq">BEq</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BLe">BLe</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BLe">BLe</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BNot">BNot</a></span> <span class="id">b1</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BNot">BNot</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b1</span>)<br/>
+&nbsp;&nbsp;| <span class="id"><a href="../SF/lf/Imp.html#BAnd">BAnd</a></span> <span class="id">b1</span> <span class="id">b2</span> =&gt; <span class="id"><a href="../SF/lf/Imp.html#BAnd">BAnd</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b1</span>) (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b2</span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<div class="doc">Transformation of a command:
+<ul>
+<li>
+ renaming the variables
+</li>
+<li>
+ dead code elimination as in chapter <span class="bracket"><span class="id">Deadcode</span></span>
+</li>
+<li>
+ coalescing: useless variable-to-variable copies <span class="bracket"><span class="id">x</span> ::= <span class="id">y</span></span> where
+  <span class="bracket"><span class="id">f</span> <span class="id">x</span> = <span class="id">f</span> <span class="id">y</span></span> are turned into <span class="bracket"><span class="id">SKIP</span></span>.
+</li>
+</ul>
+</div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="transf_com">transf_com</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#VS.t">VS.t</a></span>): <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">SKIP</span> =&gt; <span class="id">SKIP</span><br/>
+&nbsp;&nbsp;| <span class="id">x</span> ::= <span class="id">a</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="kwd">then</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#expr_is_var">expr_is_var</a></span> <span class="id">a</span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#None">None</a></span> =&gt; (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) ::= (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some">Some</a></span> <span class="id">y</span> =&gt; <span class="kwd">if</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>) <span class="kwd">then</span> <span class="id">SKIP</span> <span class="kwd">else</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) ::= (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">else</span> <span class="id">SKIP</span><br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id">c1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) ;; <span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id">c1</span> <span class="id">ELSE</span> <span class="id">c2</span> <span class="id">FI</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">IFB</span> <span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span> <span class="id">THEN</span> <span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id">c1</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id">ELSE</span> <span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id">FI</span><br/>
+&nbsp;&nbsp;| <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">WHILE</span> <span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span> <span class="id">DO</span> <span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="id">END</span>) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) <span class="id">END</span><br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<h1> 2. Semantic preservation </h1>
+<br/>
+<div class="doc">We adapt the notion of agreement between two states over a given
+  set of live variables that was introduced in chapter <span class="bracket"><span class="id">Deadcode</span></span>. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="agree">agree</a></span> (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#VS.t">VS.t</a></span>) (<span class="id">s1</span> <span class="id">s2</span>: <span class="id"><a href="../SF/lf/Imp.html#state">state</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> = <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>).<br/>
+<br/>
+<div class="doc">Monotonicity property. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_mon">agree_mon</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">L</span>' <span class="id">s1</span> <span class="id">s2</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id">L</span>' <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#VS.Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id">L</span>' -&gt; <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof77')">Proof.</div>
+<div class="proofscript" id="proof77">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Deadcode.html#VS.Subset">VS.Subset</a></span>, <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span>; <span class="tactic">intros</span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_extensional">agree_extensional</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">s3</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt; (<span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> = <span class="id"><a href="compiler.Regalloc.html#s3">s3</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) -&gt; <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s3">s3</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof78')">Proof.</div>
+<div class="proofscript" id="proof78">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span>; <span class="tactic">intros</span>. <span class="tactic">transitivity</span> (<span class="id">s2</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>)); <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement on the free variables of an expression implies that this
+    expression and its renaming evaluates identically in both states. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="aeval_agree">aeval_agree</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>, <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Deadcode.html#VS.Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_aexp">fv_aexp</a></span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span>) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span> = <span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id"><a href="compiler.Regalloc.html#a">a</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof79')">Proof.</div>
+<div class="proofscript" id="proof79">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">a</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">apply</span> <span class="id">H</span>. <span class="id">fsetdec</span>. <br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>. <br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHa1</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHa2</span>. <span class="id">fsetdec</span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="beval_agree">beval_agree</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>, <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">b</span>, <span class="id"><a href="compiler.Deadcode.html#VS.Subset">VS.Subset</a></span> (<span class="id"><a href="compiler.Deadcode.html#fv_bexp">fv_bexp</a></span> <span class="id"><a href="compiler.Regalloc.html#b">b</a></span>) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <br/>
+&nbsp;&nbsp;<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#b">b</a></span> = <span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id"><a href="compiler.Regalloc.html#b">b</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof80')">Proof.</div>
+<div class="proofscript" id="proof80">
+&nbsp;&nbsp;<span class="tactic">induction</span> <span class="id">b</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">repeat</span> <span class="tactic">rewrite</span> (<span class="id"><a href="compiler.Regalloc.html#aeval_agree">aeval_agree</a></span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>); <span class="tactic">auto</span>; <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">repeat</span> <span class="tactic">rewrite</span> (<span class="id"><a href="compiler.Regalloc.html#aeval_agree">aeval_agree</a></span> <span class="id">L</span> <span class="id">s1</span> <span class="id">s2</span>); <span class="tactic">auto</span>; <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">f_equal</span>; <span class="tactic">apply</span> <span class="id">IHb</span>; <span class="tactic">auto</span>.<br/>
+- <span class="tactic">f_equal</span>. <span class="tactic">apply</span> <span class="id">IHb1</span>; <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">IHb2</span>; <span class="id">fsetdec</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement is preserved by unilateral assignment to a dead variable. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_dead">agree_update_dead</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">v</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt; ~<span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#v">v</a></span>) <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof81')">Proof.</div>
+<div class="proofscript" id="proof81">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span>. <span class="tactic">auto</span>. <span class="tactic">congruence</span>. <br/>
+Qed.</div>
+<br/>
+<div class="doc">Agreement is preserved by simultaneous assignment to a live variable
+   <span class="bracket"><span class="id">x</span></span> and its renaming <span class="bracket"><span class="id">f</span> <span class="id">x</span></span>, provided none of the other live variables
+   <span class="bracket"><span class="id">z</span></span> is renamed to <span class="bracket"><span class="id">f</span> <span class="id">x</span></span> (non-interference property). </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_live">agree_update_live</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">v</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.remove">VS.remove</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#v">v</a></span>) (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) <span class="id"><a href="compiler.Regalloc.html#v">v</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof82')">Proof.</div>
+<div class="proofscript" id="proof82">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x</span> <span class="id">x0</span>) <span class="id">eqn</span>:<span class="id">E</span>. <br/>
+- <span class="comment">(*&nbsp;x&nbsp;=&nbsp;x0&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>. <span class="tactic">subst</span> <span class="id">x0</span>. <span class="tactic">rewrite</span> &lt;- <span class="id"><a href="../SF/lf/Maps.html#beq_id_refl">beq_id_refl</a></span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;x&nbsp;&lt;&gt;&nbsp;x0&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x0</span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id">H0</span>; <span class="tactic">auto</span>).<br/>
+&nbsp;&nbsp;<span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.remove_spec">VS.remove_spec</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">A special case of <span class="bracket"><span class="id">agree_update_live</span></span> where the value being assigned
+  is not arbitrary, but is the value of another variable <span class="bracket"><span class="id">y</span></span>.
+  In this case, we can relax the non-interference hypothesis
+  (Chaitin's observation). </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_move">agree_update_move</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">y</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.remove">VS.remove</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span>)) <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> (<span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span>)) (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) (<span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span>))).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof83')">Proof.</div>
+<div class="proofscript" id="proof83">
+&nbsp;&nbsp;<span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x</span> <span class="id">x0</span>) <span class="id">eqn</span>:<span class="id">E</span>. <br/>
+- <span class="comment">(*&nbsp;x&nbsp;=&nbsp;x0&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>. <span class="tactic">subst</span> <span class="id">x0</span>. <span class="tactic">rewrite</span> &lt;- <span class="id"><a href="../SF/lf/Maps.html#beq_id_refl">beq_id_refl</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">H</span>. <span class="id">fsetdec</span>. <br/>
+- <span class="comment">(*&nbsp;x&nbsp;&lt;&gt;&nbsp;x0&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id">x0</span> <span class="id">y</span>) <span class="id">eqn</span>:<span class="id">E</span>'.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x0&nbsp;=&nbsp;y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>'. <span class="tactic">subst</span> <span class="id">x0</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">transitivity</span> (<span class="id">s2</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">H</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>)); <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x0&nbsp;&lt;&gt;&nbsp;y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>'. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x0</span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id">H0</span>; <span class="tactic">auto</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span>.  <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">H</span>. <span class="id">fsetdec</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">A special case of <span class="bracket"><span class="id">agree_update_move</span></span> where <span class="bracket"><span class="id">f</span> <span class="id">x</span> = <span class="id">f</span> <span class="id">y</span></span>.
+  In this case, the assignment in the transformed program
+  can be optimized away. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="agree_update_coalesced_move">agree_update_coalesced_move</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">s1</span> <span class="id">s2</span> <span class="id">L</span> <span class="id">x</span> <span class="id">y</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.union">VS.union</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.remove">VS.remove</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span>)) <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span> -&gt;<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> = <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> (<span class="id"><a href="compiler.Regalloc.html#s1">s1</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span>)) <span class="id"><a href="compiler.Regalloc.html#s2">s2</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof84')">Proof.</div>
+<div class="proofscript" id="proof84">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_extensional">agree_extensional</a></span> <span class="kwd">with</span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id">s2</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) (<span class="id">s2</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>))).<br/>
+- <span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_update_move">agree_update_move</a></span>; <span class="tactic">auto</span>.<br/>
+- <span class="tactic">intros</span>. <span class="tactic">rewrite</span> <span class="id">H1</span>. <span class="tactic">unfold</span> <span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>) <span class="id">x0</span>) <span class="id">eqn</span>:<span class="id">E</span>. <br/>
+&nbsp;&nbsp;+ <span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">E</span>. <span class="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;+ <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Gathering together the various non-interference conditions above,
+  we obtain the following correctness criterion for a candidate
+  renaming <span class="bracket"><span class="id">f</span></span>.  Note that this is a boolean-valued function, not
+  a predicate; therefore, it can be used as a validator for
+  a renaming computed by an untrusted heuristic. </div>
+<br/>
+<span class="kwd">Fixpoint</span> <span class="id"><a name="correct_allocation">correct_allocation</a></span> (<span class="id">c</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">L</span>: <span class="id"><a href="compiler.Deadcode.html#VS.t">VS.t</a></span>) : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#bool">bool</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">SKIP</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span><br/>
+&nbsp;&nbsp;| <span class="id">x</span> ::= <span class="id">a</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="kwd">then</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Regalloc.html#expr_is_var">expr_is_var</a></span> <span class="id">a</span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some">Some</a></span> <span class="id">y</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#VS.for_all">VS.for_all</a></span> (<span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">x</span> || <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">y</span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>))) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#None">None</a></span> =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#VS.for_all">VS.for_all</a></span> (<span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">x</span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>))) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">else</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span><br/>
+&nbsp;&nbsp;| (<span class="id">c1</span> ;; <span class="id">c2</span>) =&gt; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id">c1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) &amp;&amp; <span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span><br/>
+&nbsp;&nbsp;| <span class="id">IFB</span> <span class="id">b</span> <span class="id">THEN</span> <span class="id">c1</span> <span class="id">ELSE</span> <span class="id">c2</span> <span class="id">FI</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id">c1</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> &amp;&amp; <span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span><br/>
+&nbsp;&nbsp;| <span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="id">END</span>) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>)<br/>
+&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
+<br/>
+<span class="kwd">Remark</span> <span class="id"><a name="correct_allocation_assign_1">correct_allocation_assign_1</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span> <span class="id">L</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#VS.for_all">VS.for_all</a></span> (<span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> || <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#y">y</a></span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>))) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof85')">Proof.</div>
+<div class="proofscript" id="proof85">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">set</span> (<span class="id">g</span> := <span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">x</span> || <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">y</span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>))) <span class="kwd">in</span> *.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Deadcode.html#VS.For_all">VS.For_all</a></span> (<span class="kwd">fun</span> <span class="id">x</span> =&gt; <span class="id">g</span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>) <span class="id">L</span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.for_all_spec">VS.for_all_spec</a></span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">red</span> <span class="kwd">in</span> <span class="id">H3</span>. <span class="tactic">generalize</span> (<span class="id">H3</span> <span class="id">z</span> <span class="id">H0</span>). <span class="tactic">unfold</span> <span class="id">g</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span> <span class="tactic">by</span> <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span> <span class="tactic">by</span> <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">z</span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>)) <span class="id">eqn</span>:<span class="id">E</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span>; <span class="tactic">auto</span>.  <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Remark</span> <span class="id"><a name="correct_allocation_assign_2">correct_allocation_assign_2</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">L</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Deadcode.html#VS.for_all">VS.for_all</a></span> (<span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>))) <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> -&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> &lt;&gt; <span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof86')">Proof.</div>
+<div class="proofscript" id="proof86">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">set</span> (<span class="id">g</span> := <span class="kwd">fun</span> <span class="id">z</span> =&gt; <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span> <span class="id">x</span> || <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#negb">negb</a></span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#z">z</a></span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>))) <span class="kwd">in</span> *.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Deadcode.html#VS.For_all">VS.For_all</a></span> (<span class="kwd">fun</span> <span class="id">x</span> =&gt; <span class="id">g</span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>) <span class="id">L</span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.for_all_spec">VS.for_all_spec</a></span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>. } <br/>
+&nbsp;&nbsp;<span class="tactic">red</span> <span class="kwd">in</span> <span class="id">H2</span>. <span class="tactic">generalize</span> (<span class="id">H2</span> <span class="id">z</span> <span class="id">H0</span>). <span class="tactic">unfold</span> <span class="id">g</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">rewrite</span> <span class="id"><a href="../SF/lf/Maps.html#false_beq_id">false_beq_id</a></span> <span class="tactic">by</span> <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span>. <span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">z</span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>)) <span class="id">eqn</span>:<span class="id">E</span>; <span class="tactic">simpl</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_false_iff">beq_id_false_iff</a></span>; <span class="tactic">auto</span>. <br/>
+Qed.</div>
+<br/>
+<div class="doc">The proof of semantic preservation is a straightforward adaptation
+  of the proof for dead code elimination.  There are more cases to
+  be considered in the assignment case <span class="bracket"><span class="id">x</span> ::= <span class="id">a</span></span>, corresponding
+  to variable-to-variable moves <span class="bracket"><span class="id">x</span> ::= <span class="id">y</span></span>, either coalesced or not. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="transf_correct_terminating">transf_correct_terminating</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">st</span> <span class="id">c</span> <span class="id">st</span>', <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> / <span class="id"><a href="compiler.Regalloc.html#st">st</a></span> \\ <span class="id">st</span>' -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">L</span> <span class="id">st1</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span>) <span class="id"><a href="compiler.Regalloc.html#st">st</a></span> <span class="id"><a href="compiler.Regalloc.html#st1">st1</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>', <span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id"><a href="compiler.Regalloc.html#c">c</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> / <span class="id"><a href="compiler.Regalloc.html#st1">st1</a></span> \\ <span class="id">st1</span>' /\ <span class="id"><a href="compiler.Regalloc.html#agree">agree</a></span> <span class="id"><a href="compiler.Regalloc.html#L">L</a></span> <span class="id">st</span>' <span class="id">st1</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof87')">Proof.</div>
+<div class="proofscript" id="proof87">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span> <span class="id">L</span> <span class="id">st1</span> <span class="id">AG</span> <span class="id">CORR</span>; <span class="tactic">simpl</span>; <span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">CORR</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;skip&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>. <span class="id">constructor</span>. <span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;:=&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">AG</span>. <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id">L</span>) <span class="id">eqn</span>:<span class="id">is_live</span>. <br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&nbsp;is&nbsp;live&nbsp;after&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#aeval">aeval</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#rename_aexp">rename_aexp</a></span> <span class="id">a1</span>) = <span class="id">n</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#aeval_agree">aeval_agree</a></span>. <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Regalloc.html#expr_is_var">expr_is_var</a></span> <span class="id">a1</span>) <span class="kwd">as</span> [<span class="id">y</span> | ] <span class="id">eqn</span>:<span class="id">is_var</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;move&nbsp;x&nbsp;:=&nbsp;y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#expr_is_var_correct">expr_is_var_correct</a></span> <span class="kwd">in</span> <span class="id">is_var</span>. <span class="tactic">subst</span> <span class="id">a1</span>. <span class="tactic">simpl</span> <span class="kwd">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">y</span>)) <span class="id">eqn</span>:<span class="id">coalesced</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** <span class="comment">(*&nbsp;coalesced&nbsp;move&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id_true_iff">beq_id_true_iff</a></span> <span class="kwd">in</span> <span class="id">coalesced</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_update_coalesced_move">agree_update_coalesced_move</a></span>; <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#correct_allocation_assign_1">correct_allocation_assign_1</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** <span class="comment">(*&nbsp;preserved&nbsp;move&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) <span class="id">n</span>); <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Ass">E_Ass</a></span>. <span class="tactic">simpl</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id">H</span> <span class="tactic">at</span> 1. <span class="tactic">rewrite</span> &lt;- <span class="id">H0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_update_move">agree_update_move</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#correct_allocation_assign_1">correct_allocation_assign_1</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;not&nbsp;a&nbsp;move&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> (<span class="id"><a href="../SF/lf/Maps.html#t_update">t_update</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#RENAMING.f">f</a></span> <span class="id">x</span>) <span class="id">n</span>); <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Ass">E_Ass</a></span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_update_live">agree_update_live</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#correct_allocation_assign_2">correct_allocation_assign_2</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&nbsp;is&nbsp;dead&nbsp;after&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Skip">E_Skip</a></span>. <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Regalloc.html#agree_update_dead">agree_update_dead</a></span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id"><a href="compiler.Deadcode.html#VS.mem_spec">VS.mem_spec</a></span>. <span class="tactic">congruence</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">AG</span>. <span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html#andb_true_iff">andb_true_iff</a></span> <span class="kwd">in</span> <span class="id">CORR</span>; <span class="tactic">destruct</span> <span class="id">CORR</span> <span class="kwd">as</span> [<span class="id">CORR1</span> <span class="id">CORR2</span>].  <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval1</span> <span class="id">_</span> <span class="id">_</span> <span class="id">AG</span> <span class="id">CORR1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E1</span> <span class="id">A1</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval2</span> <span class="id">_</span> <span class="id">_</span> <span class="id">A1</span> <span class="id">CORR2</span>) <span class="kwd">as</span> [<span class="id">st2</span>' [<span class="id">E2</span> <span class="id">A2</span>]].<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st2</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_Seq">E_Seq</a></span> <span class="kwd">with</span> <span class="id">st1</span>'; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;if&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">AG</span>. <span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html#andb_true_iff">andb_true_iff</a></span> <span class="kwd">in</span> <span class="id">CORR</span>; <span class="tactic">destruct</span> <span class="id">CORR</span> <span class="kwd">as</span> [<span class="id">CORR1</span> <span class="id">CORR2</span>]. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span>) = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. } <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval</span> <span class="id">L</span> <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E</span> <span class="id">A</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfTrue">E_IfTrue</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;if&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">simpl</span> <span class="kwd">in</span> <span class="id">AG</span>. <span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html#andb_true_iff">andb_true_iff</a></span> <span class="kwd">in</span> <span class="id">CORR</span>; <span class="tactic">destruct</span> <span class="id">CORR</span> <span class="kwd">as</span> [<span class="id">CORR1</span> <span class="id">CORR2</span>]. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span>) = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>. } <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval</span> <span class="id">L</span> <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st1</span>' [<span class="id">E</span> <span class="id">A</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <span class="id">fsetdec</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>'; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_IfFalse">E_IfFalse</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+<br/>
+- <span class="comment">(*&nbsp;while&nbsp;end&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#live_while_charact">live_while_charact</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>) <span class="kwd">as</span> [<span class="id">P</span> [<span class="id">Q</span> <span class="id">R</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span>) = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. }<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st1</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileFalse">E_WhileFalse</a></span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>. <br/>
+<br/>
+- <span class="comment">(*&nbsp;while&nbsp;loop&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#live_while_charact">live_while_charact</a></span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>) <span class="kwd">as</span> [<span class="id">P</span> [<span class="id">Q</span> <span class="id">R</span>]].<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="../SF/lf/Imp.html#beval">beval</a></span> <span class="id">st1</span> (<span class="id"><a href="compiler.Regalloc.html#rename_bexp">rename_bexp</a></span> <span class="id">b</span>) = <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>).<br/>
+&nbsp;&nbsp;{ <span class="tactic">rewrite</span> &lt;- <span class="id">H</span>. <span class="tactic">symmetry</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#beval_agree">beval_agree</a></span>; <span class="tactic">eauto</span>. }<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval1</span> (<span class="id"><a href="compiler.Deadcode.html#live">live</a></span> (<span class="id">WHILE</span> <span class="id">b</span> <span class="id">DO</span> <span class="id">c</span> <span class="id">END</span>) <span class="id">L</span>) <span class="id">st1</span>) <span class="kwd">as</span> [<span class="id">st2</span> [<span class="id">E1</span> <span class="id">A1</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Regalloc.html#agree_mon">agree_mon</a></span>; <span class="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">IHceval2</span> <span class="id">L</span> <span class="id">st2</span>) <span class="kwd">as</span> [<span class="id">st3</span> [<span class="id">E2</span> <span class="id">A2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>. <span class="tactic">auto</span>.  <br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">st3</span>; <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="../SF/lf/Imp.html#E_WhileTrue">E_WhileTrue</a></span> <span class="kwd">with</span> <span class="id">st2</span>; <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">End</span> <span class="id"><a href="compiler.Regalloc.html#RENAMING">RENAMING</a></span>.<br/>
+<br/>
+<h1> 3. Examples </h1>
+<br/>
+<div class="doc">If we give it the identity renaming, our code transformation
+  behaves exactly like dead code elimination. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="trivial_alloc">trivial_alloc</a></span> := <span class="kwd">fun</span> (<span class="id">x</span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>) =&gt; <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<br/>
+<span class="id">Compute</span> (<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#trivial_alloc">trivial_alloc</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Result is <span class="bracket"><span class="id">true</span></span>. </div>
+<br/>
+<span class="id">Compute</span> (<span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id"><a href="compiler.Regalloc.html#trivial_alloc">trivial_alloc</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Result is:
+<pre>
+   r := a;                 ===&gt;   r := a;
+   q := 0;                        skip;
+   while b &lt;= r do                while b &lt;= r do
+     r := r - b;                    r := r - b;
+     q := q + 1;                    skip;
+   done                           done</pre>
+</div>
+<br/>
+<div class="doc">Here is another allocation that collapses variables <span class="bracket"><span class="id">r</span></span> and <span class="bracket"><span class="id">a</span></span>.</div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="my_alloc">my_alloc</a></span> := <span class="kwd">fun</span> (<span class="id">x</span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>) =&gt; <span class="kwd">if</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span> <span class="kwd">then</span> <span class="id"><a href="compiler.Deadcode.html#va">va</a></span> <span class="kwd">else</span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<br/>
+<span class="kwd">Eval</span> <span class="id">vm_compute</span> <span class="kwd">in</span> (<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#my_alloc">my_alloc</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Result is <span class="bracket"><span class="id">true</span></span>. </div>
+<br/>
+<span class="kwd">Eval</span> <span class="id">vm_compute</span> <span class="kwd">in</span> (<span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id"><a href="compiler.Regalloc.html#my_alloc">my_alloc</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Here is the result.  Note the removal of <span class="bracket"><span class="id">r</span> := <span class="id">a</span></span>.
+<pre>
+   r := a;                 ===&gt;   skip;
+   q := 0;                        skip;
+   while b &lt;= r do                while b &lt;= a do
+     r := r - b;                    a := a - b;
+     q := q + 1;                    skip;
+   done                           done</pre>
+</div>
+<br/>
+<div class="doc">Finally, if we try to collapse variable <span class="bracket"><span class="id">r</span></span> and <span class="bracket"><span class="id">b</span></span>, the validation
+  function <span class="bracket"><span class="id">correct_allocation</span></span> rejects the allocation. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="wrong_alloc">wrong_alloc</a></span> := <span class="kwd">fun</span> (<span class="id">x</span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>) =&gt; <span class="kwd">if</span> <span class="id"><a href="../SF/lf/Maps.html#beq_id">beq_id</a></span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span> <span class="kwd">then</span> <span class="id"><a href="compiler.Deadcode.html#vb">vb</a></span> <span class="kwd">else</span> <span class="id"><a href="compiler.Regalloc.html#x">x</a></span>.<br/>
+<br/>
+<span class="kwd">Eval</span> <span class="id">vm_compute</span> <span class="kwd">in</span> (<span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#wrong_alloc">wrong_alloc</a></span> <span class="id"><a href="compiler.Deadcode.html#prog">prog</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id"><a href="compiler.Deadcode.html#vr">vr</a></span>)).<br/>
+<br/>
+<div class="doc">Result is <span class="bracket"><span class="id">false</span></span>. </div>
+<br/>
+<h1> 4. Putting it all together </h1>
+<br/>
+<div class="doc">We assume given a register allocation heuristic that computes a candidate
+  allocation. </div>
+<br/>
+<span class="kwd">Parameter</span> <span class="id"><a name="regalloc_heuristic">regalloc_heuristic</a></span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Deadcode.html#VS.t">VS.t</a></span> -&gt; (<span class="id"><a href="../SF/lf/Maps.html#id">id</a></span> -&gt; <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>).<br/>
+<br/>
+<div class="doc">Typically, this heuristic will be written in Caml and linked with
+  the Caml code extracted from the present Coq development. </div>
+<br/>
+<div class="doc">We then define the register allocation pass.  <span class="bracket"><span class="id">prog</span></span> is the program to be
+  transformed and <span class="bracket"><span class="id">obs</span></span> is the set of variables we want to observe at the
+  end of its execution.  This compilation pass can fail at compile-time,
+  in which case it returns <span class="bracket"><span class="id">None</span></span>. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="regalloc">regalloc</a></span> (<span class="id">prog</span>: <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span>) (<span class="id">obs</span>: <span class="id"><a href="compiler.Deadcode.html#VS.t">VS.t</a></span>) : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#option">option</a></span> <span class="id"><a href="../SF/lf/Imp.html#com">com</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">f</span> := <span class="id"><a href="compiler.Regalloc.html#regalloc_heuristic">regalloc_heuristic</a></span> <span class="id"><a href="compiler.Regalloc.html#prog">prog</a></span> <span class="id"><a href="compiler.Regalloc.html#obs">obs</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Regalloc.html#correct_allocation">correct_allocation</a></span> <span class="id"><a href="compiler.Regalloc.html#f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#prog">prog</a></span> <span class="id"><a href="compiler.Regalloc.html#obs">obs</a></span><br/>
+&nbsp;&nbsp;<span class="kwd">then</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some">Some</a></span>(<span class="id"><a href="compiler.Regalloc.html#transf_com">transf_com</a></span> <span class="id"><a href="compiler.Regalloc.html#f">f</a></span> <span class="id"><a href="compiler.Regalloc.html#prog">prog</a></span> <span class="id"><a href="compiler.Regalloc.html#obs">obs</a></span>)<br/>
+&nbsp;&nbsp;<span class="kwd">else</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#None">None</a></span>.<br/>
+
+</div>
+<div class="footer"><hr/>Generated by <a href="https://github.com/xavierleroy/coq2html/">coq2html</div>
+</body>
+</html>

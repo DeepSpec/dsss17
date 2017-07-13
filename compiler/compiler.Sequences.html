@@ -1,0 +1,329 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Module Sequences</title>
+<meta name="description" content="Documentation of Coq module Sequences" />
+<link href="coq2html.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="coq2html.js"> </script>
+</head>
+
+<body onload="hideAll('proofscript')">
+<h1 class="title">Module Sequences</h1>
+<div class="coq">
+<div class="doc">A library of relation operators defining sequences of transitions
+  and useful properties about them. </div>
+<br/>
+<span class="kwd">Set</span> <span class="kwd">Implicit</span> <span class="id">Arguments</span>.<br/>
+<br/>
+<span class="kwd">Section</span> <span class="id"><a name="SEQUENCES">SEQUENCES</a></span>.<br/>
+<br/>
+<span class="kwd">Variable</span> <span class="id"><a name="SEQUENCES.A">A</a></span>: <span class="kwd">Type</span>.                 <span class="docright">(* the type of states  *)</span><br/>
+<span class="kwd">Variable</span> <span class="id"><a name="SEQUENCES.R">R</a></span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span>.       <span class="docright">(* the transition relation, from one state to the next  *)</span><br/>
+<br/>
+<h2> Finite sequences of transitions </h2>
+<br/>
+<div class="doc">Zero, one or several transitions: reflexive, transitive closure of <span class="bracket"><span class="id">R</span></span>. </div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="star">star</a></span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="star_refl">star_refl</a></span>: <span class="kwd">forall</span> <span class="id">a</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="star_step">star_step</a></span>: <span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="star_one">star_one</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> (<span class="id">a</span> <span class="id">b</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>), <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof109')">Proof.</div>
+<div class="proofscript" id="proof109">
+&nbsp;&nbsp;<span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star">star</a></span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="star_trans">star_trans</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> (<span class="id">a</span> <span class="id">b</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>), <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="kwd">forall</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof110')">Proof.</div>
+<div class="proofscript" id="proof110">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star">star</a></span>. <br/>
+Qed.</div>
+<br/>
+<div class="doc">One or several transitions: transitive closure of <span class="bracket"><span class="id">R</span></span>. </div>
+<br/>
+<span class="kwd">Inductive</span> <span class="id"><a name="plus">plus</a></span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="plus_left">plus_left</a></span>: <span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="plus_one">plus_one</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof111')">Proof.</div>
+<div class="proofscript" id="proof111">
+&nbsp;&nbsp;<span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star">star</a></span>, <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span>. <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="plus_star">plus_star</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof112')">Proof.</div>
+<div class="proofscript" id="proof112">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">inversion</span> <span class="id">H</span>. <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star">star</a></span>.  <br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="plus_star_trans">plus_star_trans</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof113')">Proof.</div>
+<div class="proofscript" id="proof113">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">inversion</span> <span class="id">H</span>. <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span>, <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="star_plus_trans">star_plus_trans</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof114')">Proof.</div>
+<div class="proofscript" id="proof114">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">inversion</span> <span class="id">H0</span>. <span class="tactic">inversion</span> <span class="id">H</span>; <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span>, <span class="id"><a href="compiler.Sequences.html#star_trans">star_trans</a></span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="plus_right">plus_right</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof115')">Proof.</div>
+<div class="proofscript" id="proof115">
+&nbsp;&nbsp;<span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star_plus_trans">star_plus_trans</a></span>, <span class="id"><a href="compiler.Sequences.html#plus_one">plus_one</a></span>.<br/>
+Qed.</div>
+<br/>
+<h2> Infinite sequences of transitions </h2>
+<br/>
+<div class="doc">It is easy to characterize the fact that all transition sequences starting
+  from a state <span class="bracket"><span class="id">a</span></span> are infinite: it suffices to say that any finite sequence
+  starting from <span class="bracket"><span class="id">a</span></span> can always be extended by one more transition. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="all_seq_inf">all_seq_inf</a></span> (<span class="id">a</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id">exists</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<br/>
+<div class="doc">However, this is not the notion we are trying to characterize: that, starting
+  from <span class="bracket"><span class="id">a</span></span>, there exists one infinite sequence of transitions
+  <span class="bracket"><span class="id">a</span> --&gt; <span class="id">a1</span> --&gt; <span class="id">a2</span> --&gt; ... -&gt; <span class="id">aN</span> -&gt; ...</span>.
+  Indeed, consider <span class="bracket"><span class="id">A</span> = <span class="id">nat</span></span> and <span class="bracket"><span class="id">R</span></span> such that <span class="bracket"><span class="id">R</span> 0 0</span> and <span class="bracket"><span class="id">R</span> 0 1</span>.  
+  <span class="bracket"><span class="id">all_seq_inf</span> 0</span> does not hold, because a sequence <span class="bracket">0 --&gt;* 1</span> cannot be extended.
+  Yet, <span class="bracket"><span class="id">R</span></span> admits an infinite sequence, namely <span class="bracket">0 --&gt; 0 --&gt; ...</span>.  
+  Another attempt would be to represent the sequence of states 
+  <span class="bracket"><span class="id">a0</span> --&gt; <span class="id">a1</span> --&gt; <span class="id">a2</span> --&gt; ... -&gt; <span class="id">aN</span> -&gt; ...</span> explicitly, as a function 
+  <span class="bracket"><span class="id">f</span>: <span class="id">nat</span> -&gt; <span class="id">A</span></span> such that <span class="bracket"><span class="id">f</span> <span class="id">i</span></span> is the <span class="bracket"><span class="id">i</span></span>-th state <span class="bracket"><span class="id">ai</span></span> of the sequence. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="infseq_with_function">infseq_with_function</a></span> (<span class="id">a</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">f</span>: <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">nat</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>, <span class="id"><a href="compiler.Sequences.html#f">f</a></span> 0 = <span class="id"><a href="compiler.Sequences.html#a">a</a></span> /\ <span class="kwd">forall</span> <span class="id">i</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> (<span class="id"><a href="compiler.Sequences.html#f">f</a></span> <span class="id"><a href="compiler.Sequences.html#i">i</a></span>) (<span class="id"><a href="compiler.Sequences.html#f">f</a></span> (1 + <span class="id"><a href="compiler.Sequences.html#i">i</a></span>)).<br/>
+<br/>
+<div class="doc">This is a correct characterization of the existence of an infinite sequence
+  of reductions.  However, it is very inconvenient to work with this definition
+  in Coq's constructive logic: in most use cases, the function <span class="bracket"><span class="id">f</span></span> is not
+  computable and therefore cannot be defined in Coq.  </div>
+<br/>
+<div class="doc">To obtain a practical definition of infinite sequences, we use the following
+  coinductive definition of the predicate <span class="bracket"><span class="id">infseq</span> <span class="id">a</span></span>. </div>
+<br/>
+<span class="kwd">CoInductive</span> <span class="id"><a name="infseq">infseq</a></span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id"><a name="infseq_step">infseq_step</a></span>: <span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<br/>
+<div class="doc">An inductive predicate such as <span class="bracket"><span class="id">star</span> <span class="id">a</span> <span class="id">b</span></span> holds iff there exists a finite
+  derivation of the conclusion <span class="bracket"><span class="id">star</span> <span class="id">a</span> <span class="id">b</span></span> that uses the constructors
+  <span class="bracket"><span class="id">star_refl</span></span> and <span class="bracket"><span class="id">star_step</span></span> a finite number of times.
+  A coinductive predicate is similar, but holds iff there exists a finite
+  OR INFINITE derivation of the conclusion that uses the constructors
+  of the predicate a finite OR INFINITE number of times.
+  In other words, an inductive predicate is a smallest fixpoint: the smallest predicate
+  that satisfies its constructors; a coinductive predicate is a greatest fixpoint:
+  the largest predicate that satisfies its constructors.
+  The <span class="bracket"><span class="id">infseq</span></span> predicate above must be defined coinductively.  Indeed, if
+  we define it inductively, the predicate would be empty (always false),
+  since there are no base cases!  
+  Coq provides some primitive support for constructing infinite derivations
+  of facts such as <span class="bracket"><span class="id">infseq</span> <span class="id">a</span></span>.  Such constructions are proofs by coinduction.
+  For example, we can prove the following: </div>
+<br/>
+<span class="kwd">Remark</span> <span class="id"><a name="cycle_infseq">cycle_infseq</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof116')">Proof.</div>
+<div class="proofscript" id="proof116">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="id">cofix</span> <span class="id">COINDHYP</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_step">infseq_step</a></span> <span class="kwd">with</span> <span class="id">a</span>. <span class="tactic">auto</span>. <span class="tactic">apply</span> <span class="id">COINDHYP</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">This style of proof by coinduction, using the <span class="bracket"><span class="id">cofix</span></span> tactic, is effective
+  but can run into limitations of Coq's proof engine (the so-called 
+  "guard condition").  However, we can derive more conventional
+  coinduction principles that are often easier to use. </div>
+<br/>
+<div class="doc">Consider a set <span class="bracket"><span class="id">X</span></span> of states <span class="bracket"><span class="id">A</span></span>, that is, a predicate <span class="bracket"><span class="id">X</span>: <span class="id">A</span> -&gt; <span class="kwd">Prop</span></span>.
+  Assume that for every <span class="bracket"><span class="id">a</span></span> in <span class="bracket"><span class="id">X</span></span>, we can make one <span class="bracket"><span class="id">R</span></span> transition to a <span class="bracket"><span class="id">b</span></span>
+  that is still in <span class="bracket"><span class="id">X</span></span>.  Then, starting from <span class="bracket"><span class="id">a</span></span> in <span class="bracket"><span class="id">X</span></span>, we can transition
+  to some <span class="bracket"><span class="id">a1</span></span> in <span class="bracket"><span class="id">X</span></span>, then to some <span class="bracket"><span class="id">a2</span></span> still in <span class="bracket"><span class="id">X</span></span>, then... It is clear
+  that we are just building an infinite sequence of transitions starting from
+  <span class="bracket"><span class="id">a</span></span>. Therefore <span class="bracket"><span class="id">infseq</span> <span class="id">a</span></span> should hold.  Let's prove this! </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_coinduction_principle">infseq_coinduction_principle</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> (<span class="id">X</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span>),<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id">exists</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> /\ <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof117')">Proof.</div>
+<div class="proofscript" id="proof117">
+&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">X</span> <span class="id">P</span>. <span class="id">cofix</span> <span class="id">COINDHYP</span>; <span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">P</span> <span class="id">a</span> <span class="id">H</span>) <span class="kwd">as</span> [<span class="id">b</span> [<span class="id">U</span> <span class="id">V</span>]]. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_step">infseq_step</a></span> <span class="kwd">with</span> <span class="id">b</span>; <span class="tactic">auto</span>. <br/>
+Qed.</div>
+<br/>
+<div class="doc">An even more useful variant of this coinduction principle considers a
+  set <span class="bracket"><span class="id">X</span></span> where for every <span class="bracket"><span class="id">a</span></span> in <span class="bracket"><span class="id">X</span></span>, we can make one *or several* transitions
+  to reach a <span class="bracket"><span class="id">b</span></span> in <span class="bracket"><span class="id">X</span></span>.  </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_coinduction_principle_2">infseq_coinduction_principle_2</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> (<span class="id">X</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span> -&gt; <span class="kwd">Prop</span>),<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id">exists</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#plus">plus</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> /\ <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>) -&gt;<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#X">X</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof118')">Proof.</div>
+<div class="proofscript" id="proof118">
+&nbsp;&nbsp;<span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_coinduction_principle">infseq_coinduction_principle</a></span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">X</span> := <span class="kwd">fun</span> <span class="id">a</span> =&gt; <span class="id">exists</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> /\ <span class="id">X</span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>).<br/>
+- <span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> <span class="id">H1</span> <span class="kwd">as</span> [<span class="id">b</span> [<span class="id">STAR</span> <span class="id">Xb</span>]]. <span class="tactic">inversion</span> <span class="id">STAR</span>; <span class="tactic">subst</span>.<br/>
++ <span class="tactic">destruct</span> (<span class="id">H</span> <span class="id">b</span> <span class="id">Xb</span>) <span class="kwd">as</span> [<span class="id">c</span> [<span class="id">PLUS</span> <span class="id">Xc</span>]]. <span class="tactic">inversion</span> <span class="id">PLUS</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">b0</span>; <span class="tactic">split</span>. <span class="tactic">auto</span>. <span class="id">exists</span> <span class="id">c</span>; <span class="tactic">auto</span>. <br/>
++ <span class="id">exists</span> <span class="id">b0</span>; <span class="tactic">split</span>. <span class="tactic">auto</span>. <span class="id">exists</span> <span class="id">b</span>; <span class="tactic">auto</span>.<br/>
+- <span class="id">exists</span> <span class="id">a</span>; <span class="tactic">split</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_refl">star_refl</a></span>. <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Here is an example of use of <span class="bracket"><span class="id">infseq_coinduction_principle</span></span>:
+  if all finite transition sequences starting at <span class="bracket"><span class="id">a</span></span> can be extended,
+  <span class="bracket"><span class="id">infseq</span> <span class="id">a</span></span> holds. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_if_all_seq_inf">infseq_if_all_seq_inf</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#all_seq_inf">all_seq_inf</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof119')">Proof.</div>
+<div class="proofscript" id="proof119">
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_coinduction_principle">infseq_coinduction_principle</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> (<span class="id">H</span> <span class="id">a</span>) <span class="kwd">as</span> [<span class="id">b</span> <span class="id">Rb</span>]. <span class="id">constructor</span>. <br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">b</span>; <span class="tactic">split</span>; <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Sequences.html#all_seq_inf">all_seq_inf</a></span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#star_step">star_step</a></span> <span class="kwd">with</span> <span class="id">b</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Likewise, the function-based characterization <span class="bracket"><span class="id">infseq_with_function</span></span>
+  implies <span class="bracket"><span class="id">infseq</span></span>. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_from_function">infseq_from_function</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#infseq_with_function">infseq_with_function</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof120')">Proof.</div>
+<div class="proofscript" id="proof120">
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_coinduction_principle">infseq_coinduction_principle</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> <span class="id">H</span> <span class="kwd">as</span> [<span class="id">f</span> [<span class="id">P</span> <span class="id">Q</span>]].<br/>
+&nbsp;&nbsp;<span class="id">exists</span> (<span class="id">f</span> 1); <span class="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">subst</span> <span class="id">a</span>. <span class="tactic">apply</span> <span class="id">Q</span>. <br/>
+&nbsp;&nbsp;<span class="id">exists</span> (<span class="kwd">fun</span> <span class="id">n</span> =&gt; <span class="id">f</span> (1 + <span class="id"><a href="compiler.Sequences.html#n">n</a></span>)); <span class="tactic">split</span>. <span class="tactic">auto</span>. <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">Q</span>.<br/>
+Qed.</div>
+&nbsp;<br/>
+<div class="doc">Consider the transition sequences starting at state <span class="bracket"><span class="id">a</span></span>.
+  They can be infinite, or they can be finite: after a number of transitions,
+  we reach a state from with no transition is possible.  It is intuitively
+  obvious that at least one of the two cases must hold. 
+  It is however impossible to prove this fact in Coq's constructive logic.
+  Indeed, a constructive proof would be isomorphic (by the Curry-Howard isomorphism)
+  to a terminating function that solves Turing's halting problem!
+  To prove this fact, we must enrich Coq with axioms from classical logic,
+  namely the axiom of excluded middle: for all propositions <span class="bracket"><span class="id">P</span></span>,
+  either <span class="bracket"><span class="id">P</span></span> or <span class="bracket">~<span class="id">P</span></span> hold.  The Coq standard library provides such axioms
+  in the module named <span class="bracket"><span class="id">Classical</span></span>, which we now import. </div>
+<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Logic.Classical.html">Classical</a></span>.<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="irred">irred</a></span> (<span class="id">a</span>: <span class="id"><a href="compiler.Sequences.html#SEQUENCES.A">A</a></span>) : <span class="kwd">Prop</span> := <span class="kwd">forall</span> <span class="id">b</span>, ~(<span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>).<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_or_finseq">infseq_or_finseq</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> \/ <span class="id">exists</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> /\ <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof121')">Proof.</div>
+<div class="proofscript" id="proof121">
+&nbsp;&nbsp;<span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="http://coq.inria.fr/library/Coq.Logic.Classical_Prop.html#classic">classic</a></span> (<span class="kwd">forall</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id">a</span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id">exists</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span>)).<br/>
+- <span class="id">left</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Sequences.html#infseq_if_all_seq_inf">infseq_if_all_seq_inf</a></span>; <span class="tactic">auto</span>.<br/>
+- <span class="id">right</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Logic.Classical_Pred_Type.html#not_all_ex_not">not_all_ex_not</a></span> <span class="kwd">in</span> <span class="id">H</span>. <span class="tactic">destruct</span> <span class="id">H</span> <span class="kwd">as</span> [<span class="id">b</span> <span class="id">P</span>].<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Logic.Classical_Prop.html#imply_to_and">imply_to_and</a></span> <span class="kwd">in</span> <span class="id">P</span>. <span class="tactic">destruct</span> <span class="id">P</span> <span class="kwd">as</span> [<span class="id">U</span> <span class="id">V</span>].<br/>
+&nbsp;&nbsp;<span class="id">exists</span> <span class="id">b</span>; <span class="tactic">split</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>; <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">elim</span> <span class="id">V</span>. <span class="id">exists</span> <span class="id">b0</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<h2> Determinism properties for functional transition relations. </h2>
+<br/>
+<div class="doc">A transition relation is functional if every state can transition to at most
+  one other state. </div>
+<br/>
+<span class="kwd">Hypothesis</span> <span class="id"><a name="SEQUENCES.R_functional">R_functional</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R">R</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#b">b</a></span> = <span class="id"><a href="compiler.Sequences.html#c">c</a></span>.<br/>
+<br/>
+<div class="doc">Uniqueness of finite transition sequences. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="star_star_inv">star_star_inv</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="kwd">forall</span> <span class="id">c</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> \/ <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#c">c</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof122')">Proof.</div>
+<div class="proofscript" id="proof122">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>.<br/>
+- <span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">subst</span>.<br/>
++ <span class="id">right</span>. <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id"><a href="compiler.Sequences.html#star">star</a></span>. <br/>
++ <span class="tactic">assert</span> (<span class="id">b</span> = <span class="id">b0</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R_functional">R_functional</a></span>; <span class="tactic">eauto</span>). <span class="tactic">subst</span> <span class="id">b0</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">IHstar</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="finseq_unique">finseq_unique</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span> <span class="id">b</span>',<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id">b</span>' -&gt; <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id">b</span>' -&gt;<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#b">b</a></span> = <span class="id">b</span>'.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof123')">Proof.</div>
+<div class="proofscript" id="proof123">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Sequences.html#star_star_inv">star_star_inv</a></span> <span class="id">H</span> <span class="id">H1</span>).<br/>
+- <span class="tactic">inversion</span> <span class="id">H3</span>; <span class="tactic">subst</span>. <span class="tactic">auto</span>. <span class="tactic">elim</span> (<span class="id">H0</span> <span class="id">_</span> <span class="id">H4</span>).<br/>
+- <span class="tactic">inversion</span> <span class="id">H3</span>; <span class="tactic">subst</span>. <span class="tactic">auto</span>. <span class="tactic">elim</span> (<span class="id">H2</span> <span class="id">_</span> <span class="id">H4</span>).<br/>
+Qed.</div>
+<br/>
+<div class="doc">A state cannot both diverge and terminate on an irreducible state. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_star_inv">infseq_star_inv</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>, <span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof124')">Proof.</div>
+<div class="proofscript" id="proof124">
+&nbsp;&nbsp;<span class="tactic">induction</span> 1; <span class="tactic">intros</span>.<br/>
+- <span class="tactic">auto</span>. <br/>
+- <span class="tactic">inversion</span> <span class="id">H1</span>; <span class="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">b</span> = <span class="id">b0</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#SEQUENCES.R_functional">R_functional</a></span>; <span class="tactic">eauto</span>). <span class="tactic">subst</span> <span class="id">b0</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">IHstar</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_finseq_excl">infseq_finseq_excl</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span> <span class="id">b</span>,<br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Sequences.html#star">star</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#irred">irred</a></span> <span class="id"><a href="compiler.Sequences.html#b">b</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Logic.html#False">False</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof125')">Proof.</div>
+<div class="proofscript" id="proof125">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id">b</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#infseq_star_inv">infseq_star_inv</a></span>; <span class="tactic">eauto</span>). <br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H2</span>. <span class="tactic">elim</span> (<span class="id">H0</span> <span class="id">b0</span>); <span class="tactic">auto</span>. <br/>
+Qed.</div>
+<br/>
+<div class="doc">If there exists an infinite sequence of transitions from <span class="bracket"><span class="id">a</span></span>,
+  all sequences of transitions arising from <span class="bracket"><span class="id">a</span></span> are infinite. </div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id"><a name="infseq_all_seq_inf">infseq_all_seq_inf</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">a</span>, <span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span> -&gt; <span class="id"><a href="compiler.Sequences.html#all_seq_inf">all_seq_inf</a></span> <span class="id"><a href="compiler.Sequences.html#a">a</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof126')">Proof.</div>
+<div class="proofscript" id="proof126">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Sequences.html#all_seq_inf">all_seq_inf</a></span>. <span class="tactic">intros</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Sequences.html#infseq">infseq</a></span> <span class="id">b</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Sequences.html#infseq_star_inv">infseq_star_inv</a></span>; <span class="tactic">eauto</span>). <br/>
+&nbsp;&nbsp;<span class="tactic">inversion</span> <span class="id">H1</span>. <span class="tactic">subst</span>. <span class="id">exists</span> <span class="id">b0</span>; <span class="tactic">auto</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">End</span> <span class="id"><a href="compiler.Sequences.html#SEQUENCES">SEQUENCES</a></span>.<br/>
+<br/>
+<br/>
+&nbsp;&nbsp;<br/>
+<br/>
+<br/>
+
+</div>
+<div class="footer"><hr/>Generated by <a href="https://github.com/xavierleroy/coq2html/">coq2html</div>
+</body>
+</html>

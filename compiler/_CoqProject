@@ -1,0 +1,2 @@
+-R ../SF/lf LF -R . compiler
+Sequences.v Semantics.v Compiler.v Deadcode.v Fixpoint.v Regalloc.v
