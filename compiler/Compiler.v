@@ -667,6 +667,15 @@ Proof.
   (* FILL IN HERE *)
 Admitted.
 
+(** *** Exercise (3 stars, optional) *)
+(** The manufacturer of our virtual machine offers a cheaper variant
+  that lacks the [Ibge] and [Ibgt] conditional branches.  The only
+  conditional branches available are [Ibeq] (branch if equal) and 
+  [Ibne] (branch if different).  Modify the definition of [compile_bexp] and
+  its correctness proof to target this cheaper virtual machine.
+  Hint: study Coq's definition of subtraction between natural numbers
+  (do [Print Nat.sub]). *)
+
 (** ** Correctness of generated code for commands: general case. *)
 
 (** We would like to strengthen the correctness result above so that it

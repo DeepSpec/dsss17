@@ -731,6 +731,15 @@ Qed.</div>
 &nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Compiler.html#smart_Ibranch_forward">smart_Ibranch_forward</a></span>; <span class="tactic">intros</span>.<br/>
 &nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span>Admitted.</div>
 <br/>
+<h3> Exercise (3 stars, optional) </h3>
+<div class="doc">The manufacturer of our virtual machine offers a cheaper variant
+  that lacks the <span class="bracket"><span class="id">Ibge</span></span> and <span class="bracket"><span class="id">Ibgt</span></span> conditional branches.  The only
+  conditional branches available are <span class="bracket"><span class="id">Ibeq</span></span> (branch if equal) and 
+  <span class="bracket"><span class="id">Ibne</span></span> (branch if different).  Modify the definition of <span class="bracket"><span class="id">compile_bexp</span></span> and
+  its correctness proof to target this cheaper virtual machine.
+  Hint: study Coq's definition of subtraction between natural numbers
+  (do <span class="bracket"><span class="kwd">Print</span> <span class="id">Nat.sub</span></span>). </div>
+<br/>
 <h2> Correctness of generated code for commands: general case. </h2>
 <br/>
 <div class="doc">We would like to strengthen the correctness result above so that it
