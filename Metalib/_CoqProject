@@ -1,0 +1,19 @@
+-R . Metalib 
+AssocList.v
+CoqEqDec.v
+CoqFSetDecide.v
+CoqFSetInterface.v
+CoqListFacts.v
+CoqMSetDecide.v
+CoqMSetInterface.v
+CoqUniquenessTac.v
+CoqUniquenessTacEx.v
+FSetExtra.v
+FSetWeakNotin.v
+LibDefaultSimp.v
+LibLNgen.v
+LibTactics.v
+MSetExtra.v
+MSetWeakNotin.v
+Metatheory.v
+MetatheoryAtom.v
