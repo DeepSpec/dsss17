@@ -2,3 +2,11 @@
 *.vo
 *.v.d
 *.glob
+Metalib/html/
+Stlc/html
+Metalib/CoqSrc.mk
+Stlc/extra/stlc-rules.tex
+*.aux
+*.fls
+*.fdb_latexmk
+*.log
