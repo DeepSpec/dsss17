@@ -10,9 +10,9 @@ Require Coq.omega.Omega.
 (** In the [Logic] chapter, we looked at several ways of writing
     propositions, including conjunction, disjunction, and quantifiers.
     In this chapter, we bring a new tool into the mix: _inductive
-    definitions_.
+    definitions_. *)
 
-    Recall that we have seen two ways of stating that a number [n] is
+(** Recall that we have seen two ways of stating that a number [n] is
     even: We can say (1) [evenb n = true], or (2) [exists k, n =
     double k].  Yet another possibility is to say that [n] is even if
     we can establish its evenness from the following rules:
@@ -102,10 +102,11 @@ Fail Inductive wrong_ev (n : nat) : Prop :=
 
 (** We can think of the definition of [ev] as defining a Coq property
     [ev : nat -> Prop], together with theorems [ev_0 : ev 0] and
-    [ev_SS : forall n, ev n -> ev (S (S n))].  Such "constructor
-    theorems" have the same status as proven theorems.  In particular,
-    we can use Coq's [apply] tactic with the rule names to prove [ev]
-    for particular numbers... *)
+    [ev_SS : forall n, ev n -> ev (S (S n))]. *)
+
+(** Such "constructor theorems" have the same status as proven
+    theorems.  In particular, we can use Coq's [apply] tactic with the
+    rule names to prove [ev] for particular numbers... *)
 
 Theorem ev_4 : ev 4.
 Proof. apply ev_SS. apply ev_SS. apply ev_0. Qed.
@@ -727,20 +728,13 @@ End R.
 (** Regular expressions are a simple language for describing strings,
     defined as follows: *)
 
-Inductive reg_exp (T : Type) : Type :=
-| EmptySet : reg_exp T
-| EmptyStr : reg_exp T
-| Char : T -> reg_exp T
-| App : reg_exp T -> reg_exp T -> reg_exp T
-| Union : reg_exp T -> reg_exp T -> reg_exp T
-| Star : reg_exp T -> reg_exp T.
-
-Arguments EmptySet {T}.
-Arguments EmptyStr {T}.
-Arguments Char {T} _.
-Arguments App {T} _ _.
-Arguments Union {T} _ _.
-Arguments Star {T} _.
+Inductive reg_exp {T : Type} : Type :=
+| EmptySet : reg_exp
+| EmptyStr : reg_exp
+| Char : T -> reg_exp
+| App : reg_exp -> reg_exp -> reg_exp
+| Union : reg_exp -> reg_exp -> reg_exp
+| Star : reg_exp -> reg_exp.
 
 (** Note that this definition is _polymorphic_: Regular
     expressions in [reg_exp T] describe strings with characters drawn
@@ -774,12 +768,12 @@ Arguments Star {T} _.
 
         As a special case, the sequence of strings may be empty, so
         [Star re] always matches the empty string [[]] no matter what
-        [re] is.
+        [re] is. *)
 
-    We can easily translate this informal definition into an
+(** We can easily translate this informal definition into an
     [Inductive] one as follows: *)
 
-Inductive exp_match {T} : list T -> reg_exp T -> Prop :=
+Inductive exp_match {T} : list T -> reg_exp -> Prop :=
 | MEmpty : exp_match [] EmptyStr
 | MChar : forall x, exp_match [x] (Char x)
 | MApp : forall s1 re1 s2 re2,
@@ -905,7 +899,7 @@ Qed.
     also matches [Star re]. *)
 
 Lemma MStar1 :
-  forall T s (re : reg_exp T) ,
+  forall T s (re : @reg_exp T) ,
     s =~ re ->
     s =~ Star re.
 Proof.
@@ -929,7 +923,7 @@ Lemma empty_is_empty : forall T (s : list T),
 Proof.
   (* FILL IN HERE *) Admitted.
 
-Lemma MUnion' : forall T (s : list T) (re1 re2 : reg_exp T),
+Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
@@ -940,7 +934,7 @@ Proof.
     strings [s1, ..., sn], then [fold app ss []] is the result of
     concatenating them all together. *)
 
-Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp T),
+Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
@@ -960,14 +954,16 @@ Proof.
 
 (** Since the definition of [exp_match] has a recursive
     structure, we might expect that proofs involving regular
-    expressions will often require induction on evidence.  For
-    example, suppose that we wanted to prove the following intuitive
-    result: If a regular expression [re] matches some string [s], then
-    all elements of [s] must occur somewhere in [re].  To state this
-    theorem, we first define a function [re_chars] that lists all
-    characters that occur in a regular expression: *)
+    expressions will often require induction on evidence. *)
 
-Fixpoint re_chars {T} (re : reg_exp T) : list T :=
+
+(** For example, suppose that we wanted to prove the following
+    intuitive result: If a regular expression [re] matches some string
+    [s], then all elements of [s] must occur somewhere in [re].  To
+    state this theorem, we first define a function [re_chars] that
+    lists all characters that occur in a regular expression: *)
+
+Fixpoint re_chars {T} (re : reg_exp) : list T :=
   match re with
   | EmptySet => []
   | EmptyStr => []
@@ -979,7 +975,7 @@ Fixpoint re_chars {T} (re : reg_exp T) : list T :=
 
 (** We can then phrase our theorem as follows: *)
 
-Theorem in_re_match : forall T (s : list T) (re : reg_exp T) (x : T),
+Theorem in_re_match : forall T (s : list T) (re : reg_exp) (x : T),
   s =~ re ->
   In x s ->
   In x (re_chars re).
@@ -1034,10 +1030,10 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
-Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool
+Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-Lemma re_not_empty_correct : forall T (re : reg_exp T),
+Lemma re_not_empty_correct : forall T (re : @reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -1052,7 +1048,7 @@ Proof.
     information (much as [destruct] can do), and leave you unable to
     complete the proof.  Here's an example: *)
 
-Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp T),
+Lemma star_app: forall T (s1 s2 : list T) (re : @reg_exp T),
   s1 =~ Star re ->
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
@@ -1101,9 +1097,9 @@ Abort.
     We can solve this problem by generalizing over the problematic
     expressions with an explicit equality: *)
 
-Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp T),
-  s1 =~ re' ->
+Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
   re' = Star re ->
+  s1 =~ re' ->
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
 
@@ -1116,13 +1112,15 @@ Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp T),
     automatically generate such equations for us, avoiding thus the
     need for changing the statements of our theorems. *)
 
+Abort.
+
+
 (** Invoking the tactic [remember e as x] causes Coq to (1) replace
     all occurrences of the expression [e] by the variable [x], and (2)
     add an equation [x = e] to the context.  Here's how we can use it
     to show the above result: *)
-Abort.
 
-Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp T),
+Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp),
   s1 =~ Star re ->
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
@@ -1171,7 +1169,7 @@ Qed.
     [MStar'] exercise above), shows that our definition of [exp_match]
     for [Star] is equivalent to the informal one given previously. *)
 
-Lemma MStar'' : forall T (s : list T) (re : reg_exp T),
+Lemma MStar'' : forall T (s : list T) (re : reg_exp),
   s =~ Star re ->
   exists ss : list (list T),
     s = fold app ss []
@@ -1195,7 +1193,7 @@ Proof.
 
 Module Pumping.
 
-Fixpoint pumping_constant {T} (re : reg_exp T) : nat :=
+Fixpoint pumping_constant {T} (re : @reg_exp T) : nat :=
   match re with
   | EmptySet => 0
   | EmptyStr => 1
@@ -1234,7 +1232,7 @@ Qed.
     a (constructive!) way to generate strings matching [re] that are
     as long as we like. *)
 
-Lemma pumping : forall T (re : reg_exp T) s,
+Lemma pumping : forall T (re : @reg_exp T) s,
   s =~ re ->
   pumping_constant re <= length s ->
   exists s1 s2 s3,
@@ -1270,8 +1268,8 @@ End Pumping.
 
 (** We've seen in the [Logic] chapter that we often need to
     relate boolean computations to statements in [Prop].  But
-    performing this conversion in the way we did it there can result
-    in tedious proof scripts.  Consider the proof of the following
+    performing this conversion as we did it there can result in
+    tedious proof scripts.  Consider the proof of the following
     theorem: *)
 
 Theorem filter_not_empty_In : forall n l,
@@ -1294,15 +1292,15 @@ Qed.
     the [beq_nat_true_iff] lemma to the equation generated by
     destructing [beq_nat n m], to convert the assumption [beq_nat n m
     = true] into the assumption [n = m]; then we had to [rewrite]
-    using this assumption to complete the case.
+    using this assumption to complete the case. *)
 
-    We can streamline this by defining an inductive proposition that
+(** We can streamline this by defining an inductive proposition that
     yields a better case-analysis principle for [beq_nat n m].
     Instead of generating an equation such as [beq_nat n m = true],
     which is generally not directly useful, this principle gives us
-    right away the assumption we really need: [n = m].
+    right away the assumption we really need: [n = m]. *)
 
-    We'll actually define something a bit more general, which can be
+(** We'll actually define something a bit more general, which can be
     used with arbitrary properties (and not just equalities): *)
 
 Module FirstTry.
@@ -1311,13 +1309,13 @@ Inductive reflect : Prop -> bool -> Prop :=
 | ReflectT : forall (P:Prop), P -> reflect P true
 | ReflectF : forall (P:Prop), ~ P -> reflect P false.
 
+End FirstTry.
+
 (** Before explaining this, let's rearrange it a little: Since the
     types of both [ReflectT] and [ReflectF] begin with
     [forall (P:Prop)], we can make the definition a bit more readable
     and easier to work with by making [P] a parameter of the whole
     Inductive declaration. *)
-
-End FirstTry.
 
 Inductive reflect (P : Prop) : bool -> Prop :=
 | ReflectT : P -> reflect P true
@@ -1325,13 +1323,13 @@ Inductive reflect (P : Prop) : bool -> Prop :=
 
 (** The [reflect] property takes two arguments: a proposition
     [P] and a boolean [b].  Intuitively, it states that the property
-    [P] is _reflected_ in (i.e., equivalent to) the boolean [b]: [P]
-    holds if and only if [b = true].  To see this, notice that, by
-    definition, the only way we can produce evidence that [reflect P
-    true] holds is by showing that [P] is true and using the
-    [ReflectT] constructor.  If we invert this statement, this means
-    that it should be possible to extract evidence for [P] from a
-    proof of [reflect P true].  Conversely, the only way to show
+    [P] is _reflected_ in (i.e., equivalent to) the boolean [b]: that
+    is, [P] holds if and only if [b = true].  To see this, notice
+    that, by definition, the only way we can produce evidence that
+    [reflect P true] holds is by showing that [P] is true and using
+    the [ReflectT] constructor.  If we invert this statement, this
+    means that it should be possible to extract evidence for [P] from
+    a proof of [reflect P true].  Conversely, the only way to show
     [reflect P false] is by combining evidence for [~ P] with the
     [ReflectF] constructor.
 
@@ -1358,10 +1356,10 @@ Proof.
     the same time generating appropriate hypothesis in the two
     branches ([P] in the first subgoal and [~ P] in the second). *)
 
+
 Lemma beq_natP : forall n m, reflect (n = m) (beq_nat n m).
 Proof.
-  intros n m.
-  apply iff_reflect. rewrite beq_nat_true_iff. reflexivity.
+  intros n m. apply iff_reflect. rewrite beq_nat_true_iff. reflexivity.
 Qed.
 
 (** The new proof of [filter_not_empty_In] now goes as follows.
@@ -1403,10 +1401,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** This technique gives us only a small gain in convenience for
-    the proofs we've seen here, but using [reflect] consistently often
+(** Here, this technique gives us a fairly small gain in convenience
+    for the proofs we've seen, but using [reflect] consistently often
     leads to noticeably shorter and clearer scripts as proofs get
-    larger.  We'll see many more examples in later chapters.
+    larger.  We'll see many more examples in later chapters and in
+    _Programming Language Foundations_.
 
     The use of the [reflect] property was popularized by _SSReflect_,
     a Coq library that has been used to formalize important results in
@@ -1631,4 +1630,4 @@ Proof.
 (** [] *)
 
 
-(** $Date: 2017-04-26 17:33:43 -0400 (Wed, 26 Apr 2017) $ *)
+(** $Date: 2017-07-14 19:07:15 -0400 (Fri, 14 Jul 2017) $ *)

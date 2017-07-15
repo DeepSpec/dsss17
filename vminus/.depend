@@ -1,0 +1,52 @@
+Atom.vo Atom.glob Atom.v.beautified: Atom.v
+Atom.vio: Atom.v
+Util.vo Util.glob Util.v.beautified: Util.v
+Util.vio: Util.v
+Classes.vo Classes.glob Classes.v.beautified: Classes.v
+Classes.vio: Classes.v
+Dom.vo Dom.glob Dom.v.beautified: Dom.v Util.vo
+Dom.vio: Dom.v Util.vio
+Env.vo Env.glob Env.v.beautified: Env.v
+Env.vio: Env.v
+Sequences.vo Sequences.glob Sequences.v.beautified: Sequences.v
+Sequences.vio: Sequences.v
+Imp.vo Imp.glob Imp.v.beautified: Imp.v Atom.vo Env.vo Sequences.vo
+Imp.vio: Imp.v Atom.vio Env.vio Sequences.vio
+Vminus.vo Vminus.glob Vminus.v.beautified: Vminus.v Classes.vo Atom.vo Util.vo
+Vminus.vio: Vminus.v Classes.vio Atom.vio Util.vio
+CFG.vo CFG.glob CFG.v.beautified: CFG.v Util.vo Classes.vo Vminus.vo
+CFG.vio: CFG.v Util.vio Classes.vio Vminus.vio
+ListCFG.vo ListCFG.glob ListCFG.v.beautified: ListCFG.v Classes.vo Util.vo Vminus.vo CFG.vo
+ListCFG.vio: ListCFG.v Classes.vio Util.vio Vminus.vio CFG.vio
+VminusOpSem.vo VminusOpSem.glob VminusOpSem.v.beautified: VminusOpSem.v Classes.vo Util.vo Env.vo Vminus.vo CFG.vo ListCFG.vo
+VminusOpSem.vio: VminusOpSem.v Classes.vio Util.vio Env.vio Vminus.vio CFG.vio ListCFG.vio
+Stmon.vo Stmon.glob Stmon.v.beautified: Stmon.v
+Stmon.vio: Stmon.v
+ImpProp.vo ImpProp.glob ImpProp.v.beautified: ImpProp.v Atom.vo Env.vo Sequences.vo Imp.vo
+ImpProp.vio: ImpProp.v Atom.vio Env.vio Sequences.vio Imp.vio
+LtacDebug.vo LtacDebug.glob LtacDebug.v.beautified: LtacDebug.v
+LtacDebug.vio: LtacDebug.v
+Compiler.vo Compiler.glob Compiler.v.beautified: Compiler.v Classes.vo Imp.vo Vminus.vo CFG.vo ListCFG.vo
+Compiler.vio: Compiler.v Classes.vio Imp.vio Vminus.vio CFG.vio ListCFG.vio
+CompilerProp.vo CompilerProp.glob CompilerProp.v.beautified: CompilerProp.v Util.vo Classes.vo Vminus.vo CFG.vo ListCFG.vo Sequences.vo VminusOpSem.vo Imp.vo Compiler.vo LtacDebug.vo
+CompilerProp.vio: CompilerProp.v Util.vio Classes.vio Vminus.vio CFG.vio ListCFG.vio Sequences.vio VminusOpSem.vio Imp.vio Compiler.vio LtacDebug.vio
+Iteration.vo Iteration.glob Iteration.v.beautified: Iteration.v
+Iteration.vio: Iteration.v
+Kildall.vo Kildall.glob Kildall.v.beautified: Kildall.v Iteration.vo Util.vo
+Kildall.vio: Kildall.v Iteration.vio Util.vio
+DomKildall.vo DomKildall.glob DomKildall.v.beautified: DomKildall.v Dom.vo Kildall.vo Util.vo
+DomKildall.vio: DomKildall.v Dom.vio Kildall.vio Util.vio
+VminusStatics.vo VminusStatics.glob VminusStatics.v.beautified: VminusStatics.v Classes.vo Util.vo Env.vo Vminus.vo CFG.vo Dom.vo VminusOpSem.vo
+VminusStatics.vio: VminusStatics.v Classes.vio Util.vio Env.vio Vminus.vio CFG.vio Dom.vio VminusOpSem.vio
+AtomGen.vo AtomGen.glob AtomGen.v.beautified: AtomGen.v Atom.vo
+AtomGen.vio: AtomGen.v Atom.vio
+ImpGen.vo ImpGen.glob ImpGen.v.beautified: ImpGen.v Atom.vo Imp.vo AtomGen.vo
+ImpGen.vio: ImpGen.v Atom.vio Imp.vio AtomGen.vio
+VminusGen.vo VminusGen.glob VminusGen.v.beautified: VminusGen.v Atom.vo CFG.vo ListCFG.vo Vminus.vo AtomGen.vo
+VminusGen.vio: VminusGen.v Atom.vio CFG.vio ListCFG.vio Vminus.vio AtomGen.vio
+OpSemGen.vo OpSemGen.glob OpSemGen.v.beautified: OpSemGen.v Atom.vo Vminus.vo CFG.vo ListCFG.vo AtomGen.vo VminusGen.vo VminusOpSem.vo
+OpSemGen.vio: OpSemGen.v Atom.vio Vminus.vio CFG.vio ListCFG.vio AtomGen.vio VminusGen.vio VminusOpSem.vio
+CompilerTest.vo CompilerTest.glob CompilerTest.v.beautified: CompilerTest.v Classes.vo Vminus.vo Atom.vo CFG.vo ListCFG.vo Imp.vo Compiler.vo VminusOpSem.vo AtomGen.vo ImpGen.vo OpSemGen.vo Stmon.vo
+CompilerTest.vio: CompilerTest.v Classes.vio Vminus.vio Atom.vio CFG.vio ListCFG.vio Imp.vio Compiler.vio VminusOpSem.vio AtomGen.vio ImpGen.vio OpSemGen.vio Stmon.vio
+CompilerTestAnswers.vo CompilerTestAnswers.glob CompilerTestAnswers.v.beautified: CompilerTestAnswers.v Stmon.vo Vminus.vo Atom.vo CFG.vo ListCFG.vo Imp.vo Compiler.vo ImpGen.vo VminusGen.vo OpSemGen.vo CompilerTest.vo VminusOpSem.vo
+CompilerTestAnswers.vio: CompilerTestAnswers.v Stmon.vio Vminus.vio Atom.vio CFG.vio ListCFG.vio Imp.vio Compiler.vio ImpGen.vio VminusGen.vio OpSemGen.vio CompilerTest.vio VminusOpSem.vio

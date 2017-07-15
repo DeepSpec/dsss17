@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -47,11 +48,10 @@
  In the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter, we looked at several ways of writing
     propositions, including conjunction, disjunction, and quantifiers.
     In this chapter, we bring a new tool into the mix: <i>inductive
-    definitions</i>.
-
+    definitions</i>. 
 <div class="paragraph"> </div>
 
-    Recall that we have seen two ways of stating that a number <span class="inlinecode"><span class="id" type="var">n</span></span> is
+ Recall that we have seen two ways of stating that a number <span class="inlinecode"><span class="id" type="var">n</span></span> is
     even: We can say (1) <span class="inlinecode"><span class="id" type="var">evenb</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>, or (2) <span class="inlinecode">∃</span> <span class="inlinecode"><span class="id" type="var">k</span>,</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span>
     <span class="inlinecode"><span class="id" type="var">double</span></span> <span class="inlinecode"><span class="id" type="var">k</span></span>.  Yet another possibility is to say that <span class="inlinecode"><span class="id" type="var">n</span></span> is even if
     we can establish its evenness from the following rules:
@@ -196,10 +196,12 @@ This definition is different in one crucial respect from
 
  We can think of the definition of <span class="inlinecode"><span class="id" type="var">ev</span></span> as defining a Coq property
     <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>, together with theorems <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> and
-    <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">:</span> <span class="inlinecode">∀</span> <span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span>.  Such "constructor
-    theorems" have the same status as proven theorems.  In particular,
-    we can use Coq's <span class="inlinecode"><span class="id" type="tactic">apply</span></span> tactic with the rule names to prove <span class="inlinecode"><span class="id" type="var">ev</span></span>
-    for particular numbers... 
+    <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">:</span> <span class="inlinecode">∀</span> <span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span>. 
+<div class="paragraph"> </div>
+
+ Such "constructor theorems" have the same status as proven
+    theorems.  In particular, we can use Coq's <span class="inlinecode"><span class="id" type="tactic">apply</span></span> tactic with the
+    rule names to prove <span class="inlinecode"><span class="id" type="var">ev</span></span> for particular numbers... 
 </div>
 <div class="code code-tight">
 
@@ -1181,21 +1183,13 @@ Hint: This theorem can easily be proved without using <span class="inlinecode"><
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">reg_exp</span> (<span class="id" type="var">T</span> : <span class="id" type="keyword">Type</span>) : <span class="id" type="keyword">Type</span> :=<br/>
-| <span class="id" type="var">EmptySet</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span><br/>
-| <span class="id" type="var">EmptyStr</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span><br/>
-| <span class="id" type="var">Char</span> : <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span><br/>
-| <span class="id" type="var">App</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span><br/>
-| <span class="id" type="var">Union</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span><br/>
-| <span class="id" type="var">Star</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>.<br/>
-
-<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">EmptySet</span> {<span class="id" type="var">T</span>}.<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">EmptyStr</span> {<span class="id" type="var">T</span>}.<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">Char</span> {<span class="id" type="var">T</span>} <span class="id" type="var">_</span>.<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">App</span> {<span class="id" type="var">T</span>} <span class="id" type="var">_</span> <span class="id" type="var">_</span>.<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">Union</span> {<span class="id" type="var">T</span>} <span class="id" type="var">_</span> <span class="id" type="var">_</span>.<br/>
-<span class="id" type="var">Arguments</span> <span class="id" type="var">Star</span> {<span class="id" type="var">T</span>} <span class="id" type="var">_</span>.<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">reg_exp</span> {<span class="id" type="var">T</span> : <span class="id" type="keyword">Type</span>} : <span class="id" type="keyword">Type</span> :=<br/>
+| <span class="id" type="var">EmptySet</span> : <span class="id" type="var">reg_exp</span><br/>
+| <span class="id" type="var">EmptyStr</span> : <span class="id" type="var">reg_exp</span><br/>
+| <span class="id" type="var">Char</span> : <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span><br/>
+| <span class="id" type="var">App</span> : <span class="id" type="var">reg_exp</span> → <span class="id" type="var">reg_exp</span> → <span class="id" type="var">reg_exp</span><br/>
+| <span class="id" type="var">Union</span> : <span class="id" type="var">reg_exp</span> → <span class="id" type="var">reg_exp</span> → <span class="id" type="var">reg_exp</span><br/>
+| <span class="id" type="var">Star</span> : <span class="id" type="var">reg_exp</span> → <span class="id" type="var">reg_exp</span>.<br/>
 </div>
 
 <div class="doc">
@@ -1259,20 +1253,19 @@ Note that this definition is <i>polymorphic</i>: Regular
 
         As a special case, the sequence of strings may be empty, so
         <span class="inlinecode"><span class="id" type="var">Star</span></span> <span class="inlinecode"><span class="id" type="var">re</span></span> always matches the empty string <span class="inlinecode">[]</span> no matter what
-        <span class="inlinecode"><span class="id" type="var">re</span></span> is.
-
+        <span class="inlinecode"><span class="id" type="var">re</span></span> is. 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    We can easily translate this informal definition into an
+ We can easily translate this informal definition into an
     <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> one as follows: 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">exp_match</span> {<span class="id" type="var">T</span>} : <span class="id" type="var">list</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">exp_match</span> {<span class="id" type="var">T</span>} : <span class="id" type="var">list</span> <span class="id" type="var">T</span> → <span class="id" type="var">reg_exp</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 | <span class="id" type="var">MEmpty</span> : <span class="id" type="var">exp_match</span> [] <span class="id" type="var">EmptyStr</span><br/>
 | <span class="id" type="var">MChar</span> : ∀ <span class="id" type="var">x</span>, <span class="id" type="var">exp_match</span> [<span class="id" type="var">x</span>] (<span class="id" type="var">Char</span> <span class="id" type="var">x</span>)<br/>
 | <span class="id" type="var">MApp</span> : ∀ <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">re<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">re<sub>2</sub></span>,<br/>
@@ -1497,7 +1490,7 @@ We can also prove general facts about <span class="inlinecode"><span class="id" 
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">MStar1</span> :<br/>
-&nbsp;&nbsp;∀ <span class="id" type="var">T</span> <span class="id" type="var">s</span> (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) ,<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">T</span> <span class="id" type="var">s</span> (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) ,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -1528,7 +1521,7 @@ We can also prove general facts about <span class="inlinecode"><span class="id" 
 &nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MUnion'</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re<sub>1</sub></span> <span class="id" type="var">re<sub>2</sub></span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MUnion'</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re<sub>1</sub></span> <span class="id" type="var">re<sub>2</sub></span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">re<sub>1</sub></span> ∨ <span class="id" type="var">s</span> =~ <span class="id" type="var">re<sub>2</sub></span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">Union</span> <span class="id" type="var">re<sub>1</sub></span> <span class="id" type="var">re<sub>2</sub></span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -1544,7 +1537,7 @@ The next lemma is stated in terms of the <span class="inlinecode"><span class="i
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MStar'</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">ss</span> : <span class="id" type="var">list</span> (<span class="id" type="var">list</span> <span class="id" type="var">T</span>)) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MStar'</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">ss</span> : <span class="id" type="var">list</span> (<span class="id" type="var">list</span> <span class="id" type="var">T</span>)) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span>),<br/>
 &nbsp;&nbsp;(∀ <span class="id" type="var">s</span>, <span class="id" type="var">In</span> <span class="id" type="var">s</span> <span class="id" type="var">ss</span> → <span class="id" type="var">s</span> =~ <span class="id" type="var">re</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">fold</span> <span class="id" type="var">app</span> <span class="id" type="var">ss</span> [] =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -1574,17 +1567,19 @@ The next lemma is stated in terms of the <span class="inlinecode"><span class="i
 
  Since the definition of <span class="inlinecode"><span class="id" type="var">exp_match</span></span> has a recursive
     structure, we might expect that proofs involving regular
-    expressions will often require induction on evidence.  For
-    example, suppose that we wanted to prove the following intuitive
-    result: If a regular expression <span class="inlinecode"><span class="id" type="var">re</span></span> matches some string <span class="inlinecode"><span class="id" type="var">s</span></span>, then
-    all elements of <span class="inlinecode"><span class="id" type="var">s</span></span> must occur somewhere in <span class="inlinecode"><span class="id" type="var">re</span></span>.  To state this
-    theorem, we first define a function <span class="inlinecode"><span class="id" type="var">re_chars</span></span> that lists all
-    characters that occur in a regular expression: 
+    expressions will often require induction on evidence. 
+<div class="paragraph"> </div>
+
+ For example, suppose that we wanted to prove the following
+    intuitive result: If a regular expression <span class="inlinecode"><span class="id" type="var">re</span></span> matches some string
+    <span class="inlinecode"><span class="id" type="var">s</span></span>, then all elements of <span class="inlinecode"><span class="id" type="var">s</span></span> must occur somewhere in <span class="inlinecode"><span class="id" type="var">re</span></span>.  To
+    state this theorem, we first define a function <span class="inlinecode"><span class="id" type="var">re_chars</span></span> that
+    lists all characters that occur in a regular expression: 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">re_chars</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) : <span class="id" type="var">list</span> <span class="id" type="var">T</span> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">re_chars</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">T</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">re</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">EmptySet</span> ⇒ []<br/>
 &nbsp;&nbsp;| <span class="id" type="var">EmptyStr</span> ⇒ []<br/>
@@ -1601,7 +1596,7 @@ We can then phrase our theorem as follows:
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">in_re_match</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">in_re_match</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">T</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">In</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">In</span> <span class="id" type="var">x</span> (<span class="id" type="var">re_chars</span> <span class="id" type="var">re</span>).<br/>
@@ -1666,11 +1661,11 @@ Something interesting happens in the <span class="inlinecode"><span class="id" t
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">re_not_empty</span> {<span class="id" type="var">T</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) : <span class="id" type="var">bool</span><br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">re_not_empty</span> {<span class="id" type="var">T</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) : <span class="id" type="var">bool</span><br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;REPLACE&nbsp;THIS&nbsp;LINE&nbsp;WITH&nbsp;":=&nbsp;_your_definition_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">re_not_empty_correct</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">re_not_empty_correct</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
 &nbsp;&nbsp;(∃ <span class="id" type="var">s</span>, <span class="id" type="var">s</span> =~ <span class="id" type="var">re</span>) ↔ <span class="id" type="var">re_not_empty</span> <span class="id" type="var">re</span> = <span class="id" type="var">true</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
@@ -1693,7 +1688,7 @@ Something interesting happens in the <span class="inlinecode"><span class="id" t
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> ++ <span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span>.<br/>
@@ -1771,9 +1766,9 @@ The problem is that <span class="inlinecode"><span class="id" type="tactic">indu
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> <span class="id" type="var">re'</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
-&nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> =~ <span class="id" type="var">re'</span> →<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> <span class="id" type="var">re'</span> : <span class="id" type="var">reg_exp</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">re'</span> = <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> =~ <span class="id" type="var">re'</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> ++ <span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span>.<br/>
 </div>
@@ -1789,18 +1784,23 @@ We can now proceed by performing induction over evidence directly,
     This idiom is so common that Coq provides a tactic to
     automatically generate such equations for us, avoiding thus the
     need for changing the statements of our theorems. 
-<div class="paragraph"> </div>
+</div>
+<div class="code code-tight">
 
- Invoking the tactic <span class="inlinecode"><span class="id" type="var">remember</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> causes Coq to (1) replace
+<br/>
+<span class="id" type="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+Invoking the tactic <span class="inlinecode"><span class="id" type="var">remember</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> causes Coq to (1) replace
     all occurrences of the expression <span class="inlinecode"><span class="id" type="var">e</span></span> by the variable <span class="inlinecode"><span class="id" type="var">x</span></span>, and (2)
     add an equation <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">e</span></span> to the context.  Here's how we can use it
     to show the above result: 
 </div>
 <div class="code code-tight">
-<span class="id" type="keyword">Abort</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_app</span>: ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">s<sub>1</sub></span> ++ <span class="id" type="var">s<sub>2</sub></span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span>.<br/>
@@ -1872,7 +1872,7 @@ The interesting cases are those that correspond to <span class="inlinecode"><spa
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MStar''</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>),<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">MStar''</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">s</span> : <span class="id" type="var">list</span> <span class="id" type="var">T</span>) (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">Star</span> <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">ss</span> : <span class="id" type="var">list</span> (<span class="id" type="var">list</span> <span class="id" type="var">T</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">s</span> = <span class="id" type="var">fold</span> <span class="id" type="var">app</span> <span class="id" type="var">ss</span> []<br/>
@@ -1906,7 +1906,7 @@ The interesting cases are those that correspond to <span class="inlinecode"><spa
 <span class="id" type="keyword">Module</span> <span class="id" type="var">Pumping</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">pumping_constant</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) : <span class="id" type="var">nat</span> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">pumping_constant</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) : <span class="id" type="var">nat</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">re</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">EmptySet</span> ⇒ 0<br/>
 &nbsp;&nbsp;| <span class="id" type="var">EmptyStr</span> ⇒ 1<br/>
@@ -1956,7 +1956,7 @@ Now, the pumping lemma itself says that, if <span class="inlinecode"><span class
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">pumping</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">re</span> : <span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) <span class="id" type="var">s</span>,<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">pumping</span> : ∀ <span class="id" type="var">T</span> (<span class="id" type="var">re</span> : @<span class="id" type="var">reg_exp</span> <span class="id" type="var">T</span>) <span class="id" type="var">s</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">s</span> =~ <span class="id" type="var">re</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">pumping_constant</span> <span class="id" type="var">re</span> ≤ <span class="id" type="var">length</span> <span class="id" type="var">s</span> →<br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">s<sub>3</sub></span>,<br/>
@@ -2003,8 +2003,8 @@ To streamline the proof (which you are to fill in), the <span class="inlinecode"
 
  We've seen in the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter that we often need to
     relate boolean computations to statements in <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.  But
-    performing this conversion in the way we did it there can result
-    in tedious proof scripts.  Consider the proof of the following
+    performing this conversion as we did it there can result in
+    tedious proof scripts.  Consider the proof of the following
     theorem: 
 </div>
 <div class="code code-tight">
@@ -2032,19 +2032,17 @@ In the first branch after <span class="inlinecode"><span class="id" type="tactic
     the <span class="inlinecode"><span class="id" type="var">beq_nat_true_iff</span></span> lemma to the equation generated by
     destructing <span class="inlinecode"><span class="id" type="var">beq_nat</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span>, to convert the assumption <span class="inlinecode"><span class="id" type="var">beq_nat</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span>
     <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span> into the assumption <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span>; then we had to <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span>
-    using this assumption to complete the case.
-
+    using this assumption to complete the case. 
 <div class="paragraph"> </div>
 
-    We can streamline this by defining an inductive proposition that
+ We can streamline this by defining an inductive proposition that
     yields a better case-analysis principle for <span class="inlinecode"><span class="id" type="var">beq_nat</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span>.
     Instead of generating an equation such as <span class="inlinecode"><span class="id" type="var">beq_nat</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>,
     which is generally not directly useful, this principle gives us
-    right away the assumption we really need: <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span>.
-
+    right away the assumption we really need: <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span>. 
 <div class="paragraph"> </div>
 
-    We'll actually define something a bit more general, which can be
+ We'll actually define something a bit more general, which can be
     used with arbitrary properties (and not just equalities): 
 </div>
 <div class="code code-tight">
@@ -2056,6 +2054,9 @@ In the first branch after <span class="inlinecode"><span class="id" type="tactic
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">reflect</span> : <span class="id" type="keyword">Prop</span> → <span class="id" type="var">bool</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 | <span class="id" type="var">ReflectT</span> : ∀ (<span class="id" type="var">P</span>:<span class="id" type="keyword">Prop</span>), <span class="id" type="var">P</span> → <span class="id" type="var">reflect</span> <span class="id" type="var">P</span> <span class="id" type="var">true</span><br/>
 | <span class="id" type="var">ReflectF</span> : ∀ (<span class="id" type="var">P</span>:<span class="id" type="keyword">Prop</span>), ¬ <span class="id" type="var">P</span> → <span class="id" type="var">reflect</span> <span class="id" type="var">P</span> <span class="id" type="var">false</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">FirstTry</span>.<br/>
 </div>
 
 <div class="doc">
@@ -2068,9 +2069,6 @@ Before explaining this, let's rearrange it a little: Since the
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">FirstTry</span>.<br/>
-
-<br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">reflect</span> (<span class="id" type="var">P</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="var">bool</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 | <span class="id" type="var">ReflectT</span> : <span class="id" type="var">P</span> → <span class="id" type="var">reflect</span> <span class="id" type="var">P</span> <span class="id" type="var">true</span><br/>
 | <span class="id" type="var">ReflectF</span> : ¬ <span class="id" type="var">P</span> → <span class="id" type="var">reflect</span> <span class="id" type="var">P</span> <span class="id" type="var">false</span>.<br/>
@@ -2079,13 +2077,13 @@ Before explaining this, let's rearrange it a little: Since the
 <div class="doc">
 The <span class="inlinecode"><span class="id" type="var">reflect</span></span> property takes two arguments: a proposition
     <span class="inlinecode"><span class="id" type="var">P</span></span> and a boolean <span class="inlinecode"><span class="id" type="var">b</span></span>.  Intuitively, it states that the property
-    <span class="inlinecode"><span class="id" type="var">P</span></span> is <i>reflected</i> in (i.e., equivalent to) the boolean <span class="inlinecode"><span class="id" type="var">b</span></span>: <span class="inlinecode"><span class="id" type="var">P</span></span>
-    holds if and only if <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>.  To see this, notice that, by
-    definition, the only way we can produce evidence that <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>
-    <span class="inlinecode"><span class="id" type="var">true</span></span> holds is by showing that <span class="inlinecode"><span class="id" type="var">P</span></span> is true and using the
-    <span class="inlinecode"><span class="id" type="var">ReflectT</span></span> constructor.  If we invert this statement, this means
-    that it should be possible to extract evidence for <span class="inlinecode"><span class="id" type="var">P</span></span> from a
-    proof of <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>.  Conversely, the only way to show
+    <span class="inlinecode"><span class="id" type="var">P</span></span> is <i>reflected</i> in (i.e., equivalent to) the boolean <span class="inlinecode"><span class="id" type="var">b</span></span>: that
+    is, <span class="inlinecode"><span class="id" type="var">P</span></span> holds if and only if <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>.  To see this, notice
+    that, by definition, the only way we can produce evidence that
+    <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> holds is by showing that <span class="inlinecode"><span class="id" type="var">P</span></span> is true and using
+    the <span class="inlinecode"><span class="id" type="var">ReflectT</span></span> constructor.  If we invert this statement, this
+    means that it should be possible to extract evidence for <span class="inlinecode"><span class="id" type="var">P</span></span> from
+    a proof of <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>.  Conversely, the only way to show
     <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">false</span></span> is by combining evidence for <span class="inlinecode">¬</span> <span class="inlinecode"><span class="id" type="var">P</span></span> with the
     <span class="inlinecode"><span class="id" type="var">ReflectF</span></span> constructor.
 
@@ -2131,8 +2129,7 @@ The <span class="inlinecode"><span class="id" type="var">reflect</span></span> p
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_natP</span> : ∀ <span class="id" type="var">n</span> <span class="id" type="var">m</span>, <span class="id" type="var">reflect</span> (<span class="id" type="var">n</span> = <span class="id" type="var">m</span>) (<span class="id" type="var">beq_nat</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">iff_reflect</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">beq_nat_true_iff</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">iff_reflect</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">beq_nat_true_iff</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -2190,10 +2187,11 @@ The new proof of <span class="inlinecode"><span class="id" type="var">filter_not
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- This technique gives us only a small gain in convenience for
-    the proofs we've seen here, but using <span class="inlinecode"><span class="id" type="var">reflect</span></span> consistently often
+ Here, this technique gives us a fairly small gain in convenience
+    for the proofs we've seen, but using <span class="inlinecode"><span class="id" type="var">reflect</span></span> consistently often
     leads to noticeably shorter and clearer scripts as proofs get
-    larger.  We'll see many more examples in later chapters.
+    larger.  We'll see many more examples in later chapters and in
+    <i>Programming Language Foundations</i>.
 
 <div class="paragraph"> </div>
 

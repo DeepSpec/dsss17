@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Stmon</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Stmon</h1>
+
+<div class="code code-tight">
+<span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vellvm&nbsp;-&nbsp;the&nbsp;Verified&nbsp;LLVM&nbsp;project&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017&nbsp;Steve&nbsp;Zdancewic&nbsp;&lt;stevez@cis.upenn.edu&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;This&nbsp;file&nbsp;is&nbsp;distributed&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+
+<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Maximal</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Insertion</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Section</span> <span class="id" type="var">STMON</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Variable</span> (<span class="id" type="var">S</span> : <span class="id" type="keyword">Type</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stmon</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) : <span class="id" type="keyword">Type</span> := <span class="id" type="var">S</span> → (<span class="id" type="var">S</span> * <span class="id" type="var">A</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">ret</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">a</span>:<span class="id" type="var">A</span>) : <span class="id" type="var">stmon</span> <span class="id" type="var">A</span> := <span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ (<span class="id" type="var">s</span>, <span class="id" type="var">a</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">bind</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span>:<span class="id" type="var">stmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">f</span>:<span class="id" type="var">A</span> → <span class="id" type="var">stmon</span> <span class="id" type="var">B</span>) : (<span class="id" type="var">stmon</span> <span class="id" type="var">B</span>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="keyword">let</span> (<span class="id" type="var">s'</span>, <span class="id" type="var">a</span>) := <span class="id" type="var">m</span> <span class="id" type="var">s</span> <span class="id" type="keyword">in</span> <span class="id" type="var">f</span> <span class="id" type="var">a</span> <span class="id" type="var">s'</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">bind2</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span> <span class="id" type="var">C</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">f</span>:<span class="id" type="var">stmon</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>)) (<span class="id" type="var">g</span>:<span class="id" type="var">A</span> → <span class="id" type="var">B</span> → <span class="id" type="var">stmon</span> <span class="id" type="var">C</span>) : <span class="id" type="var">stmon</span> <span class="id" type="var">C</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="keyword">let</span> '(<span class="id" type="var">s'</span>, (<span class="id" type="var">a</span>, <span class="id" type="var">b</span>)) := <span class="id" type="var">f</span> <span class="id" type="var">s</span> <span class="id" type="keyword">in</span> <span class="id" type="var">g</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">s'</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stget</span> : <span class="id" type="var">stmon</span> <span class="id" type="var">S</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ (<span class="id" type="var">s</span>, <span class="id" type="var">s</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stput</span> (<span class="id" type="var">s</span>:<span class="id" type="var">S</span>) : <span class="id" type="var">stmon</span> <span class="id" type="var">unit</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ (<span class="id" type="var">s</span>, <span class="id" type="var">tt</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stmod</span> (<span class="id" type="var">f</span>:<span class="id" type="var">S</span> → <span class="id" type="var">S</span>) : <span class="id" type="var">stmon</span> <span class="id" type="var">unit</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ (<span class="id" type="var">f</span> <span class="id" type="var">s</span>, <span class="id" type="var">tt</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Definition&nbsp;strun&nbsp;(A:Type)&nbsp;(ma:stmon&nbsp;A)&nbsp;(s:S)&nbsp;:&nbsp;(S&nbsp;*&nbsp;A)&nbsp;:=&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;&nbsp;ma&nbsp;s.&nbsp;*)</span><br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">steval</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">ma</span>:<span class="id" type="var">stmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">S</span>) : <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">snd</span> (<span class="id" type="var">ma</span> <span class="id" type="var">s</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stexec</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">ma</span>:<span class="id" type="var">stmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">S</span>) : <span class="id" type="var">S</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fst</span> (<span class="id" type="var">ma</span> <span class="id" type="var">s</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Global&nbsp;Arguments&nbsp;steval&nbsp;_&nbsp;_&nbsp;_&nbsp;/.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Global&nbsp;Arguments&nbsp;stexec&nbsp;_&nbsp;_&nbsp;_&nbsp;/.&nbsp;*)</span><br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">stlift</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">R</span>:<span class="id" type="var">S</span> → <span class="id" type="var">S</span> → <span class="id" type="keyword">Prop</span>) : <span class="id" type="var">stmon</span> <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">ma</span> ⇒ ∀ <span class="id" type="var">s</span>, <span class="id" type="var">R</span> <span class="id" type="var">s</span> (<span class="id" type="var">fst</span> (<span class="id" type="var">ma</span> <span class="id" type="var">s</span>)).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FunctionalExtensionality</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">stmon_left_id</span> : ∀ <span class="id" type="var">A</span> <span class="id" type="var">B</span> (<span class="id" type="var">a</span>:<span class="id" type="var">A</span>) (<span class="id" type="var">f</span>: <span class="id" type="var">A</span> → <span class="id" type="var">stmon</span> <span class="id" type="var">B</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind</span> (<span class="id" type="var">ret</span> <span class="id" type="var">a</span>) <span class="id" type="var">f</span> = <span class="id" type="var">f</span> <span class="id" type="var">a</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">bind</span>, <span class="id" type="var">ret</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">change</span> (<span class="id" type="var">f</span> <span class="id" type="var">a</span>) <span class="id" type="keyword">with</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="var">f</span> <span class="id" type="var">a</span> <span class="id" type="var">s</span>) <span class="id" type="tactic">at</span> 2; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">stmon_right_id</span> : ∀ <span class="id" type="var">A</span> (<span class="id" type="var">a</span>:<span class="id" type="var">A</span>) (<span class="id" type="var">ma</span>:<span class="id" type="var">stmon</span> <span class="id" type="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind</span> <span class="id" type="var">ma</span> <span class="id" type="var">ret</span> = <span class="id" type="var">ma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">extensionality</span> <span class="id" type="var">s</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">bind</span>, <span class="id" type="var">ret</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ma</span> <span class="id" type="var">s</span>); <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">stmon_assoc</span> : <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">A</span> <span class="id" type="var">B</span> <span class="id" type="var">C</span> (<span class="id" type="var">m</span>:<span class="id" type="var">stmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">f</span>:<span class="id" type="var">A</span> → <span class="id" type="var">stmon</span> <span class="id" type="var">B</span>) (<span class="id" type="var">g</span>:<span class="id" type="var">B</span> → <span class="id" type="var">stmon</span> <span class="id" type="var">C</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind</span> <span class="id" type="var">m</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">a</span> ⇒ <span class="id" type="var">bind</span> (<span class="id" type="var">f</span> <span class="id" type="var">a</span>) <span class="id" type="var">g</span>) = <span class="id" type="var">bind</span> (<span class="id" type="var">bind</span> <span class="id" type="var">m</span> <span class="id" type="var">f</span>) <span class="id" type="var">g</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">extensionality</span> <span class="id" type="var">s</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">bind</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">m</span> <span class="id" type="var">s</span>); <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">STMON</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Infix</span> "&gt;&gt;=" := <span class="id" type="var">bind</span> (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">stmon_scope</span>.<br/>
+<span class="id" type="keyword">Infix</span> "&gt;&gt;=2" := <span class="id" type="var">bind2</span> (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">stmon_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Notation</span> "m '&gt;&gt;&gt;' k" := (<span class="id" type="var">bind</span> <span class="id" type="var">m</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span>:<span class="id" type="var">unit</span> ⇒ <span class="id" type="var">k</span>))<br/>
+&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">stmon_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Notation</span> "'do' X &lt;- A ; B" := (<span class="id" type="var">bind</span> <span class="id" type="var">A</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> ⇒ <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <span class="id" type="var">X</span> <span class="id" type="var">ident</span>, <span class="id" type="var">A</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">B</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200) : <span class="id" type="var">stmon_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Notation</span> "'do' ( X , Y ) &lt;- A ; B" := (<span class="id" type="var">bind2</span> <span class="id" type="var">A</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> <span class="id" type="var">Y</span> ⇒ <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <span class="id" type="var">X</span> <span class="id" type="var">ident</span>, <span class="id" type="var">Y</span> <span class="id" type="var">ident</span>, <span class="id" type="var">A</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">B</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <br/>
+&nbsp;&nbsp;<span class="id" type="var">format</span> "'do'  ( X ,  Y )  &lt;-  A  ;  B") : <span class="id" type="var">stmon_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Delimit</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">stmon_scope</span> <span class="id" type="keyword">with</span> <span class="id" type="var">stmon</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

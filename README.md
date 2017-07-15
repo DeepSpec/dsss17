@@ -1,1 +1,1 @@
-# dsss17
+# dsss17 lecture materials

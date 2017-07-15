@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>DomKildall</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">DomKildall</h1>
+
+<div class="code code-tight">
+<span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vellvm&nbsp;-&nbsp;the&nbsp;Verified&nbsp;LLVM&nbsp;project&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017&nbsp;Steve&nbsp;Zdancewic&nbsp;&lt;stevez@cis.upenn.edu&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;This&nbsp;file&nbsp;is&nbsp;distributed&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+&nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Implementation via fixpoint iteration. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Program.Equality</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Equalities</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Dom</span> <span class="id" type="var">Kildall</span> <span class="id" type="var">Util</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FSets</span> <span class="id" type="var">FMaps</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">AlgdomKildall</span> (<span class="id" type="var">PC</span>:<span class="id" type="var">UsualDecidableType</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">Import</span> <span class="id" type="var">G</span>:<span class="id" type="var">GRAPH</span> <span class="id" type="keyword">with</span> <span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="var">PC.t</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Algdom</span> <span class="id" type="var">G</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">GS</span> := <span class="id" type="var">Spec</span> <span class="id" type="var">G</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">N</span> := <span class="id" type="var">PC</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">E</span> := <span class="id" type="var">PC</span>. <span class="id" type="keyword">Module</span> <span class="id" type="var">NS</span> := <span class="id" type="var">FSetWeakList.Make</span> <span class="id" type="var">N</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">L</span> := <span class="id" type="var">BoundedSet</span> <span class="id" type="var">NS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">K</span> := ! <span class="id" type="var">ForwardSolver</span> <span class="id" type="var">N</span> <span class="id" type="var">L</span>. <span class="id" type="keyword">Module</span> <span class="id" type="var">NM</span> := <span class="id" type="var">K.NM</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Module&nbsp;Import&nbsp;FMP&nbsp;:=&nbsp;FMapProps&nbsp;N&nbsp;NM.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">FMF</span> := <span class="id" type="var">FMapFacts.WFacts_fun</span> <span class="id" type="var">N</span> <span class="id" type="var">NM</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">FSF</span> := <span class="id" type="var">FSetFacts.WFacts_fun</span> <span class="id" type="var">N</span> <span class="id" type="var">NS</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">succs</span> : <span class="id" type="var">G.t</span> → <span class="id" type="var">N.t</span> → <span class="id" type="var">list</span> <span class="id" type="var">N.t</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">succs_compat</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span>, <span class="id" type="var">Succ</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span> ↔ <span class="id" type="var">In</span> <span class="id" type="var">s</span> (<span class="id" type="var">succs</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">succs_compat2</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span>, <span class="id" type="var">In</span> <span class="id" type="var">s</span> (<span class="id" type="var">succs</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span>) → <span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">enum_vs</span> : <span class="id" type="var">G.t</span> → <span class="id" type="var">list</span> <span class="id" type="var">N.t</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">enum_vs_compat</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">n</span>, <span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span> ↔ <span class="id" type="var">In</span> <span class="id" type="var">n</span> (<span class="id" type="var">enum_vs</span> <span class="id" type="var">g</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;this&nbsp;follows&nbsp;directly&nbsp;from&nbsp;wf_cfg&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">entry_not_sdom</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">v</span>, ¬ <span class="id" type="var">SDom</span> <span class="id" type="var">g</span> <span class="id" type="var">v</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">trans</span> (<span class="id" type="var">n</span>: <span class="id" type="var">N.t</span>) (<span class="id" type="var">l</span>:<span class="id" type="var">L.t</span>) : <span class="id" type="var">L.t</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">L.union</span> (<span class="id" type="var">L.singleton</span> <span class="id" type="var">n</span>) <span class="id" type="var">l</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">inits</span> (<span class="id" type="var">g</span>:<span class="id" type="var">G.t</span>) : <span class="id" type="var">NM.t</span> <span class="id" type="var">L.t</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">NM.add</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>) <span class="id" type="var">L.top</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">fold_right</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> <span class="id" type="var">g</span> ⇒ <span class="id" type="var">NM.add</span> <span class="id" type="var">n</span> <span class="id" type="var">L.bot</span> <span class="id" type="var">g</span>) (<span class="id" type="var">NM.empty</span> <span class="id" type="var">L.t</span>) (<span class="id" type="var">enum_vs</span> <span class="id" type="var">g</span>) ).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">calc_sdom</span> (<span class="id" type="var">g</span>:<span class="id" type="var">G.t</span>) : <span class="id" type="var">option</span> (<span class="id" type="var">N.t</span> → <span class="id" type="var">L.t</span>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">nmo</span> := <span class="id" type="var">K.fixpoint</span> (<span class="id" type="var">succs</span> <span class="id" type="var">g</span>) <span class="id" type="var">trans</span> (<span class="id" type="var">inits</span> <span class="id" type="var">g</span>) <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">nmo</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">nm</span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">nm</span>!!<span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">entry_sound</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sdom</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>) == <span class="id" type="var">L.top</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">calc_sdom</span>. <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">K.fixpoint</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqk</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">injection</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">sdom</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">set</span> (<span class="id" type="var">r</span> := <span class="id" type="var">t<sub>0</sub></span>!!(<span class="id" type="var">entry</span> <span class="id" type="var">g</span>)). <span class="id" type="tactic">cut</span> (<span class="id" type="var">L.le</span> <span class="id" type="var">L.top</span> <span class="id" type="var">r</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">r</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">inversion</span> 1. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">Hsub</span>. <span class="id" type="tactic">red</span>. <span class="id" type="tactic">intro</span> <span class="id" type="var">a</span>. <span class="id" type="tactic">split</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span>; <span class="id" type="var">exfalso</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">FSF.empty_iff</span>; <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> <span class="id" type="var">L.top</span> <span class="id" type="keyword">with</span> ((<span class="id" type="var">inits</span> <span class="id" type="var">g</span>)!!(<span class="id" type="var">entry</span> <span class="id" type="var">g</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">K.fixpoint_entry</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Heqk</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">inits</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">FMP.find_default_eq</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">successors_sound</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> → <span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>2</sub></span> → <span class="id" type="var">Succ</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">L.union</span> (<span class="id" type="var">L.singleton</span> <span class="id" type="var">n<sub>1</sub></span>) (<span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span>) ≤ <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">calc_sdom</span>. <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">K.fixpoint</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqk</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">injection</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">sdom</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">set</span> (<span class="id" type="var">trans</span> <span class="id" type="var">n</span> <span class="id" type="var">o</span> := <span class="id" type="var">L.union</span> (<span class="id" type="var">L.singleton</span> <span class="id" type="var">n</span>) <span class="id" type="var">o</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">change</span> (<span class="id" type="var">L.union</span> (<span class="id" type="var">L.singleton</span> <span class="id" type="var">n<sub>1</sub></span>) <span class="id" type="var">t<sub>0</sub></span>!!<span class="id" type="var">n<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">with</span> (<span class="id" type="var">trans</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">t<sub>0</sub></span>!!<span class="id" type="var">n<sub>1</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">K.fixpoint_solution</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">inits</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">N.eq_dec</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_in_iff</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_neq_in_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;separate&nbsp;lemma?&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">enum_vs_compat</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">set</span> (<span class="id" type="var">f</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span> := <span class="id" type="var">NM.add</span> <span class="id" type="var">n</span> <span class="id" type="var">L.bot</span> <span class="id" type="var">g</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">enum_vs</span> <span class="id" type="var">g</span>) ∨ <span class="id" type="var">NM.In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">NM.empty</span> <span class="id" type="var">L.t</span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> <span class="id" type="var">Hin</span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">exact</span> (<span class="id" type="var">or_introl</span> <span class="id" type="var">H<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> (<span class="id" type="var">enum_vs</span> <span class="id" type="var">g</span>) (<span class="id" type="var">NM.empty</span> <span class="id" type="var">L.t</span>) <span class="id" type="var">Hin</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">l</span>; <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">intuition</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">to</span> <span class="id" type="var">Hin'</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hin'</span> <span class="id" type="keyword">as</span> [[? | ?] | ?]; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_in_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">N.eq_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">n<sub>1</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_in_iff</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_neq_in_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">lapply</span> (<span class="id" type="var">IHl</span> <span class="id" type="var">to</span>). <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FMF.add_in_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">succs_compat</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Include&nbsp;AlgdomProperties&nbsp;G.&nbsp;*)</span><br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">complete</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SDom</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> → <span class="id" type="var">L.In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>2</sub></span>).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="var">pose</span> <span class="id" type="var">proof</span> <span class="id" type="var">entry_sound</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> <span class="id" type="var">Hentry</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">calc_sdom</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">K.fixpoint</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">res</span>|] <span class="id" type="var">eqn</span>:<span class="id" type="var">heqk</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">injection</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">sdom</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">pattern</span> <span class="id" type="var">n<sub>2</sub></span>, <span class="id" type="var">res</span>!!<span class="id" type="var">n<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">K.fixpoint_invariant</span>; <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">N.eq_dec</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>) <span class="id" type="var">n</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">n</span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">entry_not_sdom</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">inits</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">FMP.find_default_neq</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">FMP.find_default</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">NM.find</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">l'</span>|] <span class="id" type="var">eqn</span>:<span class="id" type="var">Heq</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">induction</span> (<span class="id" type="var">enum_vs</span> <span class="id" type="var">g</span>); <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">NM.find</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">FMF.empty_o</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">NM.find</span>, <span class="id" type="var">NM.add</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">FMF.find_mapsto_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">FMF.add_mapsto_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Heq</span> <span class="id" type="keyword">as</span> [[<span class="id" type="var">eq<sub>1</sub></span> <span class="id" type="var">eq<sub>2</sub></span>] | [<span class="id" type="var">neq1</span> <span class="id" type="var">hyp</span>]]; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHl</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">FMF.find_mapsto_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">hyp</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">hyp</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;step&nbsp;preserves&nbsp;completeness&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">trans</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">succs_compat2</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Hmem</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">succs_compat</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">ls</span> <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqls</span>, <span class="id" type="var">ln</span> <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqln</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FSF.inter_iff</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FSF.union_iff</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">N.eq_dec</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n</span>). <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">FSF.singleton_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">dom_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">v<sub>2</sub></span>:=<span class="id" type="var">s</span>); <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FSF.union_iff</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">N.eq_dec</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n</span>). <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">FSF.singleton_iff</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">dom_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">v<sub>2</sub></span>:=<span class="id" type="var">s</span>); <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">AlgdomKildall</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

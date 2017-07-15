@@ -1,5 +1,6 @@
 (** * ProofObjects: The Curry-Howard Correspondence *)
 
+
 (** "_Algorithms are the computational content of proofs_."  --Robert Harper *)
 
 Set Warnings "-notation-overridden,-parsing".
@@ -86,8 +87,8 @@ Print ev_4.
 (* ===> ev_4 = ev_SS 2 (ev_SS 0 ev_0)
      : ev 4  *)
 
-(** As a matter of fact, we can also write down this proof object
-    _directly_, without the need for a separate proof script: *)
+(** Indeed, we can also write down this proof object _directly_,
+    without the need for a separate proof script: *)
 
 Check (ev_SS 2 (ev_SS 0 ev_0)).
 (* ===> ev 4 *)
@@ -116,12 +117,6 @@ Theorem ev_4': ev 4.
 Proof.
   apply (ev_SS 2 (ev_SS 0 ev_0)).
 Qed.
-
-(** We can now see that this feature is a trivial consequence of the
-    status the Coq grants to proofs and propositions: Lemmas and
-    hypotheses can be combined in expressions (i.e., proof objects)
-    according to the same basic rules used for programs in the
-    language. *)
 
 (* ################################################################# *)
 (** * Proof Scripts *)
@@ -232,8 +227,8 @@ Check ev_plus4''.
 (* ===> ev_plus4'' : forall n : nat, ev n -> ev (4 + n) *)
 
 (** When we view the proposition being proved by [ev_plus4] as a
-    function type, one aspect of it may seem a little unusual. The
-    second argument's type, [ev n], mentions the _value_ of the first
+    function type, one interesting point becomes apparent: The second
+    argument's type, [ev n], mentions the _value_ of the first
     argument, [n].  While such _dependent types_ are not found in
     conventional programming languages, they can be useful in
     programming too, as the recent flurry of activity in the
@@ -423,9 +418,9 @@ End Ex.
     the form [ex P], where [P] itself is a _function_ from witness
     values in the type [A] to propositions.  The [ex_intro]
     constructor then offers a way of constructing evidence for [ex P],
-    given a witness [x] and a proof of [P x].
+    given a witness [x] and a proof of [P x]. *)
 
-    The more familiar form [exists x, P x] desugars to an expression
+(** The more familiar form [exists x, P x] desugars to an expression
     involving [ex]: *)
 
 Check ex (fun n => ev n).
@@ -529,11 +524,7 @@ Definition four' : 2 + 2 = 1 + 3 :=
 Definition singleton : forall (X:Set) (x:X), []++[x] = x::[]  :=
   fun (X:Set) (x:X) => eq_refl [x].
 
-
 End MyEquality.
-
-Definition quiz6 : exists x,  x + 3 = 4
-  := ex_intro (fun z => (z + 3 = 4)) 1 (refl_equal 4).
 
 (* ================================================================= *)
 (** ** Inversion, Again *)
@@ -566,26 +557,26 @@ Definition quiz6 : exists x,  x + 3 = 4
       - if the equalities are not satisfiable (e.g., they involve
         things like [S n = O]), immediately solves the subgoal. *)
 
-(** _Example_: If we invert a hypothesis built with [or], there are two
-   constructors, so two subgoals get generated.  The
-   conclusion (result type) of the constructor ([P \/ Q]) doesn't
-   place any restrictions on the form of [P] or [Q], so we don't get
-   any extra equalities in the context of the subgoal.
+(** _Example_: If we invert a hypothesis built with [or], there are
+    two constructors, so two subgoals get generated.  The
+    conclusion (result type) of the constructor ([P \/ Q]) doesn't
+    place any restrictions on the form of [P] or [Q], so we don't get
+    any extra equalities in the context of the subgoal. *)
 
-   _Example_: If we invert a hypothesis built with [and], there is
-   only one constructor, so only one subgoal gets generated.  Again,
-   the conclusion (result type) of the constructor ([P /\ Q]) doesn't
-   place any restrictions on the form of [P] or [Q], so we don't get
-   any extra equalities in the context of the subgoal.  The
-   constructor does have two arguments, though, and these can be seen
-   in the context in the subgoal.
+(** _Example_: If we invert a hypothesis built with [and], there is
+    only one constructor, so only one subgoal gets generated.  Again,
+    the conclusion (result type) of the constructor ([P /\ Q]) doesn't
+    place any restrictions on the form of [P] or [Q], so we don't get
+    any extra equalities in the context of the subgoal.  The
+    constructor does have two arguments, though, and these can be seen
+    in the context in the subgoal. *)
 
-   _Example_: If we invert a hypothesis built with [eq], there is
-   again only one constructor, so only one subgoal gets generated.
-   Now, though, the form of the [refl_equal] constructor does give us
-   some extra information: it tells us that the two arguments to [eq]
-   must be the same!  The [inversion] tactic adds this fact to the
-   context. *)
+(** _Example_: If we invert a hypothesis built with [eq], there is
+    again only one constructor, so only one subgoal gets generated.
+    Now, though, the form of the [refl_equal] constructor does give us
+    some extra information: it tells us that the two arguments to [eq]
+    must be the same!  The [inversion] tactic adds this fact to the
+    context. *)
 
-(** $Date: 2017-04-26 17:33:43 -0400 (Wed, 26 Apr 2017) $ *)
+(** $Date: 2017-07-15 16:03:20 -0400 (Sat, 15 Jul 2017) $ *)
 

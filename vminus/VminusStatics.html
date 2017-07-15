@@ -1,0 +1,739 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>VminusStatics</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">VminusStatics</h1>
+
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">MakeStatics</span> (<span class="id" type="var">Cfg</span>: <span class="id" type="var">CFG</span>).<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">Cfg</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab76"></a><h1 class="section">SSA Invariants: Typing CFGs</h1>
+
+<div class="paragraph"> </div>
+
+ The only ways in which a Vminus program can "go wrong" are
+    by accessing a local variable that hasn't been defined or jumping
+    to a label that isn't in the CFG.  Therefore, its "typing"
+    constraints ensure that each instruction only mentions local
+    identifiers that are in scope according to the domination
+    structure of the control-flow graph and that all mentioned labels
+    are associated with blocks defined in the CFG.  
+
+<div class="paragraph"> </div>
+
+    These properties are partly enforced by the "syntactic"
+    well-formedness constraints imposed by the CFG interface (see
+    CFG.v), which ensure that labels and instruction identifiers are
+    unique.
+
+<div class="paragraph"> </div>
+
+    To enforce the scoping property, we formalize the notion of
+    "dominance" in the control flow graph.  The module interface
+    <span class="inlinecode"><span class="id" type="var">Dom.Spec</span></span> defines dominance for arbitrary graphs.  Here, we
+    instantiate the general theory with a suitable graph instance for
+    our CFGs.
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Typing</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab77"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
+
+<div class="paragraph"> </div>
+
+ We need to define an graph instance that captures all the edges
+    of our CFGs.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> vertices in the graph are just program points
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> program points <i>within</i> a single block have "fallthrough" edges determined by incrementing the program counter
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> a block <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> terminated by a branch to <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> induces an edge from <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> to <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> in the CFG.  
+
+</li>
+</ul>
+  
+<div class="paragraph"> </div>
+
+ Graph edge relation 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">succ_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="var">pc</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">succ_pc_S</span> : ∀ <span class="id" type="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">succ_pc_J</span> : ∀ <span class="id" type="var">p</span> <span class="id" type="var">l</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">In</span> <span class="id" type="var">l</span> (<span class="id" type="var">insn_lbls</span> <span class="id" type="var">i</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">block_entry</span> <span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab78"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
+
+<div class="paragraph"> </div>
+
+ Graph of program points 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">PcGraph</span> &lt;: <span class="id" type="var">GRAPH</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">t</span> := <span class="id" type="var">Cfg.t</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="var">pc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">entry</span> <span class="id" type="var">g</span> := <span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">Succ</span> := <span class="id" type="var">succ_pc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">Mem</span> := <span class="id" type="var">wf_pc</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">End</span> <span class="id" type="var">PcGraph</span>.<br/>
+</div>
+
+<div class="doc">
+Instantiate the dominance spec for this graph 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Dom</span> := <span class="id" type="var">Dom.Spec</span> <span class="id" type="var">PcGraph</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab79"></a><h1 class="section">Defining SSA scoping</h1>
+
+<div class="paragraph"> </div>
+
+ We can now use the dominance properties of the CFG to define scoping
+    for well-formed SSA programs. We first need some auxliary predicates: 
+<div class="paragraph"> </div>
+
+ The command at the given <span class="inlinecode"><span class="id" type="var">pc</span></span> defines uid. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">def_at_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">uid</span>:<span class="id" type="var">uid</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">c</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>) ∧ <span class="id" type="var">defs_uid</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>).<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">uid</span></span> has a definition that strictly dominates the pc <span class="inlinecode"><span class="id" type="var">p</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">uid_sdom_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">uid</span>:<span class="id" type="var">uid</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">p'</span>, <span class="id" type="var">def_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> <span class="id" type="var">uid</span> ∧ <span class="id" type="var">SDom</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> <span class="id" type="var">p</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab80"></a><h3 class="section">Uses are dominated by their definitions</h3>
+
+<div class="paragraph"> </div>
+
+ All uses of a <span class="inlinecode"><span class="id" type="var">uid</span></span> must be strictly dominated by
+      their definitions. However, we have to treat <span class="inlinecode"><span class="id" type="var">phi</span></span> instructions
+      specially, since the "uses" of identifiers on the right-hand side of 
+      are conditioned on control flow.  
+
+<div class="paragraph"> </div>
+
+      The right-hand-side of a phi node can safely refer to the identifier defined
+      by the phi node itself.  For example, consider this snippet of code:
+ 
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">entry</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">blk</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">blk</span>:&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;%<span class="id" type="var">x</span>&nbsp;=&nbsp;<span class="id" type="var">phi</span>&nbsp;[%<span class="id" type="var">entry</span>:&nbsp;0]&nbsp;[%<span class="id" type="var">blk</span>:&nbsp;%<span class="id" type="var">x</span>]&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">blk</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+      For non-phi instructions, we simply require:
+  
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_use</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬<span class="id" type="var">is_phi</span> <span class="id" type="var">i</span> → ∀ <span class="id" type="var">uid</span>, <span class="id" type="var">In</span> (<span class="id" type="var">val_uid</span> <span class="id" type="var">uid</span>) (<span class="id" type="var">insn_uses</span> <span class="id" type="var">i</span>) → <span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">p</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab81"></a><h3 class="section">Well-formed phi nodes</h3>
+
+<div class="paragraph"> </div>
+
+  Consider <span class="inlinecode"></span> <span class="inlinecode">%<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">phi</span></span> <span class="inlinecode">[<span class="id" type="var">lbl1</span>:<span class="id" type="var">v<sub>1</sub></span>,</span> <span class="inlinecode">...,<span class="id" type="var">lbln</span>:<span class="id" type="var">vn</span>]</span> <span class="inlinecode"></span>.  This is well formed
+       when every predecessor block with terminator program point p' 
+       has a label associated with value v.  Moreover, if v is a uid then
+       the definition of the uid strictly dominates p' (i.e. the terminator
+       of the predecessor).
+  
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_phi_args</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">pred</span>, <span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pred</span> (<span class="id" type="var">entry_of_pc</span> <span class="id" type="var">p</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(∃ <span class="id" type="var">v</span>, <span class="id" type="var">In</span> (<span class="id" type="var">lbl_of</span> <span class="id" type="var">pred</span>, <span class="id" type="var">v</span>) (<span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span>)) ∧<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(∀ <span class="id" type="var">uid</span>, <span class="id" type="var">In</span> (<span class="id" type="var">lbl_of</span> <span class="id" type="var">pred</span>, <span class="id" type="var">val_uid</span> <span class="id" type="var">uid</span>) (<span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span>) → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">pred</span>).<br/>
+</div>
+
+<div class="doc">
+Moreover, we require that fore every labeled value appearing in the
+      right-hand side, there is a predecessor block with that label. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_phi_pred</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">l</span> <span class="id" type="var">v</span>, <span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">v</span>) (<span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(∃ <span class="id" type="var">pred</span>, <span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pred</span> (<span class="id" type="var">entry_of_pc</span> <span class="id" type="var">p</span>) ∧ <span class="id" type="var">lbl_of</span> <span class="id" type="var">pred</span> = <span class="id" type="var">l</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_phi</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_phi</span> <span class="id" type="var">i</span> → <span class="id" type="var">wf_phi_args</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∧ <span class="id" type="var">wf_phi_pred</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∧ <span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span> ≠ [].<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab82"></a><h3 class="section">Well-formed terminators</h3>
+
+<div class="paragraph"> </div>
+
+ All jump targets must be legal block labels. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_lbl</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">l</span>, <span class="id" type="var">In</span> <span class="id" type="var">l</span> (<span class="id" type="var">insn_lbls</span> <span class="id" type="var">i</span>) → <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> <span class="id" type="var">l</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">reachable</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">path</span>, <span class="id" type="var">Path</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>)) <span class="id" type="var">p</span> <span class="id" type="var">path</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab83"></a><h3 class="section">Well-formed instructions</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_insn</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="var">insn</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wf_insn_intro</span> : ∀ <span class="id" type="var">i</span> <span class="id" type="var">p</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Huse</span>: <span class="id" type="var">wf_use</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hlbl</span>: <span class="id" type="var">wf_lbl</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hphi</span>: <span class="id" type="var">wf_phi</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hreach</span>: <span class="id" type="var">reachable</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_insn</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_prog</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wf_prog_intro</span> : ∀<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfcfg</span> : <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfis</span> : ∀ <span class="id" type="var">p</span> <span class="id" type="var">i</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> → <span class="id" type="var">wf_insn</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwftmn</span> : ∀ <span class="id" type="var">p'</span> <span class="id" type="var">i</span>, <span class="id" type="var">tmn_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> → <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> <span class="id" type="var">i</span> → <span class="id" type="var">is_tmn</span> <span class="id" type="var">i</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfentry</span> : ∀ <span class="id" type="var">p</span>, ¬ <span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>))),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Typing</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab84"></a><h1 class="section">Type Safety</h1>
+
+<div class="paragraph"> </div>
+
+ We prove type safety for Vminus by setting up the usual <i>preservation</i>
+    and <i>progress</i> theorems.  
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">OpsemCorrect</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">V</span> := <span class="id" type="var">Make</span> (<span class="id" type="var">Cfg</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Import</span> <span class="id" type="var">Typing</span> <span class="id" type="var">Opsem</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab85"></a><h3 class="section">Dominance relation</h3>
+
+<div class="paragraph"> </div>
+
+ A more convenient form for typing rules 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">uid_sdom_step</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">uid'</span> <span class="id" type="var">uid</span> <span class="id" type="var">pc<sub>1</sub></span> <span class="id" type="var">pc<sub>2</sub></span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid'</span> ≠ <span class="id" type="var">uid</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc<sub>1</sub></span> <span class="id" type="var">pc<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc<sub>1</sub></span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid'</span> <span class="id" type="var">pc<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid'</span> <span class="id" type="var">pc<sub>1</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">uid_sdom_pc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">uid'</span> <span class="id" type="var">uid</span> <span class="id" type="var">pc<sub>1</sub></span> <span class="id" type="var">pc<sub>2</sub></span> <span class="id" type="var">c</span> <span class="id" type="var">Hwff</span> <span class="id" type="var">Hneq</span> <span class="id" type="var">Hpc</span> <span class="id" type="var">Hsucc</span> <span class="id" type="var">Hi</span> [<span class="id" type="var">pc'</span> [<span class="id" type="var">Hdef</span> <span class="id" type="var">Hdom</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">pc'</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="var">contradict</span> <span class="id" type="var">Hneq</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">pc'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwff</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Hdef</span> <span class="id" type="keyword">as</span> [? [? ?]]; <span class="id" type="tactic">eapply</span> <span class="id" type="var">eq_pc_uid</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwff</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">dom_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab86"></a><h2 class="section">Progress &amp; Preservation</h2>
+
+<div class="paragraph"> </div>
+
+ Extend well-formedness definitions to include all components of 
+  the state. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_loc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">loc</span>:<span class="id" type="var">loc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">uid</span>, <span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">n</span>, <span class="id" type="var">loc</span> <span class="id" type="var">uid</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">at_entry</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">entry_of_pc</span> <span class="id" type="var">p</span> = <span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_state</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wf_state_intro</span> : ∀ <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfpc</span>: <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfloc</span>: <span class="id" type="var">wf_loc</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>) <span class="id" type="var">st</span>.(<span class="id" type="var">st_loc</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfppc</span>: <span class="id" type="var">at_entry</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>) ∨ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_ppc</span>) (<span class="id" type="var">entry_of_pc</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfploc</span>: <span class="id" type="var">at_entry</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>) ∨ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_loc</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_ppc</span>) <span class="id" type="var">st</span>.(<span class="id" type="var">st_ploc</span>)),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_state</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.<br/>
+</div>
+
+<div class="doc">
+Initial state is well formed 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_init_state</span> : <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">m</span>, <span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_state</span> <span class="id" type="var">g</span> (<span class="id" type="var">init_state</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span>).<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span> <span class="id" type="var">Hprog</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hprog</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">wf_entry</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hwfcfg</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">red</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">red</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [? [? [? ?]]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">red</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (<span class="id" type="var">In</span> <span class="id" type="var">x</span> [<span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>)]). <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">intuition</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="var">econstructor</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">init_state</span>, <span class="id" type="var">at_entry</span>, <span class="id" type="var">entry_of_pc</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">init_state</span>, <span class="id" type="var">at_entry</span>, <span class="id" type="var">entry_of_pc</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab87"></a><h3 class="section">Progress helper lemmas.</h3>
+
+<div class="paragraph"> </div>
+
+ There are no phi nodes in the entry block. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">at_entry_not_phi</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">st</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">at_entry</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span>.(<span class="id" type="var">st_pc</span>) <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬ <span class="id" type="var">is_phi</span> <span class="id" type="var">i</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span> <span class="id" type="var">i</span> <span class="id" type="var">Hprog</span> <span class="id" type="var">Hentry</span> <span class="id" type="var">Hinsn</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Hprog</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">_</span> ? <span class="id" type="var">_</span> ?].<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">Hwfis</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">Hinsn</span>). <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwfis</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">Hphi2</span>. <span class="id" type="var">specialize</span> (<span class="id" type="var">Hphi</span> <span class="id" type="var">Hphi2</span>). <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hphi</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">H<sub>0</sub></span> [<span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">His</span>. <span class="id" type="var">contradiction</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">In</span> <span class="id" type="var">p</span> (<span class="id" type="var">insn_phis</span> <span class="id" type="var">i</span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hin</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">His</span>. <span class="id" type="var">left</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hin</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hin</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">pred</span> [<span class="id" type="var">Hpred</span> <span class="id" type="var">Ht<sub>0</sub></span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">Hwfentry</span> <span class="id" type="var">pred</span>). <span class="id" type="var">contradict</span> <span class="id" type="var">Hwfentry</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Hentry</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+In a well-formed program with well-formed locals, evaluating
+  the values used by a non-phi instruction is never undefined. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">eval_val__wf_loc</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">loc</span> <span class="id" type="var">i</span> <span class="id" type="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_loc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">loc</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬<span class="id" type="var">is_phi</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">In</span> <span class="id" type="var">v</span> (<span class="id" type="var">insn_uses</span> <span class="id" type="var">i</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">n</span>, <span class="id" type="var">eval_val</span> <span class="id" type="var">loc</span> <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> ? ? ? ? <span class="id" type="var">v</span> <span class="id" type="var">Hwff</span> <span class="id" type="var">Hwfloc</span> <span class="id" type="var">Hnotphi</span> <span class="id" type="var">Hi</span> ?.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">v</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">uid</span> | <span class="id" type="var">n</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwff</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">_</span> ? <span class="id" type="var">_</span>]. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hwfis</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hi</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Hi</span> <span class="id" type="keyword">as</span> [? ? <span class="id" type="var">Huse</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">is_phi_decidable</span> <span class="id" type="var">i</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="var">contradiction</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">Huse</span> <span class="id" type="var">Hnotphi</span> <span class="id" type="var">uid</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">lapply</span> <span class="id" type="var">Huse</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab88"></a><h2 class="section">Progress</h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">FinalState</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">state</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">uid</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span>.(<span class="id" type="var">st_pc</span>) (<span class="id" type="var">uid</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">tmn_ret</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="tactic">progress</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">s</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> → <span class="id" type="var">wf_state</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">FinalState</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> ∨ ∃ <span class="id" type="var">s'</span>, <span class="id" type="var">step</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span>.<br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">Hwff</span> <span class="id" type="var">Hwfs</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwfs</span> <span class="id" type="keyword">as</span> [? <span class="id" type="var">Hwfpc</span>]; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwff</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">wf_pc_insn</span> <span class="id" type="var">g</span> <span class="id" type="var">Hwfcfg</span> <span class="id" type="var">_</span> <span class="id" type="var">Hwfpc</span>) <span class="id" type="keyword">as</span> [[<span class="id" type="var">i</span> <span class="id" type="var">c</span>] <span class="id" type="var">Hi</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">j</span>. <span class="id" type="tactic">set</span> (<span class="id" type="var">s</span>:=<span class="id" type="var">j</span>) <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">destruct</span> <span class="id" type="var">j</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"cmd_bop".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eelim</span> (<span class="id" type="var">eval_val__wf_loc</span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">v</span>:=<span class="id" type="var">v</span>) (<span class="id" type="var">loc</span>:=<span class="id" type="var">st_loc0</span>); <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eelim</span> (<span class="id" type="var">eval_val__wf_loc</span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">v</span>:=<span class="id" type="var">v<sub>0</sub></span>) (<span class="id" type="var">loc</span>:=<span class="id" type="var">st_loc0</span>); <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">Heqn1</span> <span class="id" type="var">n<sub>2</sub></span> <span class="id" type="var">Heqn2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_bop</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">eval_bop</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqn1</span>, <span class="id" type="var">Heqn2</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"cmd_phi".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="var">specialize</span> (<span class="id" type="var">Hwfis</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">Hi</span>). <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwfis</span>; <span class="id" type="tactic">subst</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Hwfppc</span> <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hwfppc</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">at_entry_not_phi</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">trivial</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Hwfploc</span> <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hwfploc</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">at_entry_not_phi</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">trivial</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">Hphi</span> <span class="id" type="var">I</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">Hphi2</span> <span class="id" type="var">_</span>]. <span class="id" type="tactic">clear</span> <span class="id" type="var">Hphi</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">Hphi2</span> <span class="id" type="var">st_ppc0</span> <span class="id" type="var">Hwfppc</span>). <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hphi2</span> <span class="id" type="keyword">as</span> [[<span class="id" type="var">v</span> <span class="id" type="var">Hin</span>] <span class="id" type="var">Hdom</span>].<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (∃ <span class="id" type="var">v</span>, <span class="id" type="var">assoc</span> <span class="id" type="var">Lbl.eq_dec</span> (<span class="id" type="var">lbl_of</span> <span class="id" type="var">st_ppc0</span>) <span class="id" type="var">l</span> = <span class="id" type="var">Some</span> <span class="id" type="var">v</span>). <span class="id" type="tactic">intros</span> [<span class="id" type="var">v'</span> <span class="id" type="var">Hv</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (∃ <span class="id" type="var">n</span>, <span class="id" type="var">eval_val</span> <span class="id" type="var">st_ploc0</span> <span class="id" type="var">v'</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>). <span class="id" type="tactic">intros</span> [<span class="id" type="var">n</span> <span class="id" type="var">Hn</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_phi</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">eval_phi</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Hv</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Hn</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">v'</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">i'</span> | <span class="id" type="var">n'</span>]. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hwfploc</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hdom</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">assoc_in</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hv</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">in_assoc_some</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hin</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"cmd_tmn".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">t<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;&nbsp;SCase&nbsp;"tmn_jmp".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_tmn</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;SCase&nbsp;"tmn_cbr".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (∃ <span class="id" type="var">n</span>, <span class="id" type="var">eval_val</span> <span class="id" type="var">st_loc0</span> <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>). <span class="id" type="tactic">intros</span> [<span class="id" type="var">n</span> <span class="id" type="var">Heqn</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_tmn</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqn</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">eval_val__wf_loc</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;SCase&nbsp;"tmn_ret".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">FinalState</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"cmd_load".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">step_load</span>. <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"cmd_store".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">cut</span> (∃ <span class="id" type="var">n<sub>1</sub></span>, <span class="id" type="var">eval_val</span> <span class="id" type="var">st_loc0</span> <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n<sub>1</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [<span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">Heqn1</span>]. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_store</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">eval_val__wf_loc</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab89"></a><h3 class="section">Some first steps towards preservation.</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_pc_incr</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬ <span class="id" type="var">is_tmn</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">p</span>).<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">wf_pc_tmn</span> <span class="id" type="var">g</span> <span class="id" type="var">Hwfcfg</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">pt</span> [<span class="id" type="var">Ht</span> <span class="id" type="var">Hle</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_pc_le_tmn</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hle</span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">Hwftmn</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span> <span class="id" type="keyword">with</span> <span class="id" type="var">arith</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">eval_tmn_in_lbls</span> : ∀ <span class="id" type="var">l</span> <span class="id" type="var">loc</span> <span class="id" type="var">t</span> <span class="id" type="var">uid</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> <span class="id" type="var">l</span> = <span class="id" type="var">eval_tmn</span> <span class="id" type="var">loc</span> <span class="id" type="var">t</span> → <span class="id" type="var">In</span> <span class="id" type="var">l</span> (<span class="id" type="var">insn_lbls</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">t</span>)).<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">t<sub>0</sub></span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">eval_val</span> <span class="id" type="var">loc</span> <span class="id" type="var">v</span>). <span class="id" type="tactic">injection</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">n</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab90"></a><h3 class="section">More preservation helpers</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">not_def_sdom_step</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> <span class="id" type="var">i</span> <span class="id" type="var">uid</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬ <span class="id" type="var">defs_uid</span> <span class="id" type="var">i</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">p<sub>1</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
+<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">i</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span> <span class="id" type="keyword">as</span> [? [[? [? <span class="id" type="var">Ht</span>]] ?]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_sdom_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">Ht</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">t<sub>0</sub></span>. <span class="id" type="tactic">assert</span> (<span class="id" type="var">x</span> = <span class="id" type="var">p<sub>1</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_at_pc_inj</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">red</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">x<sub>0</sub></span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>); <span class="id" type="tactic">trivial</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">insn_at_pc_func</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_loc_succ</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> <span class="id" type="var">loc</span> <span class="id" type="var">uid</span> <span class="id" type="var">n</span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_loc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">loc</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_loc</span> <span class="id" type="var">g</span> <span class="id" type="var">p<sub>2</sub></span> (<span class="id" type="var">update</span> <span class="id" type="var">loc</span> <span class="id" type="var">uid</span> (<span class="id" type="var">Some</span> <span class="id" type="var">n</span>)).<br/>
+<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
+<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Uid.eq_dec</span> <span class="id" type="var">uid0</span> <span class="id" type="var">uid</span>). <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_eq</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_neq</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_sdom_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab91"></a><h2 class="section">Preservation</h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">preservation</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_state</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> → <span class="id" type="var">step</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span> → <span class="id" type="var">wf_state</span> <span class="id" type="var">g</span> <span class="id" type="var">s'</span>.<br/>
+<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
+<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">_</span> <span class="id" type="var">s'</span> <span class="id" type="var">Hwff</span> [<span class="id" type="var">s</span> <span class="id" type="var">Hwfpc</span> <span class="id" type="var">Hwfloc</span>] <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">pc</span> <span class="id" type="var">into</span> <span class="id" type="var">pc<sub>0</sub></span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"step_bop".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">pc<sub>0</sub></span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hwfpc'</span> <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_pc_incr</span>; <span class="id" type="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">pc<sub>0</sub></span>; <span class="id" type="tactic">auto</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_loc_succ</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">constructor</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"step_phi".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">pc<sub>0</sub></span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hwfpc'</span> <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_pc_incr</span>; <span class="id" type="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">pc<sub>0</sub></span>; <span class="id" type="tactic">auto</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_loc_succ</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">constructor</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"step_tmn".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">l'</span>, 0)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hwfpc'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwff</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">_</span> <span class="id" type="var">Hwfi</span> <span class="id" type="var">_</span>]. <span class="id" type="var">specialize</span> (<span class="id" type="var">Hwfi</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwfi</span>. <span class="id" type="tactic">red</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hlbl</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hlbl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">eval_tmn_in_lbls</span>. <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">succ_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc<sub>0</sub></span> (<span class="id" type="var">l'</span>, 0)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hsucc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">eval_tmn_in_lbls</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hwfloc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">not_def_sdom_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"step_load".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">pc<sub>0</sub></span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hwfpc'</span> <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_pc_incr</span>; <span class="id" type="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">pc<sub>0</sub></span>; <span class="id" type="tactic">auto</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_loc_succ</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">constructor</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"step_store".&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">pc<sub>0</sub></span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">Hwfpc'</span> <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_pc_incr</span>; <span class="id" type="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">pc<sub>0</sub></span>; <span class="id" type="tactic">auto</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hwfloc</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">not_def_sdom_step</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">OpsemCorrect</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">MakeStatics</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>CFG</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">CFG</h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Vminus programs are structured into <i>control-flow graphs</i>
+    (CFG), which, conceptually, are graphs whose <i>nodes</i> are
+    instructions and whose <i>edges</i> are determined by the control
+    structure of the program.
+
+<div class="paragraph"> </div>
+
+    To characterize this structure abstractly, we define a notion of
+    <i>program point</i> <span class="inlinecode"><span class="id" type="var">pc</span></span>, which is a location of an instruction in the
+    control-flow graph (i.e. each program point is a node of the
+    graph).
+
+<div class="paragraph"> </div>
+
+    The program points are themselves organized into <i>basic blocks</i>.
+    A basic block consists of a non-empty sequence of program points 
+    ending in a terminator instruction.
+ 
+<div class="paragraph"> </div>
+
+<a name="lab32"></a><h1 class="section">Program points</h1>
+
+<div class="paragraph"> </div>
+
+ Program points (a.k.a. "program counters").
+    Concretely, a <span class="inlinecode"><span class="id" type="var">pc</span></span> is given by a block label and offset.
+
+<div class="paragraph"> </div>
+
+    (We could make this more abstract, but this is a simple, easy-to-work with definition.)
+ 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">pc</span> := (<span class="id" type="var">lbl</span> * <span class="id" type="var">nat</span>)%<span class="id" type="var">type</span>.<br/>
+</div>
+
+<div class="doc">
+Each <span class="inlinecode"><span class="id" type="var">pc</span></span> has a label 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lbl_of</span> : <span class="id" type="var">pc</span> → <span class="id" type="var">lbl</span>       := @<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>.<br/>
+</div>
+
+<div class="doc">
+Increment a <span class="inlinecode"><span class="id" type="var">pc</span></span> <i>within</i> a block. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">incr_pc</span> (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="var">pc</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">l</span>, <span class="id" type="var">n</span>) := <span class="id" type="var">p</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">l</span>, <span class="id" type="var">S</span> <span class="id" type="var">n</span>).<br/>
+</div>
+
+<div class="doc">
+(Total) Ordering on <span class="inlinecode"><span class="id" type="var">pc</span></span>s within the same block 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">le_pc</span> : <span class="id" type="var">pc</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">let_pc_intro</span> : ∀ <span class="id" type="var">l</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">n<sub>1</sub></span> ≤ <span class="id" type="var">n<sub>2</sub></span> → <span class="id" type="var">le_pc</span> (<span class="id" type="var">l</span>, <span class="id" type="var">n<sub>1</sub></span>) (<span class="id" type="var">l</span>, <span class="id" type="var">n<sub>2</sub></span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_pc</span> (<span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">le_pc</span> <span class="id" type="var">p<sub>1</sub></span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">p<sub>2</sub></span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The entry point of a block is offset <span class="inlinecode">0</span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">block_entry</span> (<span class="id" type="var">l</span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">pc</span> := (<span class="id" type="var">l</span>, 0).<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">entry_of_pc</span> (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>)  : <span class="id" type="var">pc</span> := <span class="id" type="var">block_entry</span> (<span class="id" type="var">fst</span> <span class="id" type="var">p</span>).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab33"></a><h1 class="section">Interface for syntactically well-formed CFGs</h1>
+
+<div class="paragraph"> </div>
+
+ Given the abstract characterization of program points, we need to
+    relate them to the control-flow instructions of the program's CFG.
+    We do this via a collection of well-formedness predicates that
+    ensure that each program point maps to a single instruction and
+    that the instruction defines a unique local identifier.  (Thus
+    satisfying the 'single static assignment' part of the SSA
+    representation.)
+ 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+    In this interface, we establish the basic syntactic properties of 
+    control-flow-graphs:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> A CFG <span class="inlinecode"><span class="id" type="var">g</span></span> is a (partial) function from program points to instructions.
+
+</li>
+<li> Each program point belongs to a basic block.
+
+</li>
+<li> Each basic block is non-empty
+
+</li>
+<li> Each basic block consists of a contiguous sequence of program points,
+      ending in a terminator.
+
+</li>
+</ul>
+    We will impose stronger well-formedness constraints (i.e. the SSA 
+    conditions) on CFGs later.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">CFG</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">t</span> : <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Notation</span> <span class="id" type="var">cfg</span> := <span class="id" type="var">t</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab34"></a><h3 class="section">Basic parameters of the model</h3>
+
+<div class="paragraph"> </div>
+
+ Well-formed control-flow-graphs. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">wf_cfg</span> : <span class="id" type="var">cfg</span> → <span class="id" type="keyword">Prop</span>.<br/>
+</div>
+
+<div class="doc">
+Well-formed program points. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">wf_pc</span> : <span class="id" type="var">cfg</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab35"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ The entry block of the control-flow graph. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">entry_block</span> : <span class="id" type="var">cfg</span> → <span class="id" type="var">lbl</span>.<br/>
+</div>
+
+<div class="doc">
+Is the program point a block terminator? 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">tmn_pc</span> : <span class="id" type="var">cfg</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab36"></a><h3 class="section">Program point properties</h3>
+
+<div class="paragraph"> </div>
+
+ Program points are associated with unique instructions. 
+<div class="paragraph"> </div>
+
+ Relational specification: 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">insn_at_pc</span> : <span class="id" type="var">cfg</span> → <span class="id" type="var">pc</span> → <span class="id" type="var">insn</span> → <span class="id" type="keyword">Prop</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">insn_at_pc_func</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">functional</span> (<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span>).<br/>
+</div>
+
+<div class="doc">
+Executable specification: 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">fetch</span> : <span class="id" type="var">cfg</span> → <span class="id" type="var">pc</span> → <span class="id" type="var">option</span> <span class="id" type="var">insn</span>.<br/>
+</div>
+
+<div class="doc">
+Correspondence of the two specs: 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">insn_at_pc_fetch</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">i</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">i</span> ↔ <span class="id" type="var">fetch</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> = <span class="id" type="var">Some</span> <span class="id" type="var">i</span>.<br/>
+</div>
+
+<div class="doc">
+Each <span class="inlinecode"><span class="id" type="var">pc</span></span> defines a unique <span class="inlinecode"><span class="id" type="var">uid</span></span> 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">uid_at_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">cfg</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">uid</span>:<span class="id" type="var">uid</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">c</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">uid_at_pc_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">injective</span> (<span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">uid_at_pc_func</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">functional</span> (<span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">pc_at_uid_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">injective</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">p</span> ⇒ <span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">x</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">eq_pc_uid</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">id<sub>1</sub></span> <span class="id" type="var">id<sub>2</sub></span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> (<span class="id" type="var">id<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> (<span class="id" type="var">id<sub>2</sub></span>, <span class="id" type="var">c<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">id<sub>1</sub></span> = <span class="id" type="var">id<sub>2</sub></span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+If <span class="inlinecode"><span class="id" type="var">g</span></span> is well-formed, each of its program points
+      maps to an instruction. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">wf_pc_insn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p</span>, <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">i</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab37"></a><h3 class="section">Block properties</h3>
+
+<div class="paragraph"> </div>
+
+ There is an instruction in the entry block. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">wf_entry</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>)).<br/>
+</div>
+
+<div class="doc">
+Every block has a terminator. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">wf_pc_tmn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p</span>, <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">p'</span>, <span class="id" type="var">tmn_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> ∧ <span class="id" type="var">le_pc</span> <span class="id" type="var">p</span> <span class="id" type="var">p'</span>.<br/>
+</div>
+
+<div class="doc">
+There are no "gaps" in the pc labels. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">wf_pc_le_tmn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p'</span>, <span class="id" type="var">tmn_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> → ∀ <span class="id" type="var">p</span>, <span class="id" type="var">le_pc</span> <span class="id" type="var">p</span> <span class="id" type="var">p'</span> → <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">CFG</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

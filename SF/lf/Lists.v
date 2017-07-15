@@ -251,6 +251,7 @@ Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
+
 (* ----------------------------------------------------------------- *)
 (** *** Exercises *)
 
@@ -728,6 +729,8 @@ Proof.
     familiar with.  The more pedantic style is a good default for our
     present purposes. *)
 
+
+
 (* ================================================================= *)
 (** ** [Search] *)
 
@@ -1073,5 +1076,5 @@ Inductive baz : Type :=
 *)
 (** [] *)
 
-(** $Date: 2017-03-05 16:25:50 -0500 (Sun, 05 Mar 2017) $ *)
+(** $Date: 2017-07-14 19:07:15 -0400 (Fri, 14 Jul 2017) $ *)
 

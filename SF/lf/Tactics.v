@@ -780,9 +780,9 @@ Abort.
     unfolding [bar (m+1)] leaves a [match] whose scrutinee is a
     function application (that, itself, cannot be simplified, even
     after unfolding the definition of [+]), so [simpl] leaves it
-    alone.
+    alone. *)
 
-    At this point, there are two ways to make progress.  One is to use
+(** At this point, there are two ways to make progress.  One is to use
     [destruct m] to break the proof into two cases, each focusing on a
     more concrete choice of [m] ([O] vs [S _]).  In each case, the
     [match] inside of [bar] can now make progress, and the proof is
@@ -798,9 +798,9 @@ Qed.
 
 (** This approach works, but it depends on our recognizing that the
     [match] hidden inside [bar] is what was preventing us from making
-    progress.
+    progress. *)
 
-    A more straightforward way to make progress is to explicitly tell
+(** A more straightforward way to make progress is to explicitly tell
     Coq to unfold [bar]. *)
 
 Fact silly_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
@@ -1096,6 +1096,6 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2017-04-26 17:33:43 -0400 (Wed, 26 Apr 2017) $ *)
+(** $Date: 2017-07-14 19:07:15 -0400 (Fri, 14 Jul 2017) $ *)
 
 

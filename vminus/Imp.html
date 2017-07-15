@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Imp</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Imp</h1>
+
+<div class="code code-tight">
+<span class="comment">(*&nbsp;TODO:&nbsp;License&nbsp;/&nbsp;Which&nbsp;Version&nbsp;of&nbsp;Imp?&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ This file presents a variant of the Imp programming language 
+    adapted from the Software Foundations book.  It is the source
+    language that will be compiled to the Vminus intermediate language
+    in this development.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Equalities</span> <span class="id" type="var">Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Atom</span> <span class="id" type="var">Vminus.Env</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Sequences</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab17"></a><h3 class="section">Identifiers</h3>
+
+<div class="paragraph"> </div>
+
+ To simplify the compilation process, this variant of Imp uses 
+    <span class="inlinecode"><span class="id" type="var">Atom.t</span></span> values as variable identifiers.  <span class="inlinecode"><span class="id" type="var">Atom.t</span></span> is also used by
+    the <span class="inlinecode"><span class="id" type="var">Vminus</span></span> language, so making them the same avoids the need to
+    use some kind of mapping from source to target identifiers.
+
+<div class="paragraph"> </div>
+
+    This is a slight deviation from the earlier presentation that took
+    <span class="inlinecode"><span class="id" type="var">id</span></span> to be constructed via <span class="inlinecode"><span class="id" type="var">Id</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">id</span></span>.  
+
+<div class="paragraph"> </div>
+
+    The reason to use <span class="inlinecode"><span class="id" type="var">Atom.t</span></span> is that this type supports the
+    generation of "fresh" identifiers, a feature needed in
+    implementing a compiler.  
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">id</span> := <span class="id" type="var">Atom.t</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab18"></a><h3 class="section">Arithmetic expressions</h3>
+ Arithmetic expressions are just the same as in Imp. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">aexp</span> : <span class="id" type="keyword">Type</span> := <br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span>   : <span class="id" type="var">nat</span> → <span class="id" type="var">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AId</span>    : <span class="id" type="var">id</span> → <span class="id" type="var">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span>  : <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> : <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span>  : <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab19"></a><h3 class="section">Boolean expressions</h3>
+ Boolean expressions are also just the same as in Imp.  Since (as
+    we'll see) Vminus doesn't support boolean values natively, we'll
+    have to compile these to natural numbers. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">bexp</span> : <span class="id" type="keyword">Type</span> := <br/>
+&nbsp;&nbsp;| <span class="id" type="var">BTrue</span>  : <span class="id" type="var">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BFalse</span> : <span class="id" type="var">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BEq</span>    : <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BLe</span>    : <span class="id" type="var">aexp</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BNot</span>   : <span class="id" type="var">bexp</span> → <span class="id" type="var">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BAnd</span>   : <span class="id" type="var">bexp</span> → <span class="id" type="var">bexp</span> → <span class="id" type="var">bexp</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab20"></a><h3 class="section">Commands</h3>
+ The commands are just the same as in Imp. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">com</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSkip</span> : <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CAss</span> : <span class="id" type="var">id</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> : <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CIf</span> : <span class="id" type="var">bexp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> : <span class="id" type="var">bexp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab21"></a><h3 class="section">Notation</h3>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Notation</span> "'SKIP'" := <br/>
+&nbsp;&nbsp;<span class="id" type="var">CSkip</span> : <span class="id" type="var">imp_scope</span>.<br/>
+<span class="id" type="keyword">Notation</span> "X '::=' a" := <br/>
+&nbsp;&nbsp;(<span class="id" type="var">CAss</span> <span class="id" type="var">X</span> <span class="id" type="var">a</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60) : <span class="id" type="var">imp_scope</span>.<br/>
+<span class="id" type="keyword">Notation</span> "c<sub>1</sub> ;; c<sub>2</sub>" := <br/>
+&nbsp;&nbsp;(<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">imp_scope</span>.<br/>
+<span class="id" type="keyword">Notation</span> "'WHILE' b 'DO' c 'END'" := <br/>
+&nbsp;&nbsp;(<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">imp_scope</span>.<br/>
+<span class="id" type="keyword">Notation</span> "'IFB' e<sub>1</sub> 'THEN' e<sub>2</sub> 'ELSE' e<sub>3</sub> 'FI'" := <br/>
+&nbsp;&nbsp;(<span class="id" type="var">CIf</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">e<sub>3</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">imp_scope</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab22"></a><h3 class="section">An Example:</h3>
+
+<pre>
+X ::= 5;;
+Y ::= 1;;
+WHILE (BNot (Beq (AId X) (ANum 0))) DO
+  Y ::= AMult (AId Y) (AId X);;         (* Y = Y * X *)
+  X ::= AMinus (AId X) (ANum 1)         (* X = X - 1 *)
+END
+</pre>
+
+<div class="paragraph"> </div>
+
+<a name="lab23"></a><h2 class="section">Operational Semantics</h2>
+
+<div class="paragraph"> </div>
+
+ The <i>state</i> of an Imp program maps Atoms to natural numbers. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">State</span> := <span class="id" type="var">Make_Env</span> <span class="id" type="var">Atom</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">state</span> := <span class="id" type="var">State.t</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">update</span> := @<span class="id" type="var">State.update</span> <span class="id" type="var">nat</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab24"></a><h3 class="section">Arithmetic evaluation</h3>
+ Arithmetic and boolean expressions are evaluated in a given 
+    state. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">aeval</span> (<span class="id" type="var">e</span> : <span class="id" type="var">aexp</span>) (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span>        ⇒ <span class="id" type="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AId</span> <span class="id" type="var">X</span>         ⇒ <span class="id" type="var">st</span> <span class="id" type="var">X</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span>   ⇒ (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">st</span>) + (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span>  ⇒ (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">st</span>) - (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span>   ⇒ (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">st</span>) * (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab25"></a><h3 class="section">Boolean evaluation</h3>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">beval</span> (<span class="id" type="var">e</span> : <span class="id" type="var">bexp</span>) (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) : <span class="id" type="var">bool</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">BTrue</span>       ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BFalse</span>      ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">BEq</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span>   ⇒ <span class="id" type="var">beq_nat</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">st</span>) (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">BLe</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span>   ⇒ <span class="id" type="var">leb</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">st</span>) (<span class="id" type="var">aeval</span> <span class="id" type="var">a<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">BNot</span> <span class="id" type="var">b<sub>1</sub></span>     ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">BAnd</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span>  ⇒ <span class="id" type="var">andb</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">st</span>) (<span class="id" type="var">beval</span> <span class="id" type="var">b<sub>2</sub></span> <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab26"></a><h3 class="section">Small step evaluation relation</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">step</span> : (<span class="id" type="var">com</span> * <span class="id" type="var">state</span>) → (<span class="id" type="var">com</span> * <span class="id" type="var">state</span>) → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">S_Ass</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">i</span> <span class="id" type="var">a</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">aeval</span> <span class="id" type="var">a</span> <span class="id" type="var">st</span> = <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">i</span> ::= <span class="id" type="var">a</span>, <span class="id" type="var">st</span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">update</span> <span class="id" type="var">st</span> <span class="id" type="var">i</span> <span class="id" type="var">n</span>)<br/>
+<br/>
+| <span class="id" type="var">S_Seq</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st</span>) (<span class="id" type="var">c<sub>1</sub>'</span>, <span class="id" type="var">st'</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>) (<span class="id" type="var">c<sub>1</sub>'</span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st'</span>)<br/>
+<br/>
+| <span class="id" type="var">S_SeqSkip</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">SKIP</span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>) (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>)<br/>
+<br/>
+| <span class="id" type="var">S_IfTrue</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">e</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">e</span> <span class="id" type="var">st</span> = <span class="id" type="var">true</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span>, <span class="id" type="var">st</span>) (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st</span>)<br/>
+<br/>
+| <span class="id" type="var">S_IfFalse</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">e</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">e</span> <span class="id" type="var">st</span> = <span class="id" type="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span>, <span class="id" type="var">st</span>) (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>)<br/>
+<br/>
+| <span class="id" type="var">S_While</span> : ∀ <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">e</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">step</span> (<span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>, <span class="id" type="var">st</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> (<span class="id" type="var">c</span> ;; <span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <span class="id" type="var">ELSE</span> <span class="id" type="var">SKIP</span> <span class="id" type="var">FI</span>, <span class="id" type="var">st</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">imp_step_star</span> := <span class="id" type="var">star</span> <span class="id" type="var">step</span>.<br/>
+</div>
+
+<div class="doc">
+Imp Evaluator 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">imp_eval</span> (<span class="id" type="var">c</span>: <span class="id" type="var">com</span>) (<span class="id" type="var">st</span>: <span class="id" type="var">state</span>) (<span class="id" type="var">fuel</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">option</span> <span class="id" type="var">state</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">fuel</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| 0 ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">i</span> ::= <span class="id" type="var">a</span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">update</span> <span class="id" type="var">st</span> <span class="id" type="var">i</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a</span> <span class="id" type="var">st</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒ <span class="id" type="var">imp_eval</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">imp_eval</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">n'</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">st'</span> ⇒ <span class="id" type="var">imp_eval</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st'</span> <span class="id" type="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒ <span class="id" type="var">Some</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beval</span> <span class="id" type="var">e</span> <span class="id" type="var">st</span> <span class="id" type="keyword">then</span> <span class="id" type="var">imp_eval</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">n'</span> <span class="id" type="keyword">else</span> <span class="id" type="var">imp_eval</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beval</span> <span class="id" type="var">e</span> <span class="id" type="var">st</span> <span class="id" type="keyword">then</span> <span class="id" type="var">imp_eval</span> (<span class="id" type="var">c</span> ;; <span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <span class="id" type="var">st</span> <span class="id" type="var">n'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">imp_eval_step</span> (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) : <span class="id" type="var">option</span> (<span class="id" type="var">com</span> * <span class="id" type="var">state</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">i</span> ::= <span class="id" type="var">a</span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">SKIP</span>, (<span class="id" type="var">update</span> <span class="id" type="var">st</span> <span class="id" type="var">i</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a</span> <span class="id" type="var">st</span>)))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">imp_eval_step</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">c<sub>1</sub>'</span>, <span class="id" type="var">st'</span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">c<sub>1</sub>'</span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">beval</span> <span class="id" type="var">e</span> <span class="id" type="var">st</span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">Some</span> (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">e</span> <span class="id" type="var">THEN</span> (<span class="id" type="var">c</span> ;; <span class="id" type="var">WHILE</span> <span class="id" type="var">e</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <span class="id" type="var">ELSE</span> <span class="id" type="var">SKIP</span> <span class="id" type="var">FI</span>, <span class="id" type="var">st</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

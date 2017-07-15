@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Atom: Opaque identifiers</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Atom<span class="subtitle">Opaque identifiers</span></h1>
+
+
+
+<div class="doc">
+<a name="lab1"></a><h1 class="section">The <span class="inlinecode"><span class="id" type="var">ATOM</span></span> signature</h1>
+
+<div class="paragraph"> </div>
+
+ This interface defines a type of atoms with: 
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> a <i>decidable equality</i> 
+
+</li>
+<li> a way of generating <i>fresh</i> atoms
+
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">ATOM</span> &lt;: <span class="id" type="var">UsualDecidableType</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">t</span> : <span class="id" type="keyword">Set</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">eq_dec</span> : ∀ (<span class="id" type="var">x</span> <span class="id" type="var">y</span>:<span class="id" type="var">t</span>), {<span class="id" type="var">x</span> = <span class="id" type="var">y</span>} + {<span class="id" type="var">x</span> ≠ <span class="id" type="var">y</span>}.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="tactic">fresh</span> : <span class="id" type="var">list</span> <span class="id" type="var">t</span> → <span class="id" type="var">t</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">fresh_not_in</span> : ∀ <span class="id" type="var">l</span>, ¬ <span class="id" type="var">In</span> (<span class="id" type="tactic">fresh</span> <span class="id" type="var">l</span>) <span class="id" type="var">l</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">nat_of</span>: <span class="id" type="var">t</span> → <span class="id" type="var">nat</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Include</span> <span class="id" type="var">HasUsualEq</span> &lt;+ <span class="id" type="var">UsualIsEq</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">ATOM</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab2"></a><h1 class="section">Atom implementation</h1>
+
+<div class="paragraph"> </div>
+
+ Implements the <span class="inlinecode"><span class="id" type="var">ATOM</span></span> signature. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Atom</span> : <span class="id" type="var">ATOM</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">t</span> := <span class="id" type="var">nat</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">eq_dec</span> := <span class="id" type="var">eq_nat_dec</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">max_elt</span> (<span class="id" type="var">al</span>:<span class="id" type="var">list</span> <span class="id" type="var">t</span>) : <span class="id" type="var">t</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">al</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">n'</span>::<span class="id" type="var">al'</span> ⇒ <span class="id" type="var">max</span> <span class="id" type="var">n'</span> (<span class="id" type="var">max_elt</span> <span class="id" type="var">al'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">fresh</span> (<span class="id" type="var">al</span>:<span class="id" type="var">list</span> <span class="id" type="var">t</span>) : <span class="id" type="var">t</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S</span> (<span class="id" type="var">max_elt</span> <span class="id" type="var">al</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">max_elt_spec</span> : ∀ <span class="id" type="var">al</span> <span class="id" type="var">b</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">In</span> <span class="id" type="var">b</span> <span class="id" type="var">al</span> → <span class="id" type="var">b</span> ≤ <span class="id" type="var">max_elt</span> <span class="id" type="var">al</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">al</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Nat.le_max_l</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">le_trans</span>; <span class="id" type="tactic">auto</span> <span class="id" type="keyword">with</span> <span class="id" type="var">arith</span>. <span class="comment">(*&nbsp;apply&nbsp;Nat.le_max_r.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">fresh_not_in</span> : ∀ <span class="id" type="var">l</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬ <span class="id" type="var">In</span> (<span class="id" type="tactic">fresh</span> <span class="id" type="var">l</span>) <span class="id" type="var">l</span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="tactic">fresh</span>, <span class="id" type="var">not</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">l</span> <span class="id" type="var">Hin</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">max_elt_spec</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">Hin</span>). <span class="id" type="tactic">intro</span> <span class="id" type="var">Ha</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">Ha</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">le_Sn_n</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Include</span> <span class="id" type="var">HasUsualEq</span> &lt;+ <span class="id" type="var">UsualIsEq</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">nat_of</span> (<span class="id" type="var">a</span> : <span class="id" type="var">nat</span>) := <span class="id" type="var">a</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Atom</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;Automatically&nbsp;unfold&nbsp;Atom.eq&nbsp;*)</span><br/>
+<span class="id" type="keyword">Global</span> <span class="id" type="var">Arguments</span> <span class="id" type="var">Atom.eq</span> /.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

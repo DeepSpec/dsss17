@@ -7,8 +7,12 @@
     and Java.  Here is a familiar mathematical function written in
     Imp.
 
-     Z ::= X;; Y ::= 1;; WHILE not (Z = 0) DO Y ::= Y * Z;; Z ::= Z -
-     1 END
+     Z ::= X;; 
+     Y ::= 1;; 
+     WHILE not (Z = 0) DO 
+       Y ::= Y * Z;; 
+       Z ::= Z - 1 
+     END
 *)
 
 (** This chapter looks at how to define the _syntax_ and _semantics_
@@ -464,27 +468,29 @@ Proof.
 (* ================================================================= *)
 (** ** Defining New Tactic Notations *)
 
-(** Coq also provides several ways of "programming" tactic scripts.
+(** Coq also provides several ways of "programming" tactic
+scripts.
 
-    - The [Tactic Notation] idiom illustrated below gives a handy way to
-      define "shorthand tactics" that bundle several tactics into a
+    - The [Tactic Notation] idiom illustrated below gives a handy way
+      to define "shorthand tactics" that bundle several tactics into a
       single command.
 
     - For more sophisticated programming, Coq offers a built-in
-      programming language called [Ltac] with primitives that can
-      examine and modify the proof state.  The details are a bit too
-      complicated to get into here (and it is generally agreed that
-      [Ltac] is not the most beautiful part of Coq's design!), but they
-      can be found in the reference manual and other books on Coq, and
-      there are many examples of [Ltac] definitions in the Coq standard
-      library that you can use as examples.
+      language called [Ltac] with primitives that can examine and
+      modify the proof state.  The details are a bit too complicated
+      to get into here (and it is generally agreed that [Ltac] is not
+      the most beautiful part of Coq's design!), but they can be found
+      in the reference manual and other books on Coq, and there are
+      many examples of [Ltac] definitions in the Coq standard library
+      that you can use as examples.
 
     - There is also an OCaml API, which can be used to build tactics
       that access Coq's internal structures at a lower level, but this
       is seldom worth the trouble for ordinary Coq users.
 
-    The [Tactic Notation] mechanism is the easiest to come to grips with,
-    and it offers plenty of power for many purposes.  Here's an example. *)
+    The [Tactic Notation] mechanism is the easiest to come to grips
+    with, and it offers plenty of power for many purposes.  Here's an
+    example. *)
 
 Tactic Notation "simpl_and_try" tactic(c) :=
   simpl;
@@ -558,7 +564,7 @@ Qed.
        applied to solve the current goal.  If one is found, behave
        like [apply c].
 
-    We'll see examples below. *)
+    We'll see examples as we go along. *)
 
 (* ################################################################# *)
 (** * Evaluation as a Relation *)
@@ -1729,5 +1735,5 @@ End BreakImp.
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2017-07-04 07:52:33 -0400 (Tue, 04 Jul 2017) $ *)
+(* $Date: 2017-07-15 12:37:05 -0400 (Sat, 15 Jul 2017) $ *)
 

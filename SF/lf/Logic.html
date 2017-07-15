@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -70,14 +71,17 @@ In previous chapters, we have seen many examples of factual
 
 <div class="doc">
 Note that <i>all</i> syntactically well-formed propositions have type
-    <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> in Coq, regardless of whether they are true or not.
-
+    <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> in Coq, regardless of whether they are true or not. 
 <div class="paragraph"> </div>
 
-    Simply <i>being</i> a proposition is one thing; being <i>provable</i> is
+ Simply <i>being</i> a proposition is one thing; being <i>provable</i> is
     something else! 
 </div>
 <div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Check</span> 2 = 2.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;Prop&nbsp;*)</span><br/>
 
 <br/>
 <span class="id" type="keyword">Check</span> ∀ <span class="id" type="var">n</span> : <span class="id" type="var">nat</span>, <span class="id" type="var">n</span> = 2.<br/>
@@ -89,11 +93,13 @@ Note that <i>all</i> syntactically well-formed propositions have type
 </div>
 
 <div class="doc">
-Indeed, propositions don't just have types: they are <i>first-class
-    objects</i> that can be manipulated in the same ways as the other
-    entities in Coq's world.  So far, we've seen one primary place
-    that propositions can appear: in <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> (and <span class="inlinecode"><span class="id" type="keyword">Lemma</span></span> and
-    <span class="inlinecode"><span class="id" type="keyword">Example</span></span>) declarations. 
+Indeed, propositions don't just have types: they are
+    <i>first-class objects</i> that can be manipulated in the same ways as
+    the other entities in Coq's world. 
+<div class="paragraph"> </div>
+
+ So far, we've seen one primary place that propositions can appear:
+    in <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> (and <span class="inlinecode"><span class="id" type="keyword">Lemma</span></span> and <span class="inlinecode"><span class="id" type="keyword">Example</span></span>) declarations. 
 </div>
 <div class="code code-tight">
 
@@ -149,7 +155,7 @@ We can also write <i>parameterized</i> propositions &mdash; that is,
 
 <div class="doc">
 In Coq, functions that return propositions are said to define
-    <i>properties</i> of their arguments.
+    <i>properties</i> of their arguments. 
 
 <div class="paragraph"> </div>
 
@@ -440,11 +446,10 @@ Another common situation with conjunctions is that we know
  Another important connective is the <i>disjunction</i>, or <i>logical or</i>
     of two propositions: <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">B</span></span> is true when either <span class="inlinecode"><span class="id" type="var">A</span></span> or <span class="inlinecode"><span class="id" type="var">B</span></span>
     is.  (Alternatively, we can write <span class="inlinecode"><span class="id" type="var">or</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode"><span class="id" type="var">B</span></span>, where <span class="inlinecode"><span class="id" type="var">or</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> <span class="inlinecode">→</span>
-    <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.)
-
+    <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.) 
 <div class="paragraph"> </div>
 
-    To use a disjunctive hypothesis in a proof, we proceed by case
+ To use a disjunctive hypothesis in a proof, we proceed by case
     analysis, which, as for <span class="inlinecode"><span class="id" type="var">nat</span></span> or other data types, can be done
     with <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> or <span class="inlinecode"><span class="id" type="tactic">intros</span></span>.  Here is an example: 
 </div>
@@ -537,17 +542,16 @@ Conversely, to show that a disjunction holds, we need to show that
     associative, etc.  Of course, we may also be interested in
     <i>negative</i> results, showing that certain propositions are <i>not</i>
     true. In Coq, such negative statements are expressed with the
-    negation operator <span class="inlinecode">¬</span>.
-
+    negation operator <span class="inlinecode">¬</span>. 
 <div class="paragraph"> </div>
 
-    To see how negation works, recall the discussion of the <i>principle
+ To see how negation works, recall the discussion of the <i>principle
     of explosion</i> from the <a href="Tactics.html"><span class="inlineref">Tactics</span></a> chapter; it asserts that, if we
     assume a contradiction, then any other proposition can be derived.
     Following this intuition, we could define <span class="inlinecode">¬</span> <span class="inlinecode"><span class="id" type="var">P</span></span> ("not <span class="inlinecode"><span class="id" type="var">P</span></span>") as
     <span class="inlinecode">∀</span> <span class="inlinecode"><span class="id" type="var">Q</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>.  Coq actually makes a slightly different
     choice, defining <span class="inlinecode">¬</span> <span class="inlinecode"><span class="id" type="var">P</span></span> as <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">False</span></span>, where <span class="inlinecode"><span class="id" type="var">False</span></span> is a
-    <i>particular</i> contradictory proposition defined in the standard
+    particular contradictory proposition defined in the standard
     library. 
 </div>
 <div class="code code-tight">
@@ -572,7 +576,8 @@ Conversely, to show that a disjunction holds, we need to show that
 <div class="doc">
 Since <span class="inlinecode"><span class="id" type="var">False</span></span> is a contradictory proposition, the principle of
     explosion also applies to it. If we get <span class="inlinecode"><span class="id" type="var">False</span></span> into the proof
-    context, we can <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> it to complete any goal: 
+    context, we can use <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> (or <span class="inlinecode"><span class="id" type="tactic">inversion</span></span>) on it to complete
+    any goal: 
 </div>
 <div class="code code-tight">
 
@@ -1050,31 +1055,26 @@ Conversely, if we have an existential hypothesis <span class="inlinecode">∃</s
     simple recursive structure: 
 <div class="paragraph"> </div>
 
-
-<div class="paragraph"> </div>
-
 <ul class="doclist">
 <li> If <span class="inlinecode"><span class="id" type="var">l</span></span> is the empty list, then <span class="inlinecode"><span class="id" type="var">x</span></span> cannot occur on it, so the
-      property "<span class="inlinecode"><span class="id" type="var">x</span></span> appears in <span class="inlinecode"><span class="id" type="var">l</span></span>" is simply false.
+         property "<span class="inlinecode"><span class="id" type="var">x</span></span> appears in <span class="inlinecode"><span class="id" type="var">l</span></span>" is simply false. 
+</li>
+</ul>
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
 <li> Otherwise, <span class="inlinecode"><span class="id" type="var">l</span></span> has the form <span class="inlinecode"><span class="id" type="var">x'</span></span> <span class="inlinecode">::</span> <span class="inlinecode"><span class="id" type="var">l'</span></span>.  In this case, <span class="inlinecode"><span class="id" type="var">x</span></span>
-      occurs in <span class="inlinecode"><span class="id" type="var">l</span></span> if either it is equal to <span class="inlinecode"><span class="id" type="var">x'</span></span> or it occurs in
-      <span class="inlinecode"><span class="id" type="var">l'</span></span>.
+         occurs in <span class="inlinecode"><span class="id" type="var">l</span></span> if either it is equal to <span class="inlinecode"><span class="id" type="var">x'</span></span> or it occurs in
+         <span class="inlinecode"><span class="id" type="var">l'</span></span>. 
+</li>
+</ul>
 
 <div class="paragraph"> </div>
 
-
-</li>
-</ul>
-    We can translate this directly into a straightforward recursive
+ We can translate this directly into a straightforward recursive
     function from taking an element and a list and returning a
     proposition: 
-</li>
-</ul>
-
 </div>
 <div class="code code-tight">
 
@@ -1183,7 +1183,7 @@ This way of defining propositions recursively, though convenient
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab179"></a><h4 class="section">Exercise: 3 stars (All)</h4>
+<a name="lab179"></a><h4 class="section">Exercise: 3 stars, recommended (All)</h4>
  Recall that functions returning propositions can be seen as
     <i>properties</i> of their arguments. For instance, if <span class="inlinecode"><span class="id" type="var">P</span></span> has type
     <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>, then <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> states that property <span class="inlinecode"><span class="id" type="var">P</span></span> holds of <span class="inlinecode"><span class="id" type="var">n</span></span>.
@@ -1295,11 +1295,10 @@ To test your definition, prove the following facts:
 <div class="doc">
 Coq prints the <i>statement</i> of the <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> theorem in the same
     way that it prints the <i>type</i> of any term that we ask it to
-    <span class="inlinecode"><span class="id" type="keyword">Check</span></span>.  Why?
-
+    <span class="inlinecode"><span class="id" type="keyword">Check</span></span>.  Why? 
 <div class="paragraph"> </div>
 
-    The reason is that the identifier <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> actually refers to a
+  The reason is that the identifier <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> actually refers to a
     <i>proof object</i> &mdash; a data structure that represents a logical
     derivation establishing of the truth of the statement <span class="inlinecode">∀</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span>
     <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">nat</span>,</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span>.  The type of this object <i>is</i> the statement
@@ -1517,11 +1516,10 @@ However, we can add functional extensionality to Coq's core logic
 Using <span class="inlinecode"><span class="id" type="keyword">Axiom</span></span> has the same effect as stating a theorem and
     skipping its proof using <span class="inlinecode"><span class="id" type="var">Admitted</span></span>, but it alerts the reader that
     this isn't just something we're going to come back and fill in
-    later!
-
+    later! 
 <div class="paragraph"> </div>
 
-    We can now invoke functional extensionality in proofs: 
+ We can now invoke functional extensionality in proofs: 
 </div>
 <div class="code code-tight">
 
@@ -1548,11 +1546,10 @@ Naturally, we must be careful when adding new axioms into Coq's
 <div class="paragraph"> </div>
 
     However, it is known that adding functional extensionality, in
-    particular, <i>is</i> consistent.
-
+    particular, <i>is</i> consistent. 
 <div class="paragraph"> </div>
 
-    To check whether a particular proof relies on any additional
+ To check whether a particular proof relies on any additional
     axioms, use the <span class="inlinecode"><span class="id" type="keyword">Print</span></span> <span class="inlinecode"><span class="id" type="var">Assumptions</span></span> command.  
 </div>
 <div class="code code-tight">
@@ -1693,7 +1690,7 @@ Similarly, to state that two numbers <span class="inlinecode"><span class="id" t
 </div>
 
 <div class="doc">
-However, while the boolean and propositional formulations of a
+However, even when the boolean and propositional formulations of a
     claim are equivalent from a purely logical perspective, they need
     not be equivalent <i>operationally</i>.  Equality provides an extreme
     example: knowing that <span class="inlinecode"><span class="id" type="var">beq_nat</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span> is generally of little

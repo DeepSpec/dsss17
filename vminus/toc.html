@@ -1,0 +1,451 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Table of contents</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<script>
+
+$(document).ready(function() {
+
+    $("#accordion").show().accordion({
+        autoHeight: false
+    });
+
+    $("#accordion div").css({ 'height': 'auto' });
+});      
+
+
+$( function() {
+    var icons = {
+      header: "ui-icon-circle-arrow-e",
+      activeHeader: "ui-icon-circle-arrow-s"
+    };
+    
+    $( "#accordion" ).accordion({
+      icons: icons
+    });
+    $("#accordion").accordion({collapsible : true, active : 'none'});
+
+    $( "#toggle" ).button().on( "click", function() {
+      if ( $( "#accordion" ).accordion( "option", "icons" ) ) {
+        $( "#accordion" ).accordion( "option", "icons", null );
+      } else {
+        $( "#accordion" ).accordion( "option", "icons", icons );
+      }
+    });
+  } );
+  </script>
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+</div>
+
+<div id="main">
+
+<div id="toc">
+<div id="accordion">
+<h2><a href="Atom.html">Opaque identifiers&nbsp;&nbsp;&nbsp;&nbsp;(<i>Atom</i>)</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Atom.html">Top</a>
+<li><a href="Atom.html#lab1">The <span class="inlinecode"><span class="id" type="var">ATOM</span></span> signature</a>
+
+</li>
+<li><a href="Atom.html#lab2">Atom implementation</a>
+
+</li>
+</ul>
+</div>
+<h2><a href="Util.html">Util</a></h2>
+<h2><a href="Classes.html">Classes</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Classes.html">Top</a>
+<li><a href="Classes.html#lab3">Type classes</a>
+<div>
+<ul class="doclist">
+<li><a href="Classes.html#lab4">Decidable propositions &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</a>
+
+</li>
+<li><a href="Classes.html#lab5">Functors &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-</a>
+
+</li>
+<li><a href="Classes.html#lab6">Monads &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="Dom.html">Dom</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Dom.html">Top</a>
+<li><a href="Dom.html#lab7">GRAPH</a>
+
+</li>
+<li><a href="Dom.html#lab8">Specification of Dominators</a>
+
+</li>
+<li><a href="Dom.html#lab11">Computing Dominance Properties</a>
+
+</li>
+<li><a href="Dom.html#lab12">Full Soundness</a>
+
+</li>
+</ul>
+</div>
+<h2><a href="Env.html">Env</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Env.html">Top</a>
+<li><a href="Env.html#lab13">Environments</a>
+
+</li>
+</ul>
+</div>
+<h2><a href="Sequences.html">Sequences</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Sequences.html">Top</a>
+<li><div>
+<ul class="doclist">
+<li><a href="Sequences.html#lab14">Finite sequences of transitions</a>
+
+</li>
+<li><a href="Sequences.html#lab15">Infinite sequences of transitions</a>
+
+</li>
+<li><a href="Sequences.html#lab16">Determinism properties for functional transition relations.</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="Imp.html">Imp</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Imp.html">Top</a>
+<li><div>
+<ul class="doclist">
+<li><a href="Imp.html#lab23">Operational Semantics</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="Vminus.html">A Simple SSA Intermediate Representation&nbsp;&nbsp;&nbsp;&nbsp;(<i>Vminus</i>)</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Vminus.html">Top</a>
+<li><a href="Vminus.html#lab27">Vminus labels, identifiers, and addresses.</a>
+
+</li>
+<li><a href="Vminus.html#lab28">Values and Binary Operations</a>
+
+</li>
+<li><a href="Vminus.html#lab29">Basic block terminators</a>
+
+</li>
+<li><a href="Vminus.html#lab30">Commands</a>
+
+</li>
+</ul>
+</div>
+<h2><a href="CFG.html">CFG</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="CFG.html">Top</a>
+<li><a href="CFG.html#lab32">Program points</a>
+
+</li>
+<li><a href="CFG.html#lab33">Interface for syntactically well-formed CFGs</a>
+
+</li>
+</ul>
+</div>
+<h2><a href="ListCFG.html">ListCFG</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="ListCFG.html">Top</a>
+<li><a href="ListCFG.html#lab38">List-based CFG Implementation</a>
+
+</li>
+<li><a href="ListCFG.html#lab39">Syntactically Well-formed ListCFGs</a>
+<div>
+<ul class="doclist">
+<li><a href="ListCFG.html#lab40">Implementing the interface requirements:</a>
+
+</li>
+<li><a href="ListCFG.html#lab41">Working with ListCFG</a>
+
+</li>
+<li><a href="ListCFG.html#lab42">Simple lemmas about CFG modifications.</a>
+
+</li>
+<li><a href="ListCFG.html#lab43">Implementing fetch</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="VminusOpSem.html">VminusOpSem</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="VminusOpSem.html">Top</a>
+<li><a href="VminusOpSem.html#lab44">Vminus Operational Semantics</a>
+
+</li>
+<li><a href="VminusOpSem.html#lab52">Small-step, executable operational semantics</a>
+<div>
+<ul class="doclist">
+<li><a href="VminusOpSem.html#lab54">Correspondence between relational and executable definitions</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+<li><a href="VminusOpSem.html#lab55">Determinism of <span class="inlinecode"><span class="id" type="var">step</span></span></a>
+<div>
+<ul class="doclist">
+<li><a href="VminusOpSem.html#lab56">Instantiating the operational semantics to ListCFG</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="Stmon.html">Stmon</a></h2>
+<h2><a href="ImpProp.html">ImpProp</a></h2>
+<h2><a href="LtacDebug.html">LtacDebug</a></h2>
+<h2><a href="Compiler.html">Compiler</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="Compiler.html">Top</a>
+<li><a href="Compiler.html#lab57">Imp to Vminus Compiler</a>
+
+</li>
+<li><a href="Compiler.html#lab58">Compiling Expressions</a>
+<div>
+<ul class="doclist">
+<li><a href="Compiler.html#lab59">Compiling binops.</a>
+
+</li>
+<li><a href="Compiler.html#lab60">Compiling boolean expressions.</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="CompilerProp.html">CompilerProp</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="CompilerProp.html">Top</a>
+<li><a href="CompilerProp.html#lab61">To possibly refactor into CFGProp</a>
+<div>
+<ul class="doclist">
+<li><a href="CompilerProp.html#lab62">Correspondence between concrete and abstract CFGs.</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+<li><a href="CompilerProp.html#lab63">End refactoring</a>
+<div>
+<ul class="doclist">
+<li><a href="CompilerProp.html#lab64">Auxiliary definitions.</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+<li><a href="CompilerProp.html#lab65">Proofs start here; commented out because of QuickChick for now</a>
+
+</li>
+<li><a href="CompilerProp.html#lab66">Correctness?</a>
+<div>
+<ul class="doclist">
+<li><a href="CompilerProp.html#lab67">Simulation relation.</a>
+
+</li>
+<li><a href="CompilerProp.html#lab68">Translation simulation: First try.</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+<li><a href="CompilerProp.html#lab69">Stuttering</a>
+<div>
+<ul class="doclist">
+<li><a href="CompilerProp.html#lab70">Eliminating Stuttering</a>
+
+</li>
+<li><a href="CompilerProp.html#lab71">Lemmas about the measure.</a>
+
+</li>
+<li><a href="CompilerProp.html#lab72">Final simulation relation.</a>
+
+</li>
+<li><a href="CompilerProp.html#lab73">Relating initial states</a>
+
+</li>
+<li><a href="CompilerProp.html#lab74">Compilation invariant</a>
+
+</li>
+<li><a href="CompilerProp.html#lab75">Relating Initial Compilation</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="Iteration.html">Iteration</a></h2>
+<h2><a href="Kildall.html">Kildall</a></h2>
+<h2><a href="DomKildall.html">DomKildall</a></h2>
+<h2><a href="VminusStatics.html">VminusStatics</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="VminusStatics.html">Top</a>
+<li><a href="VminusStatics.html#lab76">SSA Invariants: Typing CFGs</a>
+
+</li>
+<li><a href="VminusStatics.html#lab77">GRAPH instance for dominance calculation</a>
+
+</li>
+<li><a href="VminusStatics.html#lab78">GRAPH instance for dominance calculation</a>
+
+</li>
+<li><a href="VminusStatics.html#lab79">Defining SSA scoping</a>
+
+</li>
+<li><a href="VminusStatics.html#lab84">Type Safety</a>
+<div>
+<ul class="doclist">
+<li><a href="VminusStatics.html#lab86">Progress &amp; Preservation</a>
+
+</li>
+<li><a href="VminusStatics.html#lab88">Progress</a>
+
+</li>
+<li><a href="VminusStatics.html#lab91">Preservation</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="AtomGen.html">AtomGen</a></h2>
+<h2><a href="ImpGen.html">ImpGen</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="ImpGen.html">Top</a>
+<li><div>
+<ul class="doclist">
+<li><a href="ImpGen.html#lab92">QuickChick infrastructure for Imp</a>
+
+</li>
+<li><a href="ImpGen.html#lab93">id</a>
+
+</li>
+<li><a href="ImpGen.html#lab94">aexp</a>
+
+</li>
+<li><a href="ImpGen.html#lab95">bexp</a>
+
+</li>
+<li><a href="ImpGen.html#lab96">com</a>
+
+</li>
+<li><a href="ImpGen.html#lab97">imp_state</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="VminusGen.html">VminusGen</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="VminusGen.html">Top</a>
+<li><div>
+<ul class="doclist">
+<li><a href="VminusGen.html#lab98">QuickChick infrastructure for Vminus</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="OpSemGen.html">OpSemGen</a></h2>
+<h2><a href="CompilerTest.html">CompilerTest</a></h2>
+<div>
+<ul class="doclist">
+<li><a href="CompilerTest.html">Top</a>
+<li><div>
+<ul class="doclist">
+<li><a href="CompilerTest.html#lab99">QuickChick and Vellvm</a>
+
+</li>
+</ul>
+</div>
+
+</li>
+</ul>
+</div>
+<h2><a href="CompilerTestAnswers.html">CompilerTestAnswers</a></h2>
+</div>
+</div>
+
+</div>
+
+</div>
+</body>
+</html>

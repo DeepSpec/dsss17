@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Vminus: A Simple SSA Intermediate Representation</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Vminus<span class="subtitle">A Simple SSA Intermediate Representation</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ This file defines the syntax and semantics for Vminus, an
+    intermediate representation that is intended to capture the
+    essence of LLVM's IR.  In particular, this language represents
+    code as a <i>control flow graph</i> whose blocks contain instructions
+    in <i>static single assignment</i> form.  This means that each
+    instruction <i>defines</i> (at most) one local identifier and that
+    those identifiers are <i>immutable</i>.  To make this work in practice,
+    SSA representations introduce the notation of <i>phi functions</i>,
+    whose value is determined by the run-time control flow of the
+    program.
+
+<div class="paragraph"> </div>
+
+    To support mutable state, Vminus also has Imp-style global
+    identifiers.
+
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab27"></a><h1 class="section">Vminus labels, identifiers, and addresses.</h1>
+
+<div class="paragraph"> </div>
+
+ Basic block labels 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Lbl</span> := <span class="id" type="var">Atom</span>.<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">lbl</span> := <span class="id" type="var">Lbl.t</span>.<br/>
+</div>
+
+<div class="doc">
+Local unique identifiers 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Uid</span> := <span class="id" type="var">Atom</span>.<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">uid</span> := <span class="id" type="var">Uid.t</span>.<br/>
+</div>
+
+<div class="doc">
+Addresses of mutable state 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Addr</span> := <span class="id" type="var">Atom</span>.<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">addr</span> := <span class="id" type="var">Addr.t</span>.<br/>
+</div>
+
+<div class="doc">
+All come equipped with decidable equality. 
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab28"></a><h1 class="section">Values and Binary Operations</h1>
+
+<div class="paragraph"> </div>
+
+ Values are just local identifiers or natural numbers 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">val</span> : <span class="id" type="keyword">Set</span> :=<br/>
+&nbsp;| <span class="id" type="var">val_uid</span>  : <span class="id" type="var">uid</span> → <span class="id" type="var">val</span><br/>
+&nbsp;| <span class="id" type="var">val_nat</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">val</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+All Vminus operations are binary arithmetic forms.  There are no
+    unary operations, nor are there assembly-language-like <span class="inlinecode"><span class="id" type="tactic">move</span></span>
+    instructions.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">bop</span> : <span class="id" type="keyword">Set</span> := <br/>
+&nbsp;| <span class="id" type="var">bop_add</span>   <span class="comment">(*&nbsp;addition&nbsp;*)</span><br/>
+&nbsp;| <span class="id" type="var">bop_sub</span>   <span class="comment">(*&nbsp;subtraction&nbsp;*)</span><br/>
+&nbsp;| <span class="id" type="var">bop_mul</span>   <span class="comment">(*&nbsp;multiplication&nbsp;*)</span><br/>
+&nbsp;| <span class="id" type="var">bop_eq</span>    <span class="comment">(*&nbsp;equality&nbsp;*)</span><br/>
+&nbsp;| <span class="id" type="var">bop_le</span>    <span class="comment">(*&nbsp;less-than-or-equal&nbsp;*)</span><br/>
+&nbsp;| <span class="id" type="var">bop_and</span>   <span class="comment">(*&nbsp;both&nbsp;non-zero&nbsp;*)</span><br/>
+.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab29"></a><h1 class="section">Basic block terminators</h1>
+
+<div class="paragraph"> </div>
+
+ Each basic block is a sequence of commands (defined next) ending
+    in a <i>terminator</i>, which is just a control flow operation.  
+    Terminators cannot appear in the middle of a well-formed basic block.
+    (We will define well-formed Vminus programs later.)
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tmn</span> : <span class="id" type="keyword">Set</span> :=<br/>
+| <span class="id" type="var">tmn_jmp</span> : <span class="id" type="var">lbl</span> → <span class="id" type="var">tmn</span>                  <span class="comment">(*&nbsp;unconditional&nbsp;jump&nbsp;*)</span><br/>
+| <span class="id" type="var">tmn_cbr</span> : <span class="id" type="var">val</span> → <span class="id" type="var">lbl</span> → <span class="id" type="var">lbl</span> → <span class="id" type="var">tmn</span>    <span class="comment">(*&nbsp;conditional&nbsp;branch&nbsp;*)</span><br/>
+| <span class="id" type="var">tmn_ret</span> : <span class="id" type="var">tmn</span>. <span class="comment">(*&nbsp;return&nbsp;*)</span><br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab30"></a><h1 class="section">Commands</h1>
+
+<div class="paragraph"> </div>
+
+ Vminus has only a few commands: binary operations, 
+    terminators, phi nodes, and <span class="inlinecode"><span class="id" type="var">load</span></span> and <span class="inlinecode"><span class="id" type="var">store</span></span> operations. 
+<div class="paragraph"> </div>
+
+ Each <span class="inlinecode"><span class="id" type="var">phiarg</span></span> associates a value with a predessor block, given by
+    a <span class="inlinecode"><span class="id" type="var">lbl</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">phiarg</span> := (<span class="id" type="var">lbl</span> * <span class="id" type="var">val</span>)%<span class="id" type="var">type</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Vminus Commands 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">cmd</span> : <span class="id" type="keyword">Set</span> :=<br/>
+| <span class="id" type="var">cmd_bop</span>   : <span class="id" type="var">bop</span> → <span class="id" type="var">val</span> → <span class="id" type="var">val</span> → <span class="id" type="var">cmd</span><br/>
+| <span class="id" type="var">cmd_phi</span>   : <span class="id" type="var">list</span> <span class="id" type="var">phiarg</span> → <span class="id" type="var">cmd</span><br/>
+| <span class="id" type="var">cmd_tmn</span>   : <span class="id" type="var">tmn</span> → <span class="id" type="var">cmd</span><br/>
+| <span class="id" type="var">cmd_load</span>  : <span class="id" type="var">addr</span> → <span class="id" type="var">cmd</span><br/>
+| <span class="id" type="var">cmd_store</span> : <span class="id" type="var">addr</span> → <span class="id" type="var">val</span> → <span class="id" type="var">cmd</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab31"></a><h3 class="section">Useful predicates about instructions</h3>
+
+<div class="paragraph"> </div>
+
+ Which values are used by an instruction? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insn_uses</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="var">list</span> <span class="id" type="var">val</span> :=<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_bop</span> <span class="id" type="var">_</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>) ⇒ [<span class="id" type="var">v<sub>1</sub></span>; <span class="id" type="var">v<sub>2</sub></span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_phi</span> <span class="id" type="var">pas</span>) ⇒ <span class="id" type="var">map</span> (@<span class="id" type="var">snd</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">pas</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">v</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>)) ⇒ [<span class="id" type="var">v</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_store</span> <span class="id" type="var">_</span> <span class="id" type="var">v</span>) ⇒ [<span class="id" type="var">v</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">_</span>) ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+Which labels appear in an instruction? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insn_lbls</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="var">list</span> <span class="id" type="var">lbl</span> :=<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">l</span>)) ⇒ [<span class="id" type="var">l</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">_</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>)) ⇒ [<span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+Which phi arguments appear in an instruction? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insn_phis</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="var">list</span> <span class="id" type="var">phiarg</span> :=<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_phi</span> <span class="id" type="var">pas</span>) ⇒ <span class="id" type="var">pas</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+Is it a terminator? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_tmn</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> := <br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">_</span>) ⇒ <span class="id" type="var">True</span> | <span class="id" type="var">_</span> ⇒ <span class="id" type="var">False</span> <span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+Is is a phi node? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_phi</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> := <br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_phi</span> <span class="id" type="var">_</span>) ⇒ <span class="id" type="var">True</span> | <span class="id" type="var">_</span> ⇒ <span class="id" type="var">False</span> <span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">is_phi_decidable</span> : ∀ <span class="id" type="var">i</span>, {<span class="id" type="var">is_phi</span> <span class="id" type="var">i</span>} + {¬<span class="id" type="var">is_phi</span> <span class="id" type="var">i</span>}.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [? <span class="id" type="var">c</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">tauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Does it define its uid? 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">defs_uid</span> (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">_</span>) | (<span class="id" type="var">_</span>, <span class="id" type="var">cmd_store</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) ⇒ <span class="id" type="var">False</span> | <span class="id" type="var">_</span> ⇒ <span class="id" type="var">True</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

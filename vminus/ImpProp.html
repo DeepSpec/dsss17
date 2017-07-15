@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>ImpProp</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">ImpProp</h1>
+
+<div class="code code-tight">
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Equalities</span> <span class="id" type="var">Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Atom</span> <span class="id" type="var">Vminus.Env</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Sequences</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Imp</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">imp_step_star_seq_append</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span>, <span class="id" type="var">imp_step_star</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">c</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">p<sub>1</sub></span> = (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st<sub>1</sub></span>) → <span class="id" type="var">p<sub>2</sub></span> = (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c</span>, <span class="id" type="var">st<sub>1</sub></span>) (<span class="id" type="var">c<sub>2</sub></span> ;; <span class="id" type="var">c</span>, <span class="id" type="var">st<sub>2</sub></span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> <span class="id" type="var">imp_step_p<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">imp_step_p<sub>1</sub></span> <span class="id" type="keyword">as</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[[<span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">st<sub>1</sub>'</span>] | [<span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">st<sub>1</sub>'</span>] [<span class="id" type="var">c_step</span> <span class="id" type="var">st_step</span>] [<span class="id" type="var">c_final</span> <span class="id" type="var">st_final</span>]];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">p1_eq</span> <span class="id" type="var">p2_eq</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">p1_eq</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">p2_eq</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">star_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">b</span> := (<span class="id" type="var">c_step</span> ;; <span class="id" type="var">c</span>, <span class="id" type="var">st_step</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">S_Seq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHimp_step_p<sub>1</sub></span>; <span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">imp_step_star_trans</span>: ∀ <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">st</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st<sub>1</sub></span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">st</span>) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">st<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st<sub>1</sub></span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">st<sub>2</sub></span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">imp1</span> <span class="id" type="var">imp2</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">imp_step_star</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">imp1</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">S_SeqSkip</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">star_trans</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">b</span> := (<span class="id" type="var">SKIP</span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">st</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">imp_step_star_seq_append</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">p<sub>1</sub></span> := (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">st<sub>1</sub></span>)) (<span class="id" type="var">p<sub>2</sub></span> := (<span class="id" type="var">SKIP</span>, <span class="id" type="var">st</span>));<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">S_SeqSkip</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">imp_step_star_seq_inversion</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span>, <span class="id" type="var">imp_step_star</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">sta</span> <span class="id" type="var">stc</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">p<sub>1</sub></span> = (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">sta</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">p<sub>2</sub></span> = (<span class="id" type="var">SKIP</span>, <span class="id" type="var">stc</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">stb</span>, <span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">sta</span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">stb</span>) ∧<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">imp_step_star</span> (<span class="id" type="var">SKIP</span> ;; <span class="id" type="var">c<sub>2</sub></span>, <span class="id" type="var">stb</span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">stc</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> <span class="id" type="var">imp_step_p<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">imp_step_p<sub>1</sub></span> <span class="id" type="keyword">as</span> [| [<span class="id" type="var">cseq'</span> <span class="id" type="var">sta'</span>] <span class="id" type="var">p</span> [<span class="id" type="var">skip'</span> <span class="id" type="var">stc'</span>] <span class="id" type="var">Hstep</span>];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">sta</span> <span class="id" type="var">stc</span> <span class="id" type="var">p1_eq</span> <span class="id" type="var">p2_eq</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">rewrite</span> <span class="id" type="var">p1_eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">p2_eq</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">p2_eq</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">p1_eq</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">p2_eq</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">p1_eq</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">p2_eq</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span> <span class="id" type="keyword">as</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ | <span class="id" type="var">sta'</span> ? ? ? ? <span class="id" type="var">H</span> | <span class="id" type="var">sta'</span> <span class="id" type="var">c<sub>2</sub>'</span> [<span class="id" type="var">c2_eq</span> <span class="id" type="var">sta_eq</span>] <span class="id" type="var">p_eq</span> | | | ];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> | <span class="id" type="var">idtac</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">sta</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span> | <span class="id" type="var">idtac</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">S_SeqSkip</span> | <span class="id" type="tactic">trivial</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>3</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">step_sta</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">step_sta</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ (<span class="id" type="var">update</span> <span class="id" type="var">sta</span> <span class="id" type="var">i</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a</span> <span class="id" type="var">sta</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">step_sta</span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st'</span> <span class="id" type="var">into</span> <span class="id" type="var">one_step_after_sta</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">into</span> <span class="id" type="var">c<sub>11</sub>'</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">p_eq</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>3</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">step_c1_1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">p_eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">c<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">IHimp_step_p<sub>1</sub></span> <span class="id" type="var">c<sub>11</sub>'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">one_step_after_sta</span> <span class="id" type="var">stc</span> (<span class="id" type="tactic">symmetry</span> <span class="id" type="var">p_eq</span>) <span class="id" type="var">eq_refl</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">IH</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">IH</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">stb</span> [<span class="id" type="var">imp1</span> <span class="id" type="var">imp2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">stb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">apply</span> <span class="id" type="var">step_c1_1</span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">imp1</span>] | <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">imp2</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st'</span> <span class="id" type="var">into</span> <span class="id" type="var">one_step_after_sta</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">into</span> <span class="id" type="var">c<sub>1</sub>'</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>3</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">step_c<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">p_eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">c<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">IHimp_step_p<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">one_step_after_sta</span> <span class="id" type="var">stc</span> (<span class="id" type="tactic">symmetry</span> <span class="id" type="var">p_eq</span>) <span class="id" type="var">eq_refl</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">IH</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">IH</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">stb</span> [<span class="id" type="var">imp1</span> <span class="id" type="var">imp2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">stb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">apply</span> <span class="id" type="var">step_c<sub>1</sub></span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">imp1</span>] | <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">imp2</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st'</span> <span class="id" type="var">into</span> <span class="id" type="var">one_step_after_sta</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">into</span> <span class="id" type="var">c<sub>1</sub>'</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>3</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">step_c<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">p_eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">c<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">IHimp_step_p<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">one_step_after_sta</span> <span class="id" type="var">stc</span> (<span class="id" type="tactic">symmetry</span> <span class="id" type="var">p_eq</span>) <span class="id" type="var">eq_refl</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">IH</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">IH</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">stb</span> [<span class="id" type="var">imp1</span> <span class="id" type="var">imp2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">stb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">apply</span> <span class="id" type="var">step_c<sub>1</sub></span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">imp1</span>] | <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">imp2</span>].<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">cases_on_imp_eval</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="keyword">match</span> ?<span class="id" type="var">imp_eval</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">_</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> = <span class="id" type="var">_</span> |- <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">imp_eval</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">middle_st</span> | ] <span class="id" type="var">eqn</span>:<span class="id" type="var">middle_st_eq</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>]<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">imp_eval_sound</span>: ∀ <span class="id" type="var">fuel</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">imp_eval</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">fuel</span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span> → <span class="id" type="var">imp_step_star</span> (<span class="id" type="var">c</span>, <span class="id" type="var">st</span>) (<span class="id" type="var">SKIP</span>, <span class="id" type="var">st'</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">fuel</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n</span>]; <span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">eval_ok</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">inversion</span> <span class="id" type="var">eval_ok</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>.<br/>
+&nbsp;&nbsp;{ <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">eval_ok</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>. }<br/>
+&nbsp;&nbsp;{ <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">eval_ok</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">S_Ass</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
+&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;{ <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">apply</span> <span class="id" type="var">S_SeqSkip</span> |<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHn</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>]];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="var">cases_on_imp_eval</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> (<span class="id" type="var">IHn</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">middle_st_eq</span>); <span class="id" type="tactic">intros</span> <span class="id" type="var">imp_single_step</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">imp_step_star_trans</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">apply</span> <span class="id" type="var">imp_single_step</span> |<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHn</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">trivial</span>]].<br/>
+&nbsp;&nbsp;} <br/>
+&nbsp;&nbsp;{ <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">eval_b</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHn</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">S_IfTrue</span>; <span class="id" type="tactic">trivial</span> | <span class="id" type="tactic">trivial</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">S_IfFalse</span>; <span class="id" type="tactic">trivial</span> | <span class="id" type="tactic">trivial</span>].<br/>
+&nbsp;&nbsp;}      <br/>
+&nbsp;&nbsp;{ <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">eval_b</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">inversion</span> <span class="id" type="var">eval_ok</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHn</span> <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> (<span class="id" type="var">imp_step_star_seq_inversion</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">eval_ok</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="var">idtac</span> | <span class="id" type="tactic">reflexivity</span> | <span class="id" type="tactic">reflexivity</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">eval_ok</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st_after_iter</span> [<span class="id" type="var">after_one_iter</span> <span class="id" type="var">the_rest</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; [<span class="id" type="var">idtac</span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">the_rest</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">S_While</span> | <span class="id" type="var">idtac</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; [<span class="id" type="tactic">apply</span> <span class="id" type="var">S_IfTrue</span>; <span class="id" type="tactic">trivial</span> | <span class="id" type="var">idtac</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">imp_step_star_seq_append</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">after_one_iter</span>); <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;}     <br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

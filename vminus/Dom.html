@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Dom</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Dom</h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<a name="lab7"></a><h1 class="section">GRAPH</h1>
+ Interface for a nonempty graph <span class="inlinecode"><span class="id" type="var">t</span></span> with: 
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> a set of <i>vertices</i> of type <span class="inlinecode"><span class="id" type="var">V</span></span>, defined by a membership predicate <span class="inlinecode"><span class="id" type="var">Mem</span></span>
+
+</li>
+<li> a distinguished <i>entry vertex</i> <span class="inlinecode"><span class="id" type="var">entry</span></span>
+
+</li>
+<li> an <i>edge relation</i> <span class="inlinecode"><span class="id" type="var">Succ</span></span>
+
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">GRAPH</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="keyword">Inline</span> <span class="id" type="var">t</span> <span class="id" type="var">V</span> : <span class="id" type="keyword">Type</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="keyword">Inline</span> <span class="id" type="var">entry</span> : <span class="id" type="var">t</span> → <span class="id" type="var">V</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="keyword">Inline</span> <span class="id" type="var">Succ</span> : <span class="id" type="var">t</span> → <span class="id" type="var">V</span> → <span class="id" type="var">V</span> → <span class="id" type="keyword">Prop</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="keyword">Inline</span> <span class="id" type="var">Mem</span> : <span class="id" type="var">t</span> → <span class="id" type="var">V</span> → <span class="id" type="keyword">Prop</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">GRAPH</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab8"></a><h1 class="section">Specification of Dominators</h1>
+
+<div class="paragraph"> </div>
+
+ This is a relational specification of the graph dominance properties that 
+    is convenient for proofs and intuitively captures the definitions. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Spec</span> (<span class="id" type="keyword">Import</span> <span class="id" type="var">G</span>:<span class="id" type="var">GRAPH</span>).<br/>
+</div>
+
+<div class="doc">
+We first define a <i>path</i> in the graph.
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><span class="id" type="var">path</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span> <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">vs</span></span> means that there is a sequence of vertices
+    starting from vertex <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> and ending at <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> that are connected by
+    the <span class="inlinecode"><span class="id" type="var">Succ</span></span> relation.  The vertices traversed on the path are those
+    listed in <span class="inlinecode"><span class="id" type="var">vs</span></span> (in reverse order).  
+
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Path</span> (<span class="id" type="var">g</span>:<span class="id" type="var">G.t</span>) : <span class="id" type="var">V</span> → <span class="id" type="var">V</span> → <span class="id" type="var">list</span> <span class="id" type="var">V</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">path_nil</span> : ∀ <span class="id" type="var">v</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">v</span> → <span class="id" type="var">Path</span> <span class="id" type="var">g</span> <span class="id" type="var">v</span> <span class="id" type="var">v</span> [<span class="id" type="var">v</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">path_cons</span> : ∀ <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">v<sub>3</sub></span> <span class="id" type="var">vs</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Path</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">vs</span> → <span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>3</sub></span> → <span class="id" type="var">Succ</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">v<sub>3</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="id" type="var">Path</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>3</sub></span> (<span class="id" type="var">v<sub>3</sub></span>::<span class="id" type="var">vs</span>).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab9"></a><h3 class="section">Definition of domination</h3>
+
+<div class="paragraph"> </div>
+
+ Vertex <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> <i>dominates</i> vertex <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> if every path starting 
+      from the entry of the graph and ending at <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> goes through <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">Dom</span> (<span class="id" type="var">g</span>:<span class="id" type="var">G.t</span>) (<span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>: <span class="id" type="var">V</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">vs</span>, <span class="id" type="var">Path</span> <span class="id" type="var">g</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>) <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">vs</span> → <span class="id" type="var">In</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">vs</span>.<br/>
+</div>
+
+<div class="doc">
+Vertex <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> <i>strictly dominates</i> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> if they are distinct and 
+     <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> dominates <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">SDom</span> (<span class="id" type="var">g</span>:<span class="id" type="var">G.t</span>) (<span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> : <span class="id" type="var">V</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v<sub>1</sub></span> ≠ <span class="id" type="var">v<sub>2</sub></span> ∧ <span class="id" type="var">Dom</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab10"></a><h3 class="section">Interaction of dominance and Succ</h3>
+
+<div class="paragraph"> </div>
+
+ The strict dominators of a vertex <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> also dominate its predecessors. 
+</div>
+<div class="code code-tight">
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">dom_step</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>2</sub></span> → <span class="id" type="var">Succ</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> → ∀ <span class="id" type="var">v'</span>, <span class="id" type="var">SDom</span> <span class="id" type="var">g</span> <span class="id" type="var">v'</span> <span class="id" type="var">v<sub>2</sub></span> → <span class="id" type="var">Dom</span> <span class="id" type="var">g</span> <span class="id" type="var">v'</span> <span class="id" type="var">v<sub>1</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">SDom</span>, <span class="id" type="var">Dom</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">Hmem</span> <span class="id" type="var">Hsucc</span> <span class="id" type="var">v'</span> [<span class="id" type="var">Hneq</span> <span class="id" type="var">Hdom</span>] <span class="id" type="var">p</span> <span class="id" type="var">Hp</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (<span class="id" type="var">In</span> <span class="id" type="var">v'</span> (<span class="id" type="var">v<sub>2</sub></span>::<span class="id" type="var">p</span>)). <span class="id" type="tactic">inversion</span> 1; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">intuition</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hdom</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">path_cons</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Spec</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab11"></a><h1 class="section">Computing Dominance Properties</h1>
+
+<div class="paragraph"> </div>
+
+ As usual, if we want to run the dominance calculation, we need an executable
+    version of the specification.  For dominance, we can think of an implementation
+    as an function that takes a graph and produces a mapping that sends each
+    vertex to its set of strict dominators.  Any correct implementation must be sound 
+    (and complete) with respect to the relational spec defined above.  This 
+    interface capture the requirements of such an implementation.
+
+<div class="paragraph"> </div>
+
+    Full soundness follows from an "unrolled" version of the <span class="inlinecode"><span class="id" type="var">dom_step</span></span> property.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">Algdom</span> (<span class="id" type="keyword">Import</span> <span class="id" type="var">G</span>:<span class="id" type="var">GRAPH</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">GS</span> := <span class="id" type="var">Spec</span> <span class="id" type="var">G</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Declare Module</span> <span class="id" type="var">E</span> : <span class="id" type="var">UsualDecidableType</span> <span class="id" type="keyword">with</span> <span class="id" type="keyword">Definition</span> <span class="id" type="var">t</span> := <span class="id" type="var">V</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Declare Module</span> <span class="id" type="var">NS</span> : <span class="id" type="var">FSetInterface.WS</span> <span class="id" type="keyword">with</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">E</span>:=<span class="id" type="var">E</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="var">L</span> := <span class="id" type="var">BoundedSet</span> <span class="id" type="var">NS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Include</span> <span class="id" type="var">EqLeNotation</span> <span class="id" type="var">L</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">calc_sdom</span> : <span class="id" type="var">G.t</span> → <span class="id" type="var">option</span> (<span class="id" type="var">V</span> → <span class="id" type="var">L.t</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">entry_sound</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sdom</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>) == <span class="id" type="var">L.top</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">successors_sound</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> → <span class="id" type="var">Mem</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>2</sub></span> → <span class="id" type="var">Succ</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">L.union</span> (<span class="id" type="var">L.singleton</span> <span class="id" type="var">n<sub>1</sub></span>) (<span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span>) ≤ <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>2</sub></span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">complete</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SDom</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> → <span class="id" type="var">L.In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>2</sub></span>).<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Algdom</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab12"></a><h1 class="section">Full Soundness</h1>
+
+<div class="paragraph"> </div>
+
+ The full soundness result follows as a corollary of the <span class="inlinecode"><span class="id" type="var">entry_sound</span></span> and
+    <span class="inlinecode"><span class="id" type="var">successors_sound</span></span> properties of <span class="inlinecode"><span class="id" type="var">Algdom</span></span>.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">AlgdomProperties</span> (<span class="id" type="keyword">Import</span> <span class="id" type="var">G</span>:<span class="id" type="var">GRAPH</span>) (<span class="id" type="keyword">Import</span> <span class="id" type="var">A</span> : <span class="id" type="var">Algdom</span> <span class="id" type="var">G</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">GS</span> := <span class="id" type="var">Spec</span> <span class="id" type="var">G</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">sound</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">calc_sdom</span> <span class="id" type="var">g</span> = <span class="id" type="var">Some</span> <span class="id" type="var">sdom</span> →              <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">L.In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">sdom</span> <span class="id" type="var">n<sub>2</sub></span>) → <span class="id" type="var">Dom</span> <span class="id" type="var">g</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="var">remember</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>). <span class="id" type="tactic">induction</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> <span class="id" type="var">entry_sound</span> <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">H</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">sdom</span> (<span class="id" type="var">entry</span> <span class="id" type="var">g</span>)); <span class="id" type="tactic">try</span> <span class="id" type="var">contradiction</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">L.SFacts.empty_iff</span>. <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">E.eq_dec</span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">n<sub>1</sub></span>). <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">intuition</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHPath</span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">sdom</span> <span class="id" type="var">v<sub>2</sub></span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqv2</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (<span class="id" type="var">NS.In</span> <span class="id" type="var">n<sub>1</sub></span> (<span class="id" type="var">NS.union</span> (<span class="id" type="var">NS.singleton</span> <span class="id" type="var">v<sub>2</sub></span>) <span class="id" type="var">t<sub>0</sub></span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">Hin</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">NS.union_1</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hin</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">Hin</span> | <span class="id" type="var">Hin</span>]; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">NS.singleton_1</span>. <span class="id" type="tactic">assumption</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> <span class="id" type="var">successors_sound</span> <span class="id" type="var">g</span> <span class="id" type="var">sdom</span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">v<sub>3</sub></span> <span class="id" type="keyword">as</span> <span class="id" type="var">Hss</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hss</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqv2</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hss</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hss</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">sdom</span> <span class="id" type="var">v<sub>3</sub></span>). <span class="id" type="tactic">apply</span> <span class="id" type="var">Hss</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hss</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">AlgdomProperties</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

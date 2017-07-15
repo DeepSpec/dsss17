@@ -15,7 +15,7 @@ Require Import Imp.
     startlingly short!  Used properly, they can also make proofs more
     maintainable and robust to changes in underlying definitions.  A
     deeper treatment of [auto] and [eauto] can be found in the
-    [UseAuto] chapter.
+    [UseAuto] chapter in _Programming Language Foundations_.
 
     There's another major category of automation we haven't discussed
     much yet, namely built-in decision procedures for specific kinds
@@ -81,12 +81,11 @@ Proof.
 Qed.
 
 (** The [auto] tactic frees us from this drudgery by _searching_ for a
-    sequence of applications that will prove the goal *)
+    sequence of applications that will prove the goal: *)
 
 Example auto_example_1' : forall (P Q R: Prop),
   (P -> Q) -> (Q -> R) -> P -> R.
 Proof.
-  intros P Q R H1 H2 H3.
   auto.
 Qed.
 
@@ -143,7 +142,7 @@ Example auto_example_4 : forall P Q R : Prop,
 Proof. auto. Qed.
 
 (** We can extend the hint database just for the purposes of one
-    application of [auto] by writing [auto using ...]. *)
+    application of [auto] by writing "[auto using ...]". *)
 
 Lemma le_antisym : forall n m: nat, (n <= m /\ m <= n) -> n = m.
 Proof. intros. omega. Qed.
@@ -154,7 +153,6 @@ Example auto_example_6 : forall n m p : nat,
   n = m.
 Proof.
   intros.
-  auto. (* does nothing: auto doesn't destruct hypotheses! *)
   auto using le_antisym.
 Qed.
 
@@ -181,6 +179,10 @@ Qed.
     of [d], thus enabling further possibilities for applying lemmas that
     it knows about. *)
 
+(** It is also possible to define specialized hint databases that can
+    be activated only when needed.  See the Coq reference manual for
+    more. *)
+
 Hint Resolve le_antisym.
 
 Example auto_example_6' : forall n m p : nat,
@@ -192,7 +194,7 @@ Proof.
   auto. (* picks up hint from database *)
 Qed.
 
-Definition is_fortytwo x := x = 42.
+Definition is_fortytwo x := (x = 42).
 
 Example auto_example_7: forall x, (x <= 42 /\ 42 <= x) -> is_fortytwo x.
 Proof.
@@ -376,7 +378,7 @@ Proof.
     Currently we have phrased these as assertions, so that we have to
     predict what the resulting equality will be (although we can then
     use [auto] to prove it).  An alternative is to pick the relevant
-    hypotheses to use and then rewrite with them, as follows: *)
+    hypotheses to use and then [rewrite] with them, as follows: *)
 
 Theorem ceval_deterministic'''': forall c st st1 st2,
      c / st \\ st1  ->
@@ -424,6 +426,7 @@ Ltac find_eqn :=
     - [rewrite] will fail given a trivial equation of the form [X = X];
     - we can wrap the whole thing in a [repeat], which will keep doing
       useful rewrites until only trivial ones are left. *)
+
 
 Theorem ceval_deterministic''''': forall c st st1 st2,
      c / st \\ st1  ->
@@ -507,9 +510,9 @@ Inductive ceval : state -> com -> state -> Prop :=
 Notation "c1 '/' st '\\' st'" := (ceval st c1 st')
                                  (at level 40, st at level 39).
 
-(** Our first attempt at the proof is disappointing: the [E_RepeatEnd]
-    and [E_RepeatLoop] cases are not handled by our previous
-    automation. *)
+(** Our first attempt at the determinacy proof is disappointing: the
+    [E_RepeatEnd] and [E_RepeatLoop] cases are not handled by our
+    previous automation. *)
 
 Theorem ceval_deterministic: forall c st st1 st2,
      c / st \\ st1  ->
@@ -530,8 +533,8 @@ Proof.
         find_rwinv.
 Qed.
 
-(** To fix this, we just have to swap the invocations of [find_eqn]
-    and [find_rwinv]. *)
+(** Fortunately, to fix this, we just have to swap the invocations of
+    [find_eqn] and [find_rwinv]. *)
 
 Theorem ceval_deterministic': forall c st st1 st2,
      c / st \\ st1  ->
@@ -576,8 +579,6 @@ Proof.
 Qed.
 
 
-
-
 (** In the first step of the proof, we had to explicitly provide a
     longish expression to help Coq instantiate a "hidden" argument to
     the [E_Seq] constructor.  This was needed because the definition
@@ -598,8 +599,7 @@ Qed.
    will actually become obvious in the very next step, where we apply
    [E_Ass].  If Coq could just wait until we get to this step, there
    would be no need to give the value explicitly.  This is exactly what
-   the [eapply] tactic gives us:
-*)
+   the [eapply] tactic gives us: *)
 
 Example ceval'_example1:
     (X ::= ANum 2;;
@@ -654,4 +654,4 @@ Proof. eauto. Qed.
 (** The [eauto] tactic works just like [auto], except that it uses
     [eapply] instead of [apply]. *)
 
-(** $Date: 2017-05-24 10:56:51 -0400 (Wed, 24 May 2017) $ *)
+(** $Date: 2017-07-15 16:03:20 -0400 (Sat, 15 Jul 2017) $ *)

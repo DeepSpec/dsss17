@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -159,8 +160,8 @@ As with ordinary data values and functions, we can use the <span class="inlineco
 </div>
 
 <div class="doc">
-As a matter of fact, we can also write down this proof object
-    <i>directly</i>, without the need for a separate proof script: 
+Indeed, we can also write down this proof object <i>directly</i>,
+    without the need for a separate proof script: 
 </div>
 <div class="code code-tight">
 
@@ -203,14 +204,6 @@ The expression <span class="inlinecode"><span class="id" type="var">ev_SS</span>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-We can now see that this feature is a trivial consequence of the
-    status the Coq grants to proofs and propositions: Lemmas and
-    hypotheses can be combined in expressions (i.e., proof objects)
-    according to the same basic rules used for programs in the
-    language. 
 </div>
 
 <div class="doc">
@@ -372,8 +365,8 @@ Recall that <span class="inlinecode"><span class="id" type="keyword">fun</span><
 
 <div class="doc">
 When we view the proposition being proved by <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> as a
-    function type, one aspect of it may seem a little unusual. The
-    second argument's type, <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>, mentions the <i>value</i> of the first
+    function type, one interesting point becomes apparent: The second
+    argument's type, <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>, mentions the <i>value</i> of the first
     argument, <span class="inlinecode"><span class="id" type="var">n</span></span>.  While such <i>dependent types</i> are not found in
     conventional programming languages, they can be useful in
     programming too, as the recent flurry of activity in the
@@ -663,11 +656,10 @@ This may benefit from a little unpacking.  The core definition is
     the form <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>, where <span class="inlinecode"><span class="id" type="var">P</span></span> itself is a <i>function</i> from witness
     values in the type <span class="inlinecode"><span class="id" type="var">A</span></span> to propositions.  The <span class="inlinecode"><span class="id" type="var">ex_intro</span></span>
     constructor then offers a way of constructing evidence for <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>,
-    given a witness <span class="inlinecode"><span class="id" type="var">x</span></span> and a proof of <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>.
-
+    given a witness <span class="inlinecode"><span class="id" type="var">x</span></span> and a proof of <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>. 
 <div class="paragraph"> </div>
 
-    The more familiar form <span class="inlinecode">∃</span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> desugars to an expression
+ The more familiar form <span class="inlinecode">∃</span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> desugars to an expression
     involving <span class="inlinecode"><span class="id" type="var">ex</span></span>: 
 </div>
 <div class="code code-tight">
@@ -834,10 +826,6 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 
 <br/>
 <span class="id" type="keyword">End</span> <span class="id" type="var">MyEquality</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">quiz6</span> : ∃ <span class="id" type="var">x</span>,  <span class="id" type="var">x</span> + 3 = 4<br/>
-&nbsp;&nbsp;:= <span class="id" type="var">ex_intro</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">z</span> ⇒ (<span class="id" type="var">z</span> + 3 = 4)) 1 (<span class="id" type="var">refl_equal</span> 4).<br/>
 </div>
 
 <div class="doc">
@@ -908,30 +896,28 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 
 <div class="paragraph"> </div>
 
- <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">or</span></span>, there are two
-   constructors, so two subgoals get generated.  The
-   conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
-   place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
-   any extra equalities in the context of the subgoal.
-
+ <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">or</span></span>, there are
+    two constructors, so two subgoals get generated.  The
+    conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
+    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
+    any extra equalities in the context of the subgoal. 
 <div class="paragraph"> </div>
 
-   <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">and</span></span>, there is
-   only one constructor, so only one subgoal gets generated.  Again,
-   the conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
-   place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
-   any extra equalities in the context of the subgoal.  The
-   constructor does have two arguments, though, and these can be seen
-   in the context in the subgoal.
-
+ <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">and</span></span>, there is
+    only one constructor, so only one subgoal gets generated.  Again,
+    the conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
+    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
+    any extra equalities in the context of the subgoal.  The
+    constructor does have two arguments, though, and these can be seen
+    in the context in the subgoal. 
 <div class="paragraph"> </div>
 
-   <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">eq</span></span>, there is
-   again only one constructor, so only one subgoal gets generated.
-   Now, though, the form of the <span class="inlinecode"><span class="id" type="var">refl_equal</span></span> constructor does give us
-   some extra information: it tells us that the two arguments to <span class="inlinecode"><span class="id" type="var">eq</span></span>
-   must be the same!  The <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic adds this fact to the
-   context. 
+ <i>Example</i>: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">eq</span></span>, there is
+    again only one constructor, so only one subgoal gets generated.
+    Now, though, the form of the <span class="inlinecode"><span class="id" type="var">refl_equal</span></span> constructor does give us
+    some extra information: it tells us that the two arguments to <span class="inlinecode"><span class="id" type="var">eq</span></span>
+    must be the same!  The <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic adds this fact to the
+    context. 
 <div class="paragraph"> </div>
 
   

@@ -396,7 +396,7 @@ with parseSequencedCommand (steps:nat)
       DO (c, rest) <==
         parseSimpleCommand steps' xs;
       DO (c', rest') <--
-        firstExpect ";" 
+        firstExpect ";;" 
           (parseSequencedCommand steps') rest;
         SomeE(c ;; c', rest')
       OR
@@ -495,4 +495,4 @@ Compute parse "
 
 (* /DROP *)
 
-(** $Date: 2017-04-26 17:33:43 -0400 (Wed, 26 Apr 2017) $ *)
+(** $Date: 2017-07-11 11:00:01 -0400 (Tue, 11 Jul 2017) $ *)

@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -1251,11 +1252,10 @@ The reason that <span class="inlinecode"><span class="id" type="tactic">simpl</s
     unfolding <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode">(<span class="id" type="var">m</span>+1)</span> leaves a <span class="inlinecode"><span class="id" type="keyword">match</span></span> whose scrutinee is a
     function application (that, itself, cannot be simplified, even
     after unfolding the definition of <span class="inlinecode">+</span>), so <span class="inlinecode"><span class="id" type="tactic">simpl</span></span> leaves it
-    alone.
-
+    alone. 
 <div class="paragraph"> </div>
 
-    At this point, there are two ways to make progress.  One is to use
+ At this point, there are two ways to make progress.  One is to use
     <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> to break the proof into two cases, each focusing on a
     more concrete choice of <span class="inlinecode"><span class="id" type="var">m</span></span> (<span class="inlinecode"><span class="id" type="var">O</span></span> vs <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span>).  In each case, the
     <span class="inlinecode"><span class="id" type="keyword">match</span></span> inside of <span class="inlinecode"><span class="id" type="var">bar</span></span> can now make progress, and the proof is
@@ -1276,11 +1276,10 @@ The reason that <span class="inlinecode"><span class="id" type="tactic">simpl</s
 <div class="doc">
 This approach works, but it depends on our recognizing that the
     <span class="inlinecode"><span class="id" type="keyword">match</span></span> hidden inside <span class="inlinecode"><span class="id" type="var">bar</span></span> is what was preventing us from making
-    progress.
-
+    progress. 
 <div class="paragraph"> </div>
 
-    A more straightforward way to make progress is to explicitly tell
+ A more straightforward way to make progress is to explicitly tell
     Coq to unfold <span class="inlinecode"><span class="id" type="var">bar</span></span>. 
 </div>
 <div class="code code-tight">

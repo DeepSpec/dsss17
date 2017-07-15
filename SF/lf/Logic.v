@@ -26,10 +26,13 @@ Check forall n m : nat, n + m = m + n.
 (* ===> Prop *)
 
 (** Note that _all_ syntactically well-formed propositions have type
-    [Prop] in Coq, regardless of whether they are true or not.
+    [Prop] in Coq, regardless of whether they are true or not. *)
 
-    Simply _being_ a proposition is one thing; being _provable_ is
+(** Simply _being_ a proposition is one thing; being _provable_ is
     something else! *)
+
+Check 2 = 2.
+(* ===> Prop *)
 
 Check forall n : nat, n = 2.
 (* ===> Prop *)
@@ -37,11 +40,12 @@ Check forall n : nat, n = 2.
 Check 3 = 4.
 (* ===> Prop *)
 
-(** Indeed, propositions don't just have types: they are _first-class
-    objects_ that can be manipulated in the same ways as the other
-    entities in Coq's world.  So far, we've seen one primary place
-    that propositions can appear: in [Theorem] (and [Lemma] and
-    [Example]) declarations. *)
+(** Indeed, propositions don't just have types: they are
+    _first-class objects_ that can be manipulated in the same ways as
+    the other entities in Coq's world. *)
+
+(** So far, we've seen one primary place that propositions can appear:
+    in [Theorem] (and [Lemma] and [Example]) declarations. *)
 
 Theorem plus_2_2_is_4 :
   2 + 2 = 4.
@@ -76,7 +80,7 @@ Check is_three.
 (* ===> nat -> Prop *)
 
 (** In Coq, functions that return propositions are said to define
-    _properties_ of their arguments.
+    _properties_ of their arguments. 
 
     For instance, here's a (polymorphic) property defining the
     familiar notion of an _injective function_. *)
@@ -269,9 +273,9 @@ Check and.
 (** Another important connective is the _disjunction_, or _logical or_
     of two propositions: [A \/ B] is true when either [A] or [B]
     is.  (Alternatively, we can write [or A B], where [or : Prop ->
-    Prop -> Prop].)
+    Prop -> Prop].) *)
 
-    To use a disjunctive hypothesis in a proof, we proceed by case
+(** To use a disjunctive hypothesis in a proof, we proceed by case
     analysis, which, as for [nat] or other data types, can be done
     with [destruct] or [intros].  Here is an example: *)
 
@@ -334,15 +338,15 @@ Proof.
     associative, etc.  Of course, we may also be interested in
     _negative_ results, showing that certain propositions are _not_
     true. In Coq, such negative statements are expressed with the
-    negation operator [~].
+    negation operator [~]. *)
 
-    To see how negation works, recall the discussion of the _principle
+(** To see how negation works, recall the discussion of the _principle
     of explosion_ from the [Tactics] chapter; it asserts that, if we
     assume a contradiction, then any other proposition can be derived.
     Following this intuition, we could define [~ P] ("not [P]") as
     [forall Q, P -> Q].  Coq actually makes a slightly different
     choice, defining [~ P] as [P -> False], where [False] is a
-    _particular_ contradictory proposition defined in the standard
+    particular contradictory proposition defined in the standard
     library. *)
 
 Module MyNot.
@@ -358,7 +362,8 @@ End MyNot.
 
 (** Since [False] is a contradictory proposition, the principle of
     explosion also applies to it. If we get [False] into the proof
-    context, we can [destruct] it to complete any goal: *)
+    context, we can use [destruct] (or [inversion]) on it to complete
+    any goal: *)
 
 Theorem ex_falso_quodlibet : forall (P:Prop),
   False -> P.
@@ -683,15 +688,13 @@ Proof.
     To illustrate, let's look at how to express the claim that an
     element [x] occurs in a list [l].  Notice that this property has a
     simple recursive structure: *)
+(**    - If [l] is the empty list, then [x] cannot occur on it, so the
+         property "[x] appears in [l]" is simply false. *)
+(**    - Otherwise, [l] has the form [x' :: l'].  In this case, [x]
+         occurs in [l] if either it is equal to [x'] or it occurs in
+         [l']. *)
 
-(** - If [l] is the empty list, then [x] cannot occur on it, so the
-      property "[x] appears in [l]" is simply false.
-
-    - Otherwise, [l] has the form [x' :: l'].  In this case, [x]
-      occurs in [l] if either it is equal to [x'] or it occurs in
-      [l'].
-
-    We can translate this directly into a straightforward recursive
+(** We can translate this directly into a straightforward recursive
     function from taking an element and a list and returning a
     proposition: *)
 
@@ -767,7 +770,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (All)  *)
+(** **** Exercise: 3 stars, recommended (All)  *)
 (** Recall that functions returning propositions can be seen as
     _properties_ of their arguments. For instance, if [P] has type
     [nat -> Prop], then [P n] states that property [P] holds of [n].
@@ -847,9 +850,9 @@ Check plus_comm.
 
 (** Coq prints the _statement_ of the [plus_comm] theorem in the same
     way that it prints the _type_ of any term that we ask it to
-    [Check].  Why?
+    [Check].  Why? *)
 
-    The reason is that the identifier [plus_comm] actually refers to a
+(**  The reason is that the identifier [plus_comm] actually refers to a
     _proof object_ -- a data structure that represents a logical
     derivation establishing of the truth of the statement [forall n m
     : nat, n + m = m + n].  The type of this object _is_ the statement
@@ -1004,9 +1007,9 @@ Axiom functional_extensionality : forall {X Y: Type}
 (** Using [Axiom] has the same effect as stating a theorem and
     skipping its proof using [Admitted], but it alerts the reader that
     this isn't just something we're going to come back and fill in
-    later!
+    later! *)
 
-    We can now invoke functional extensionality in proofs: *)
+(** We can now invoke functional extensionality in proofs: *)
 
 Example function_equality_ex2 :
   (fun x => plus x 1) = (fun x => plus 1 x).
@@ -1024,9 +1027,9 @@ Qed.
     consistency of any particular combination of axioms.
 
     However, it is known that adding functional extensionality, in
-    particular, _is_ consistent.
+    particular, _is_ consistent. *)
 
-    To check whether a particular proof relies on any additional
+(** To check whether a particular proof relies on any additional
     axioms, use the [Print Assumptions] command.  *)
 
 Print Assumptions function_equality_ex2.
@@ -1116,7 +1119,7 @@ Proof.
   - intros H. rewrite H. rewrite <- beq_nat_refl. reflexivity.
 Qed.
 
-(** However, while the boolean and propositional formulations of a
+(** However, even when the boolean and propositional formulations of a
     claim are equivalent from a purely logical perspective, they need
     not be equivalent _operationally_.  Equality provides an extreme
     example: knowing that [beq_nat n m = true] is generally of little
@@ -1441,4 +1444,4 @@ Definition implies_to_or := forall P Q:Prop,
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2017-04-26 17:33:43 -0400 (Wed, 26 Apr 2017) $ *)
+(** $Date: 2017-07-14 19:07:15 -0400 (Fri, 14 Jul 2017) $ *)

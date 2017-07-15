@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -51,7 +52,7 @@ Up to now, we've used the more manual part of Coq's tactic
     startlingly short!  Used properly, they can also make proofs more
     maintainable and robust to changes in underlying definitions.  A
     deeper treatment of <span class="inlinecode"><span class="id" type="tactic">auto</span></span> and <span class="inlinecode"><span class="id" type="tactic">eauto</span></span> can be found in the
-    <span class="inlinecode"><span class="id" type="var">UseAuto</span></span> chapter.
+    <span class="inlinecode"><span class="id" type="var">UseAuto</span></span> chapter in <i>Programming Language Foundations</i>.
 
 <div class="paragraph"> </div>
 
@@ -133,7 +134,7 @@ Up to now, we've used the more manual part of Coq's tactic
 
 <div class="doc">
 The <span class="inlinecode"><span class="id" type="tactic">auto</span></span> tactic frees us from this drudgery by <i>searching</i> for a
-    sequence of applications that will prove the goal 
+    sequence of applications that will prove the goal: 
 </div>
 <div class="code code-tight">
 
@@ -141,7 +142,6 @@ The <span class="inlinecode"><span class="id" type="tactic">auto</span></span> t
 <span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_1'</span> : ∀ (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>: <span class="id" type="keyword">Prop</span>),<br/>
 &nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">Q</span>) → (<span class="id" type="var">Q</span> → <span class="id" type="var">R</span>) → <span class="id" type="var">P</span> → <span class="id" type="var">R</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">H<sub>3</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
@@ -225,7 +225,7 @@ When searching for potential proofs of the current goal,
 
 <div class="doc">
 We can extend the hint database just for the purposes of one
-    application of <span class="inlinecode"><span class="id" type="tactic">auto</span></span> by writing <span class="inlinecode"><span class="id" type="tactic">auto</span></span> <span class="inlinecode"><span class="id" type="keyword">using</span></span> <span class="inlinecode">...</span>. 
+    application of <span class="inlinecode"><span class="id" type="tactic">auto</span></span> by writing "<span class="inlinecode"><span class="id" type="tactic">auto</span></span> <span class="inlinecode"><span class="id" type="keyword">using</span></span> <span class="inlinecode">...</span>". 
 </div>
 <div class="code code-tight">
 
@@ -240,7 +240,6 @@ We can extend the hint database just for the purposes of one
 &nbsp;&nbsp;<span class="id" type="var">n</span> = <span class="id" type="var">m</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">auto</span>. <span class="comment">(*&nbsp;does&nbsp;nothing:&nbsp;auto&nbsp;doesn't&nbsp;destruct&nbsp;hypotheses!&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">auto</span> <span class="id" type="keyword">using</span> <span class="id" type="var">le_antisym</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
@@ -285,6 +284,11 @@ Of course, in any given development there will probably be
     where <span class="inlinecode"><span class="id" type="var">d</span></span> is a defined symbol, so that <span class="inlinecode"><span class="id" type="tactic">auto</span></span> knows to expand uses
     of <span class="inlinecode"><span class="id" type="var">d</span></span>, thus enabling further possibilities for applying lemmas that
     it knows about. 
+<div class="paragraph"> </div>
+
+ It is also possible to define specialized hint databases that can
+    be activated only when needed.  See the Coq reference manual for
+    more. 
 </div>
 <div class="code code-tight">
 
@@ -302,7 +306,7 @@ Of course, in any given development there will probably be
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span> := <span class="id" type="var">x</span> = 42.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span> := (<span class="id" type="var">x</span> = 42).<br/>
 
 <br/>
 <span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_7</span>: ∀ <span class="id" type="var">x</span>, (<span class="id" type="var">x</span> ≤ 42 ∧ 42 ≤ <span class="id" type="var">x</span>) → <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span>.<br/>
@@ -538,7 +542,7 @@ Let's see about the remaining cases. Each of them involves
     Currently we have phrased these as assertions, so that we have to
     predict what the resulting equality will be (although we can then
     use <span class="inlinecode"><span class="id" type="tactic">auto</span></span> to prove it).  An alternative is to pick the relevant
-    hypotheses to use and then rewrite with them, as follows: 
+    hypotheses to use and then <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> with them, as follows: 
 </div>
 <div class="code code-tight">
 
@@ -709,9 +713,9 @@ The big payoff in this approach is that our proof script
 </div>
 
 <div class="doc">
-Our first attempt at the proof is disappointing: the <span class="inlinecode"><span class="id" type="var">E_RepeatEnd</span></span>
-    and <span class="inlinecode"><span class="id" type="var">E_RepeatLoop</span></span> cases are not handled by our previous
-    automation. 
+Our first attempt at the determinacy proof is disappointing: the
+    <span class="inlinecode"><span class="id" type="var">E_RepeatEnd</span></span> and <span class="inlinecode"><span class="id" type="var">E_RepeatLoop</span></span> cases are not handled by our
+    previous automation. 
 </div>
 <div class="code code-tight">
 
@@ -737,8 +741,8 @@ Our first attempt at the proof is disappointing: the <span class="inlinecode"><s
 </div>
 
 <div class="doc">
-To fix this, we just have to swap the invocations of <span class="inlinecode"><span class="id" type="var">find_eqn</span></span>
-    and <span class="inlinecode"><span class="id" type="var">find_rwinv</span></span>. 
+Fortunately, to fix this, we just have to swap the invocations of
+    <span class="inlinecode"><span class="id" type="var">find_eqn</span></span> and <span class="inlinecode"><span class="id" type="var">find_rwinv</span></span>. 
 </div>
 <div class="code code-tight">
 
@@ -822,8 +826,7 @@ In the first step of the proof, we had to explicitly provide a
    will actually become obvious in the very next step, where we apply
    <span class="inlinecode"><span class="id" type="var">E_Ass</span></span>.  If Coq could just wait until we get to this step, there
    would be no need to give the value explicitly.  This is exactly what
-   the <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> tactic gives us:
-
+   the <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> tactic gives us: 
 </div>
 <div class="code code-tight">
 

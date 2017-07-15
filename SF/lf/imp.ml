@@ -1858,7 +1858,7 @@ and parseSequencedCommand steps xs =
     match parseSimpleCommand steps' xs with
     | SomeE p ->
       let Pair (c, rest) = p in
-      (match firstExpect (String (';', EmptyString))
+      (match firstExpect (String (';', (String (';', EmptyString))))
                (parseSequencedCommand steps') rest with
        | SomeE p0 ->
          let Pair (c', rest') = p0 in SomeE (Pair ((CSeq (c, c')), rest'))

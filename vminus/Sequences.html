@@ -1,0 +1,475 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Sequences</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Sequences</h1>
+
+<div class="code code-tight">
+<span class="comment">(*&nbsp;<br/>
+&nbsp;&nbsp;Acknowledgements:&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;This&nbsp;file&nbsp;is&nbsp;taken&nbsp;from&nbsp;the&nbsp;compiler&nbsp;verification&nbsp;development&nbsp;created&nbsp;by&nbsp;<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;Xavier&nbsp;Leroy,&nbsp;INRIA&nbsp;Paris-Rocquencourt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+<br/>
+&nbsp;&nbsp;and&nbsp;available&nbsp;at:&nbsp;http://gallium.inria.fr/~xleroy/courses/Eugene-2012/<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+A library of relation operators defining sequences of transitions
+  and useful properties about them. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Section</span> <span class="id" type="var">SEQUENCES</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>. <span class="comment">(**r&nbsp;the&nbsp;type&nbsp;of&nbsp;states&nbsp;*)</span><br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">R</span>: <span class="id" type="var">A</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>. <span class="comment">(**r&nbsp;the&nbsp;transition&nbsp;relation,&nbsp;from&nbsp;one&nbsp;state&nbsp;to&nbsp;the&nbsp;next&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab14"></a><h2 class="section">Finite sequences of transitions</h2>
+
+<div class="paragraph"> </div>
+
+ Zero, one or several transitions: reflexive, transitive closure of <span class="inlinecode"><span class="id" type="var">R</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">star</span>: <span class="id" type="var">A</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">star_refl</span>: ∀ <span class="id" type="var">a</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">star_step</span>: ∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">star</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_one</span>:<br/>
+&nbsp;&nbsp;∀ (<span class="id" type="var">a</span> <span class="id" type="var">b</span>: <span class="id" type="var">A</span>), <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">constructor</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_trans</span>:<br/>
+&nbsp;&nbsp;∀ (<span class="id" type="var">a</span> <span class="id" type="var">b</span>: <span class="id" type="var">A</span>), <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → ∀ <span class="id" type="var">c</span>, <span class="id" type="var">star</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> 1; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+One or several transitions: transitive closure of <span class="inlinecode"><span class="id" type="var">R</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">plus</span>: <span class="id" type="var">A</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">plus_left</span>: ∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">star</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">plus_one</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>, <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_left</span> <span class="id" type="keyword">with</span> <span class="id" type="var">b</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">plus_star</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">plus_star_trans</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>, <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">star</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_left</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">plus_star_trans'</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">plus</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_left</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_plus_trans</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">plus</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">plus_right</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> → <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_plus_trans</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_one</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab15"></a><h2 class="section">Infinite sequences of transitions</h2>
+
+<div class="paragraph"> </div>
+
+ It is easy to characterize the fact that all transition sequences starting
+  from a state <span class="inlinecode"><span class="id" type="var">a</span></span> are infinite: it suffices to say that any finite sequence
+  starting from <span class="inlinecode"><span class="id" type="var">a</span></span> can always be extended by one more transition. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">all_seq_inf</span> (<span class="id" type="var">a</span>: <span class="id" type="var">A</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → ∃ <span class="id" type="var">c</span>, <span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>.<br/>
+</div>
+
+<div class="doc">
+However, this is not the notion we are trying to characterize: that, starting
+  from <span class="inlinecode"><span class="id" type="var">a</span></span>, there exists one infinite sequence of transitions
+  <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode"><span class="id" type="var">a<sub>1</sub></span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode"><span class="id" type="var">a<sub>2</sub></span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode">...</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">aN</span></span> <span class="inlinecode">→</span> <span class="inlinecode">...</span>.
+
+<div class="paragraph"> </div>
+
+  Indeed, consider <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> and <span class="inlinecode"><span class="id" type="var">R</span></span> such that <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode">0</span> <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode">0</span> <span class="inlinecode">1</span>.  
+  <span class="inlinecode"><span class="id" type="var">all_seq_inf</span></span> <span class="inlinecode">0</span> does not hold, because a sequence <span class="inlinecode">0</span> <span class="inlinecode">--&gt;*</span> <span class="inlinecode">1</span> cannot be extended.
+  Yet, <span class="inlinecode"><span class="id" type="var">R</span></span> admits an infinite sequence, namely <span class="inlinecode">0</span> <span class="inlinecode">--&gt;</span> <span class="inlinecode">0</span> <span class="inlinecode">--&gt;</span> <span class="inlinecode">...</span>.  
+
+<div class="paragraph"> </div>
+
+  Another attempt would be to represent the sequence of states 
+  <span class="inlinecode"><span class="id" type="var">a<sub>0</sub></span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode"><span class="id" type="var">a<sub>1</sub></span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode"><span class="id" type="var">a<sub>2</sub></span></span> <span class="inlinecode">--&gt;</span> <span class="inlinecode">...</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">aN</span></span> <span class="inlinecode">→</span> <span class="inlinecode">...</span> explicitly, as a function 
+  <span class="inlinecode"><span class="id" type="var">f</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">A</span></span> such that <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> is the <span class="inlinecode"><span class="id" type="var">i</span></span>-th state <span class="inlinecode"><span class="id" type="var">ai</span></span> of the sequence. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">infseq_with_function</span> (<span class="id" type="var">a</span>: <span class="id" type="var">A</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">f</span>: <span class="id" type="var">nat</span> → <span class="id" type="var">A</span>, <span class="id" type="var">f</span> 0 = <span class="id" type="var">a</span> ∧ ∀ <span class="id" type="var">i</span>, <span class="id" type="var">R</span> (<span class="id" type="var">f</span> <span class="id" type="var">i</span>) (<span class="id" type="var">f</span> (1 + <span class="id" type="var">i</span>)).<br/>
+</div>
+
+<div class="doc">
+This is a correct characterization of the existence of an infinite sequence
+  of reductions.  However, it is very inconvenient to work with this definition
+  in Coq's constructive logic: in most use cases, the function <span class="inlinecode"><span class="id" type="var">f</span></span> is not
+  computable and therefore cannot be defined in Coq.  
+<div class="paragraph"> </div>
+
+ To obtain a practical definition of infinite sequences, we use the following
+  coinductive definition of the predicate <span class="inlinecode"><span class="id" type="var">infseq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">CoInductive</span> <span class="id" type="var">infseq</span>: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">infseq_step</span>: ∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">b</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+</div>
+
+<div class="doc">
+An inductive predicate such as <span class="inlinecode"><span class="id" type="var">star</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> holds iff there exists a finite
+  derivation of the conclusion <span class="inlinecode"><span class="id" type="var">star</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> that uses the constructors
+  <span class="inlinecode"><span class="id" type="var">star_refl</span></span> and <span class="inlinecode"><span class="id" type="var">star_step</span></span> a finite number of times.
+
+<div class="paragraph"> </div>
+
+  A coinductive predicate is similar, but holds iff there exists a finite
+  OR INFINITE derivation of the conclusion that uses the constructors
+  of the predicate a finite OR INFINITE number of times.
+
+<div class="paragraph"> </div>
+
+  In other words, an inductive predicate is a smallest fixpoint: the smallest predicate
+  that satisfies its constructors; a coinductive predicate is a greatest fixpoint:
+  the largest predicate that satisfies its constructors.
+
+<div class="paragraph"> </div>
+
+  The <span class="inlinecode"><span class="id" type="var">infseq</span></span> predicate above must be defined coinductively.  Indeed, if
+  we define it inductively, the predicate would be empty (always false),
+  since there are no base cases!  
+
+<div class="paragraph"> </div>
+
+  Coq provides some primitive support for constructing infinite derivations
+  of facts such as <span class="inlinecode"><span class="id" type="var">infseq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>.  Such constructions are proofs by coinduction.
+  For example, we can prove the following: 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Remark</span> <span class="id" type="var">cycle_infseq</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="var">cofix</span> <span class="id" type="var">COINDHYP</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_step</span> <span class="id" type="keyword">with</span> <span class="id" type="var">a</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">COINDHYP</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+This style of proof by coinduction, using the <span class="inlinecode"><span class="id" type="var">cofix</span></span> tactic, is effective
+  but can run into limitations of Coq's proof engine (the so-called 
+  "guard condition").  However, we can derive more conventional
+  coinduction principles that are often easier to use. 
+<div class="paragraph"> </div>
+
+ Consider a set <span class="inlinecode"><span class="id" type="var">X</span></span> of states <span class="inlinecode"><span class="id" type="var">A</span></span>, that is, a predicate <span class="inlinecode"><span class="id" type="var">X</span>:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.
+  Assume that for every <span class="inlinecode"><span class="id" type="var">a</span></span> in <span class="inlinecode"><span class="id" type="var">X</span></span>, we can make one <span class="inlinecode"><span class="id" type="var">R</span></span> transition to a <span class="inlinecode"><span class="id" type="var">b</span></span>
+  that is still in <span class="inlinecode"><span class="id" type="var">X</span></span>.  Then, starting from <span class="inlinecode"><span class="id" type="var">a</span></span> in <span class="inlinecode"><span class="id" type="var">X</span></span>, we can transition
+  to some <span class="inlinecode"><span class="id" type="var">a<sub>1</sub></span></span> in <span class="inlinecode"><span class="id" type="var">X</span></span>, then to some <span class="inlinecode"><span class="id" type="var">a<sub>2</sub></span></span> still in <span class="inlinecode"><span class="id" type="var">X</span></span>, then... It is clear
+  that we are just building an infinite sequence of transitions starting from
+  <span class="inlinecode"><span class="id" type="var">a</span></span>. Therefore <span class="inlinecode"><span class="id" type="var">infseq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> should hold.  Let's prove this! 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_coinduction_principle</span>:<br/>
+&nbsp;&nbsp;∀ (<span class="id" type="var">X</span>: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;(∀ <span class="id" type="var">a</span>, <span class="id" type="var">X</span> <span class="id" type="var">a</span> → ∃ <span class="id" type="var">b</span>, <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> ∧ <span class="id" type="var">X</span> <span class="id" type="var">b</span>) →<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">X</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">X</span> <span class="id" type="var">P</span>. <span class="id" type="var">cofix</span> <span class="id" type="var">COINDHYP</span>; <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">P</span> <span class="id" type="var">a</span> <span class="id" type="var">H</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">b</span> [<span class="id" type="var">U</span> <span class="id" type="var">V</span>]]. <span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_step</span> <span class="id" type="keyword">with</span> <span class="id" type="var">b</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+An even more useful variant of this coinduction principle considers a
+  set <span class="inlinecode"><span class="id" type="var">X</span></span> where for every <span class="inlinecode"><span class="id" type="var">a</span></span> in <span class="inlinecode"><span class="id" type="var">X</span></span>, we can make one *or several* transitions
+  to reach a <span class="inlinecode"><span class="id" type="var">b</span></span> in <span class="inlinecode"><span class="id" type="var">X</span></span>.  
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_coinduction_principle_2</span>:<br/>
+&nbsp;&nbsp;∀ (<span class="id" type="var">X</span>: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;(∀ <span class="id" type="var">a</span>, <span class="id" type="var">X</span> <span class="id" type="var">a</span> → ∃ <span class="id" type="var">b</span>, <span class="id" type="var">plus</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> ∧ <span class="id" type="var">X</span> <span class="id" type="var">b</span>) →<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">X</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_coinduction_principle</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">X</span> := <span class="id" type="keyword">fun</span> <span class="id" type="var">a</span> ⇒ ∃ <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> ∧ <span class="id" type="var">X</span> <span class="id" type="var">b</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">b</span> [<span class="id" type="var">STAR</span> <span class="id" type="var">Xb</span>]]. <span class="id" type="tactic">inversion</span> <span class="id" type="var">STAR</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">H</span> <span class="id" type="var">b</span> <span class="id" type="var">Xb</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">c</span> [<span class="id" type="var">PLUS</span> <span class="id" type="var">Xc</span>]]. <span class="id" type="tactic">inversion</span> <span class="id" type="var">PLUS</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">b<sub>0</sub></span>; <span class="id" type="tactic">split</span>. <span class="id" type="tactic">auto</span>. ∃ <span class="id" type="var">c</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">b<sub>0</sub></span>; <span class="id" type="tactic">split</span>. <span class="id" type="tactic">auto</span>. ∃ <span class="id" type="var">b</span>; <span class="id" type="tactic">auto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">a</span>; <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>. <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Here is an example of use of <span class="inlinecode"><span class="id" type="var">infseq_coinduction_principle</span></span>:
+  if all finite transition sequences starting at <span class="inlinecode"><span class="id" type="var">a</span></span> can be extended,
+  <span class="inlinecode"><span class="id" type="var">infseq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> holds. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_if_all_seq_inf</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">all_seq_inf</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_coinduction_principle</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">H</span> <span class="id" type="var">a</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">b</span> <span class="id" type="var">Rb</span>]. <span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">b</span>; <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">all_seq_inf</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_step</span> <span class="id" type="keyword">with</span> <span class="id" type="var">b</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Likewise, the function-based characterization <span class="inlinecode"><span class="id" type="var">infseq_with_function</span></span>
+  implies <span class="inlinecode"><span class="id" type="var">infseq</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_from_function</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">infseq_with_function</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_coinduction_principle</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">f</span> [<span class="id" type="var">P</span> <span class="id" type="var">Q</span>]].<br/>
+&nbsp;&nbsp;∃ (<span class="id" type="var">f</span> 1); <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">a</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Q</span>.<br/>
+&nbsp;&nbsp;∃ (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">f</span> (1 + <span class="id" type="var">n</span>)); <span class="id" type="tactic">split</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Q</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Consider the transition sequences starting at state <span class="inlinecode"><span class="id" type="var">a</span></span>.
+  They can be infinite, or they can be finite: after a number of transitions,
+  we reach a state from with no transition is possible.  It is intuitively
+  obvious that at least one of the two cases must hold. 
+
+<div class="paragraph"> </div>
+
+  It is however impossible to prove this fact in Coq's constructive logic.
+  Indeed, a constructive proof would be isomorphic (by the Curry-Howard isomorphism)
+  to a terminating function that solves Turing's halting problem!
+
+<div class="paragraph"> </div>
+
+  To prove this fact, we must enrich Coq with axioms from classical logic,
+  namely the axiom of excluded middle: for all propositions <span class="inlinecode"><span class="id" type="var">P</span></span>,
+  either <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode">¬<span class="id" type="var">P</span></span> hold.  The Coq standard library provides such axioms
+  in the module named <span class="inlinecode"><span class="id" type="var">Classical</span></span>, which we now import. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Classical</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">irred</span> (<span class="id" type="var">a</span>: <span class="id" type="var">A</span>) : <span class="id" type="keyword">Prop</span> := ∀ <span class="id" type="var">b</span>, ~(<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_or_finseq</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">infseq</span> <span class="id" type="var">a</span> ∨ ∃ <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> ∧ <span class="id" type="var">irred</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">classic</span> (∀ <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → ∃ <span class="id" type="var">c</span>, <span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>)).<br/>
+&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">infseq_if_all_seq_inf</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">right</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> (<span class="id" type="var">not_all_ex_not</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H</span>). <span class="id" type="tactic">intros</span> [<span class="id" type="var">b</span> <span class="id" type="var">P</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> (<span class="id" type="var">imply_to_and</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span>). <span class="id" type="tactic">intros</span> [<span class="id" type="var">U</span> <span class="id" type="var">V</span>].<br/>
+&nbsp;&nbsp;∃ <span class="id" type="var">b</span>; <span class="id" type="tactic">split</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">elim</span> <span class="id" type="var">V</span>. ∃ <span class="id" type="var">b<sub>0</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab16"></a><h2 class="section">Determinism properties for functional transition relations.</h2>
+
+<div class="paragraph"> </div>
+
+ A transition relation is functional if every state can transition to at most
+  one other state. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Hypothesis</span> <span class="id" type="var">R_functional</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>, <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span> → <span class="id" type="var">b</span> = <span class="id" type="var">c</span>.<br/>
+</div>
+
+<div class="doc">
+Uniqueness of finite transition sequences. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">star_star_inv</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → ∀ <span class="id" type="var">c</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span> → <span class="id" type="var">star</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> ∨ <span class="id" type="var">star</span> <span class="id" type="var">c</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> 1; <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="var">right</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">b</span> = <span class="id" type="var">b<sub>0</sub></span>). <span class="id" type="tactic">eapply</span> <span class="id" type="var">R_functional</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">b<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHstar</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">finseq_unique</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">b'</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">irred</span> <span class="id" type="var">b</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b'</span> → <span class="id" type="var">irred</span> <span class="id" type="var">b'</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">b</span> = <span class="id" type="var">b'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">star_star_inv</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>1</sub></span>).<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">elim</span> (<span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>4</sub></span>).<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">elim</span> (<span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>4</sub></span>).<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+A state cannot both diverge and terminate on an irreducible state. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_star_inv</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>, <span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> 1; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">assert</span> (<span class="id" type="var">b</span> = <span class="id" type="var">b<sub>0</sub></span>). <span class="id" type="tactic">eapply</span> <span class="id" type="var">R_functional</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">b<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHstar</span>. <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_finseq_excl</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span> <span class="id" type="var">b</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">star</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> → <span class="id" type="var">irred</span> <span class="id" type="var">b</span> → <span class="id" type="var">infseq</span> <span class="id" type="var">a</span> → <span class="id" type="var">False</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">infseq</span> <span class="id" type="var">b</span>). <span class="id" type="tactic">eapply</span> <span class="id" type="var">infseq_star_inv</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">elim</span> (<span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">b<sub>0</sub></span>); <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+If there exists an infinite sequence of transitions from <span class="inlinecode"><span class="id" type="var">a</span></span>,
+  all sequences of transitions arising from <span class="inlinecode"><span class="id" type="var">a</span></span> are infinite. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">infseq_all_seq_inf</span>:<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">a</span>, <span class="id" type="var">infseq</span> <span class="id" type="var">a</span> → <span class="id" type="var">all_seq_inf</span> <span class="id" type="var">a</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">all_seq_inf</span>. <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">infseq</span> <span class="id" type="var">b</span>). <span class="id" type="tactic">eapply</span> <span class="id" type="var">infseq_star_inv</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">subst</span>. ∃ <span class="id" type="var">b<sub>0</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">SEQUENCES</span>.<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

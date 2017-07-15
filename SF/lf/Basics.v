@@ -695,9 +695,9 @@ Proof.
     just a few differences.
 
     First, we've used the keyword [Theorem] instead of [Example].
-    This difference is purely a matter of style; the keywords
+    This difference is mostly a matter of style; the keywords
     [Example] and [Theorem] (and a few others, including [Lemma],
-    [Fact], and [Remark]) mean exactly the same thing to Coq.
+    [Fact], and [Remark]) mean pretty much the same thing to Coq.
 
     Second, we've added the quantifier [forall n:nat], so that our
     theorem talks about _all_ natural numbers [n].  Informally, to
@@ -1212,5 +1212,5 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2017-06-20 14:46:24 -0400 (Tue, 20 Jun 2017) $ *)
+(** $Date: 2017-07-14 19:07:15 -0400 (Fri, 14 Jul 2017) $ *)
 

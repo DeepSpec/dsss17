@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -219,11 +220,10 @@ This useful variant follows just by rewriting:
     maps, where two maps that respond to queries in the same way will
     be represented as literally the same thing (the very same function),
     rather than just "equivalent" data structures.  This, in turn,
-    simplifies proofs that use maps.
-
+    simplifies proofs that use maps. 
 <div class="paragraph"> </div>
 
-    We build partial maps in two steps.  First, we define a type of
+ We build partial maps in two steps.  First, we define a type of
     <i>total maps</i> that return a default value when we look up a key
     that is not present in the map. 
 </div>
@@ -235,11 +235,10 @@ This useful variant follows just by rewriting:
 
 <div class="doc">
 Intuitively, a total map over an element type <span class="inlinecode"><span class="id" type="var">A</span></span> is just a
-    function that can be used to look up <span class="inlinecode"><span class="id" type="var">id</span></span>s, yielding <span class="inlinecode"><span class="id" type="var">A</span></span>s.
-
+    function that can be used to look up <span class="inlinecode"><span class="id" type="var">id</span></span>s, yielding <span class="inlinecode"><span class="id" type="var">A</span></span>s. 
 <div class="paragraph"> </div>
 
-    The function <span class="inlinecode"><span class="id" type="var">t_empty</span></span> yields an empty total map, given a default
+ The function <span class="inlinecode"><span class="id" type="var">t_empty</span></span> yields an empty total map, given a default
     element; this map always returns the default element when applied
     to any id. 
 </div>
@@ -271,7 +270,7 @@ This definition is a nice example of higher-order programming:
 <div class="paragraph"> </div>
 
     For example, we can build a map taking <span class="inlinecode"><span class="id" type="var">id</span></span>s to <span class="inlinecode"><span class="id" type="var">bool</span></span>s, where <span class="inlinecode"><span class="id" type="var">Id</span></span>
-    <span class="inlinecode">3</span> is mapped to <span class="inlinecode"><span class="id" type="var">true</span></span> and every other key is mapped to <span class="inlinecode"><span class="id" type="var">false</span></span>,
+    <span class="inlinecode">"<span class="id" type="var">foo</span>"</span> is mapped to <span class="inlinecode"><span class="id" type="var">true</span></span> and every other key is mapped to <span class="inlinecode"><span class="id" type="var">false</span></span>,
     like this: 
 </div>
 <div class="code code-tight">
@@ -283,9 +282,9 @@ This definition is a nice example of higher-order programming:
 </div>
 
 <div class="doc">
-This completes the definition of total maps.  Note that we don't
-    need to define a <span class="inlinecode"><span class="id" type="var">find</span></span> operation because it is just function
-    application! 
+This completes the definition of total maps.  Note that we
+    don't need to define a <span class="inlinecode"><span class="id" type="var">find</span></span> operation because it is just
+    function application! 
 </div>
 <div class="code code-tight">
 
@@ -322,11 +321,15 @@ This completes the definition of total maps.  Note that we don't
 
 <div class="doc">
 To use maps in later chapters, we'll need several fundamental
-    facts about how they behave.  Even if you don't work the following
-    exercises, make sure you thoroughly understand the statements of
-    the lemmas!  (Some of the proofs require the functional
-    extensionality axiom, which is discussed in the <a href="Logic.html"><span class="inlineref">Logic</span></a>
-    chapter.) 
+    facts about how they behave. 
+<div class="paragraph"> </div>
+
+ Even if you don't work the following exercises, make sure
+    you thoroughly understand the statements of the lemmas! 
+<div class="paragraph"> </div>
+
+ (Some of the proofs require the functional extensionality axiom,
+    which is discussed in the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter.) 
 <div class="paragraph"> </div>
 
 <a name="lab235"></a><h4 class="section">Exercise: 1 star, optional (t_apply_empty)</h4>

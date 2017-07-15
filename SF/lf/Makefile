@@ -211,8 +211,8 @@ opt:
 	@echo "B $(COQLIB)config" >> .merlin
 	@echo "B $(COQLIB)ltac" >> .merlin
 	@echo "B $(COQLIB)engine" >> .merlin
-	@echo "B /Users/bcpierce/work/sf/new/lf/full" >> .merlin
-	@echo "S /Users/bcpierce/work/sf/new/lf/full" >> .merlin
+	@echo "B /Users/bcpierce/home/sf/new/lf/full" >> .merlin
+	@echo "S /Users/bcpierce/home/sf/new/lf/full" >> .merlin
 
 clean::
 	rm -f $(OBJFILES) $(OBJFILES:.o=.native) $(NATIVEFILES)
