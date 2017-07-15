@@ -9,6 +9,7 @@
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
 
 <body>
@@ -39,8 +40,9 @@
 
  The heart of property-based random testing is random generation of
     inputs.  
-<div class="paragraph"> </div>
+</div>
 
+<div class="doc">
 <a name="lab49"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">G</span></span> Monad</h2>
 
 <div class="paragraph"> </div>
@@ -169,8 +171,9 @@
 <a name="lab51"></a><h4 class="section">Exercise: 1 star, optional (cfi)</h4>
  Print out the definition of <span class="inlinecode"><span class="id" type="var">ChoosableFromInterval</span></span>.  Can you
     understand what it means?  <span class="proofbox">&#9744;</span> 
-<div class="paragraph"> </div>
+</div>
 
+<div class="doc">
 <a name="lab52"></a><h2 class="section">Lists</h2>
 
 <div class="paragraph"> </div>
@@ -288,9 +291,10 @@
     wants, and there is no enforced guarantee that generators pay any
     attention to it at all; however, it is good practice to respect
     this bound when programming new generators. 
-<div class="paragraph"> </div>
+</div>
 
-<a name="lab53"></a><h2 class="section">Generators for Custom Datatypes</h2>
+<div class="doc">
+<a name="lab53"></a><h2 class="section">Custom Generators</h2>
 
 <div class="paragraph"> </div>
 
@@ -411,17 +415,16 @@ Now, to generate a random color, we just need to pick one of the
 | <span class="id" type="var">Node</span> : <span class="id" type="var">A</span> → <span class="id" type="var">Tree</span> <span class="id" type="var">A</span> → <span class="id" type="var">Tree</span> <span class="id" type="var">A</span> → <span class="id" type="var">Tree</span> <span class="id" type="var">A</span>.<br/>
 
 <br/>
-<span class="comment">(*&nbsp;TODO:&nbsp;Use&nbsp;{...}&nbsp;above?&nbsp;*)</span><br/>
 <span class="id" type="var">Arguments</span> <span class="id" type="var">Leaf</span> {<span class="id" type="var">A</span>}.<br/>
 <span class="id" type="var">Arguments</span> <span class="id" type="var">Node</span> {<span class="id" type="var">A</span>} <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>.<br/>
 </div>
 
 <div class="doc">
 Before getting to generators for trees, we again give a
-    straightforward <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance.  (The rather inconvenient need
-    for a local <span class="inlinecode"><span class="id" type="keyword">let</span></span> <span class="inlinecode"><span class="id" type="var">fix</span></span> declaration stems from the fact that Coq's
-    typeclasses (unlike Haskell's) are not automatically recursive.
-    We could alternatively define <span class="inlinecode"><span class="id" type="var">aux</span></span> with a separate top-level
+    straightforward <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance.  (The need for a local <span class="inlinecode"><span class="id" type="keyword">let</span></span> <span class="inlinecode"><span class="id" type="var">fix</span></span>
+    declaration stems from the fact that Coq's typeclasses (unlike
+    Haskell's) are not automatically recursive.  We could
+    alternatively define <span class="inlinecode"><span class="id" type="var">aux</span></span> with a separate top-level
     <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span>.) 
 </div>
 <div class="code code-tight">
@@ -547,17 +550,18 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 
 <div class="paragraph"> </div>
 
- While this generator avoids the nontermination issue, we can see
-    just by observing the result of <span class="inlinecode"><span class="id" type="var">Sample</span></span> that there is a problem:
-    <span class="inlinecode"><span class="id" type="var">genTreeSized</span></span> produces way too many <span class="inlinecode"><span class="id" type="var">Leaf</span></span>s!  This is actually to
-    be expected, since half the time we generate a <span class="inlinecode"><span class="id" type="var">Leaf</span></span> right at the
-    outset. We can obtain more interesting trees more often if we skew
-    the distribution towards <span class="inlinecode"><span class="id" type="var">Node</span></span>s using the most expressive
-    QuickChick combinator, <span class="inlinecode"><span class="id" type="var">frequency</span></span> and its associated
-    default-lifting notation <span class="inlinecode"><span class="id" type="var">freq</span></span>.
- 
+ While this generator succeeds in avoiding nontermination, we can
+    see just by observing the result of <span class="inlinecode"><span class="id" type="var">Sample</span></span> that there is a
+    problem: <span class="inlinecode"><span class="id" type="var">genTreeSized</span></span> produces way too many <span class="inlinecode"><span class="id" type="var">Leaf</span></span>s!  This is
+    actually to be expected, since half the time we generate a <span class="inlinecode"><span class="id" type="var">Leaf</span></span>
+    right at the outset. We can obtain more interesting trees more
+    often if we skew the distribution towards <span class="inlinecode"><span class="id" type="var">Node</span></span>s using the most
+    expressive QuickChick combinator, <span class="inlinecode"><span class="id" type="var">frequency</span></span> and its associated
+    default-lifting notation <span class="inlinecode"><span class="id" type="var">freq</span></span>. 
 </div>
 <div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Check</span> <span class="id" type="var">frequency</span>.<br/>
 </div>
 
@@ -594,7 +598,8 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 <div class="doc">
 <pre>
       ===&gt; 
-         [ Node (3) (Node (1) (Node (3) (Leaf) (Leaf)) (Leaf)) (Node (0) (Leaf) (Node (3) (Leaf) (Leaf))),
+         [ Node (3) (Node (1) (Node (3) (Leaf) (Leaf)) (Leaf)) 
+                    (Node (0) (Leaf) (Node (3) (Leaf) (Leaf))),
            Leaf,
            Node (2) (Node (1) (Leaf) (Leaf)) (Leaf),
            Node (0) (Leaf) (Node (0) (Node (2) (Leaf) (Leaf))
@@ -627,9 +632,32 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 
 <div class="paragraph"> </div>
 
- To showcase how this generator could be used in practice, consider
-    the operation of mirroring a tree &mdash; swapping its left and right
-    subtrees recursively. 
+ This looks better. 
+<div class="paragraph"> </div>
+
+ <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> better exercise: write genListSized 
+</div> <a name="lab54"></a><h4 class="section">Exercise: 3 stars (colorOptionGen)</h4>
+ Write a custom generator for values of type <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">color</span></span>.  Make
+    it generate <span class="inlinecode"><span class="id" type="var">None</span></span> about 1/10th of the time, and make it generate
+    <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Red</span></span> three times as often as the other colors. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab55"></a><h2 class="section">Checkers</h2>
+
+<div class="paragraph"> </div>
+
+ To showcase how such a generator could be used in practice for
+    finding counterexamples, suppose we define a function for
+    "mirroring" a tree &mdash; swapping its left and right subtrees
+    recursively. 
 </div>
 <div class="code code-tight">
 
@@ -665,28 +693,233 @@ We expect that <span class="inlinecode"><span class="id" type="var">mirror</span
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">mirrorP</span> (<span class="id" type="var">t</span> : <span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>) := <span class="id" type="var">eq_tree</span> (<span class="id" type="var">mirror</span> (<span class="id" type="var">mirror</span> <span class="id" type="var">t</span>)) <span class="id" type="var">t</span>.<br/>
-
-<br/>
-<span class="comment">(*&nbsp;TODO:&nbsp;Decidable&nbsp;equality&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-To test this assumption, we can use the <span class="inlinecode"><span class="id" type="var">forAll</span></span> property
-    combinator that receives a generator <span class="inlinecode"><span class="id" type="var">g</span></span> for elements of type <span class="inlinecode"><span class="id" type="var">A</span></span>
-    and an executable property with argument <span class="inlinecode"><span class="id" type="var">A</span></span> and tests the
-    property on random inputs of <span class="inlinecode"><span class="id" type="var">g</span></span>. 
+Now we want to use our generator to create a lot of random trees
+    and, for each one, check whether <span class="inlinecode"><span class="id" type="var">mirrorP</span></span> returns <span class="inlinecode"><span class="id" type="var">true</span></span> or
+    <span class="inlinecode"><span class="id" type="var">false</span></span>.  That is, we want to use <span class="inlinecode"><span class="id" type="var">mirrorP</span></span> to build a <i>generator
+    for test results</i>.
+
+<div class="paragraph"> </div>
+
+    Let's open a playground module so we can show simplified versions
+    of the actual QUickChick definitions. 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;(forAll&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;mirrorP).&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;STOPPED&nbsp;HERE&nbsp;*)</span><br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">CheckerPlayground1</span>.<br/>
 </div>
 
 <div class="doc">
-QuickChick quickly responds that this property passed 10000 tests,
-    so we gain some confidence in its truth.  What if we had defined
-    the *wrong* property? 
+First, we need a type of test results &mdash; let's call it <span class="inlinecode"><span class="id" type="var">Result</span></span>.
+    For the moment, think of <span class="inlinecode"><span class="id" type="var">Result</span></span> as just an enumerated type with
+    constructors <span class="inlinecode"><span class="id" type="var">Success</span></span> and <span class="inlinecode"><span class="id" type="var">Failure</span></span>.  
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Result</span> := <span class="id" type="var">Success</span> | <span class="id" type="var">Failure</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">showResult</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">Result</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">r</span> := <span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Success</span> ⇒ "Success" | <span class="id" type="var">Failure</span> ⇒ "Failure" <span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;}.<br/>
+</div>
+
+<div class="doc">
+Then we can define the type <span class="inlinecode"><span class="id" type="var">Checker</span></span> to be <span class="inlinecode"><span class="id" type="var">G</span></span> <span class="inlinecode"><span class="id" type="var">Result</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Checker</span> := <span class="id" type="var">G</span> <span class="id" type="var">Result</span>.<br/>
+</div>
+
+<div class="doc">
+To check <span class="inlinecode"><span class="id" type="var">mirrorP</span></span>, we need a way to build a <span class="inlinecode"><span class="id" type="var">Checker</span></span> out of a
+    function from trees to booleans.  But let's start simpler and see
+    how to build a checker out of a <span class="inlinecode"><span class="id" type="var">bool</span></span>. 
+<div class="paragraph"> </div>
+
+ <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Words needed 
+</div> 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Class</span> <span class="id" type="var">Checkable</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> : <span class="id" type="var">A</span> → <span class="id" type="var">Checker</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">checkableBool</span> : <span class="id" type="var">Checkable</span> <span class="id" type="var">bool</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> <span class="id" type="var">b</span> := <span class="id" type="keyword">if</span> <span class="id" type="var">b</span> <span class="id" type="keyword">then</span> <span class="id" type="var">ret</span> <span class="id" type="var">Success</span> <span class="id" type="keyword">else</span> <span class="id" type="var">ret</span> <span class="id" type="var">Failure</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground1</span>.<br/>
+</div>
+
+<div class="doc">
+Let's see what happens if we sample our favorite booleans.  (We
+    need to exit the playground so that we can do <span class="inlinecode"><span class="id" type="var">Sample</span></span>, because
+    <span class="inlinecode"><span class="id" type="var">Sample</span></span> is implemented internally via extraction to OCaml, which
+    usually does not work from inside a <span class="inlinecode"><span class="id" type="keyword">Module</span></span>.) 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">true</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Success, Success, Success, Success, Success, Success, Success, 
+       Success, Success, Success, Success]
+</pre>
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">false</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Failure, Failure, Failure, Failure, Failure, Failure, Failure, 
+       Failure, Failure, Failure, Failure]
+</pre>
+
+<div class="paragraph"> </div>
+
+ What we've done so far may look a a bit strange, since our
+    checkers always generate constant results.  We'll make things more
+    interesting in a bit, but first let's pause to define one more
+    instance of <span class="inlinecode"><span class="id" type="var">Checkable</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">CheckerPlayground2</span>.<br/>
+<span class="id" type="keyword">Export</span> <span class="id" type="var">CheckerPlayground1</span>.<br/>
+</div>
+
+<div class="doc">
+A decidable <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> is not too different from a boolean, so we
+    should be able to build a checker from that. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">checkableDec</span> `{<span class="id" type="var">P</span> : <span class="id" type="keyword">Prop</span>} `{<span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} : <span class="id" type="var">Checkable</span> <span class="id" type="var">P</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> <span class="id" type="var">p</span> := <span class="id" type="keyword">if</span> <span class="id" type="var">P</span>? <span class="id" type="keyword">then</span> <span class="id" type="var">ret</span> <span class="id" type="var">Success</span> <span class="id" type="keyword">else</span> <span class="id" type="var">ret</span> <span class="id" type="var">Failure</span><br/>
+&nbsp;&nbsp;}.<br/>
+</div>
+
+<div class="doc">
+(The definition looks a bit strange since it doesn't use its
+    argument <span class="inlinecode"><span class="id" type="var">p</span></span>.  The intuition is that all the information in <span class="inlinecode"><span class="id" type="var">p</span></span> is
+    already encoded in <span class="inlinecode"><span class="id" type="var">P</span></span>!) 
+<div class="paragraph"> </div>
+
+ Now suppose we pose a couple of (decidable) conjectures: 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">c<sub>1</sub></span> : 0 = 42.<br/>
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">c<sub>2</sub></span> : 41 + 1 = 42.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground2</span>.<br/>
+</div>
+
+<div class="doc">
+The somewhat astononishing thing is that, even though these are
+    <i>conjectures</i> (we haven't proved them, so the "evidence" that Coq
+    has for them internally is just an uninstantiated "evar"), but &mdash;
+    because the <span class="inlinecode"><span class="id" type="var">Checkable</span></span> instance for decidable properties does not
+    look at its argument &mdash; we can still build checkers from them and
+    sample from these checkers! 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">CheckerPlayground2.c1</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Failure, Failure, Failure, Failure, Failure, Failure, Failure, 
+       Failure, Failure, Failure, Failure]
+</pre>
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">CheckerPlayground2.c2</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Success, Success, Success, Success, Success, Success, Success, 
+       Success, Success, Success, Success]
+</pre>
+
+<div class="paragraph"> </div>
+
+ Again, the intuition is that, although we didn't present proofs,
+    Coq already "knows" either a proof or a disproof of each of these
+    conjectures because they are decidable. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">CheckerPlayground3</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">CheckerPlayground2</span>.<br/>
+</div>
+
+<div class="doc">
+Now let's go back to <span class="inlinecode"><span class="id" type="var">mirrorP</span></span>.
+
+<div class="paragraph"> </div>
+
+    We have seen that the result of <span class="inlinecode"><span class="id" type="var">mirrorP</span></span> is <span class="inlinecode"><span class="id" type="var">Checkable</span></span>.  What we
+    need is a way of taking a function returning a checkable thing and
+    making the function itself checkable.  We can easily do this, as
+    long as the argument type of the function is something we know how
+    to generate! 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">forAll</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">B</span>} (<span class="id" type="var">g</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>) (<span class="id" type="var">f</span> : <span class="id" type="var">A</span> → <span class="id" type="var">B</span>) : <span class="id" type="var">Checker</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">a</span> &lt;- <span class="id" type="var">g</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">checker</span> (<span class="id" type="var">f</span> <span class="id" type="var">a</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground3</span>.<br/>
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground3.forAll</span> (<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3))) <span class="id" type="var">mirrorP</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Success, Success, Success, Success, Success, Success, Success, 
+       Success, Success, Success, Success]
+</pre>
+
+<div class="paragraph"> </div>
+
+ Excellent: It looks like lots of tests are succeeding.  Now let's
+    try defining a bad property and see if we can detect that it's bad... 
 </div>
 <div class="code code-tight">
 
@@ -694,39 +927,165 @@ QuickChick quickly responds that this property passed 10000 tests,
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">faultyMirrorP</span> (<span class="id" type="var">t</span> : <span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>) := <span class="id" type="var">eq_tree</span> (<span class="id" type="var">mirror</span> <span class="id" type="var">t</span>) <span class="id" type="var">t</span>.<br/>
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;(forAll&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;faultyMirrorP).&nbsp;*)</span><br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground3.forAll</span> (<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3))) <span class="id" type="var">faultyMirrorP</span>).<br/>
 </div>
 
 <div class="doc">
 <pre>
-      ===&gt; 
-  Node (3) (Node (0) (Leaf) (Node (0) (Node (1) (Leaf) (Leaf)) (Leaf)))
-  (Node (5) (Node (0) (Node (1) (Leaf) (Node (4) (Leaf) (Leaf))) (Node (4) (Leaf)
-  (Node (0) (Leaf) (Leaf)))) (Node (5) (Node (4) (Node (0) (Leaf) (Leaf)) (Leaf))
-  (Node (3) (Leaf) (Leaf))))
-
-  *** Failed! After 1 tests and 0 shrinks
+      [Failure, Success, Failure, Success, Success, Success, Failure, 
+       Success, Failure, Failure, Success]
 </pre>
 
 <div class="paragraph"> </div>
 
- The bug is found immediately and reported. However, is this counterexample
-    really helpful? What is the important part of it? The reported bug is too
-    big and noisy to identify the root cause of the problem. That is where
-    shrinking comes in. 
-<div class="paragraph"> </div>
-
- <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> color option generator, with not too many NONEs 
-</div> <a name="lab54"></a><h1 class="section">Shrinking</h1>
+ Great &mdash; looks like a good number of tests are failing now.
+    There's only one fly in the ointment: What <i>are</i> the tests that
+    are failing?  We can tell that the property is bad, but we can't
+    see the counterexamples!
 
 <div class="paragraph"> </div>
 
- Shrinking, also known as delta debugging, is a greedy process by
-    which we can find a smaller counterexample given a relatively
-    large one. Given a shrinking function <span class="inlinecode"><span class="id" type="var">s</span></span> of type <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>
-    and a counterexample <span class="inlinecode"><span class="id" type="var">x</span></span> of type <span class="inlinecode"><span class="id" type="var">A</span></span> that is known to falsify some
-    property <span class="inlinecode"><span class="id" type="var">p</span></span>, QuickChick (lazily) tries <span class="inlinecode"><span class="id" type="var">p</span></span> on all members of <span class="inlinecode"><span class="id" type="var">s</span></span>
-    <span class="inlinecode"><span class="id" type="var">x</span></span> until it finds another counterexample; then it repeats this
+    We can fix this by going back to the beginning and enriching the
+    <span class="inlinecode"><span class="id" type="var">Result</span></span> type to keep track of failing counterexamples. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">CheckerPlayground4</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Result</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Success</span> : <span class="id" type="var">Result</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Failure</span> : ∀ {<span class="id" type="var">A</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}, <span class="id" type="var">A</span> → <span class="id" type="var">Result</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">showResult</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">Result</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">r</span> := <span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> ⇒ "Success"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">A</span> <span class="id" type="var">showA</span> <span class="id" type="var">a</span> ⇒ "Failure: " ++ <span class="id" type="var">show</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Checker</span> := <span class="id" type="var">G</span> <span class="id" type="var">Result</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Class</span> <span class="id" type="var">Checkable</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> : <span class="id" type="var">A</span> → <span class="id" type="var">Checker</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">showUnit</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">unit</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">u</span> := "tt"<br/>
+&nbsp;&nbsp;}.<br/>
+</div>
+
+<div class="doc">
+The failure cases in the <span class="inlinecode"><span class="id" type="var">bool</span></span> and <span class="inlinecode"><span class="id" type="var">Dec</span></span> checkers don't need to
+    record anything except the <span class="inlinecode"><span class="id" type="var">Failure</span></span>, so we put <span class="inlinecode"><span class="id" type="var">tt</span></span> (the sole
+    value of type <span class="inlinecode"><span class="id" type="var">unit</span></span>) as the "failure reason." 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">checkableBool</span> : <span class="id" type="var">Checkable</span> <span class="id" type="var">bool</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> <span class="id" type="var">b</span> := <span class="id" type="keyword">if</span> <span class="id" type="var">b</span> <span class="id" type="keyword">then</span> <span class="id" type="var">ret</span> <span class="id" type="var">Success</span> <span class="id" type="keyword">else</span> <span class="id" type="var">ret</span> (<span class="id" type="var">Failure</span> <span class="id" type="var">tt</span>)<br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">checkableDec</span> `{<span class="id" type="var">P</span> : <span class="id" type="keyword">Prop</span>} `{<span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} : <span class="id" type="var">Checkable</span> <span class="id" type="var">P</span> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span> <span class="id" type="var">p</span> := <span class="id" type="keyword">if</span> <span class="id" type="var">P</span>? <span class="id" type="keyword">then</span> <span class="id" type="var">ret</span> <span class="id" type="var">Success</span> <span class="id" type="keyword">else</span> <span class="id" type="var">ret</span> (<span class="id" type="var">Failure</span> <span class="id" type="var">tt</span>)<br/>
+&nbsp;&nbsp;}.<br/>
+</div>
+
+<div class="doc">
+The interesting case is the <span class="inlinecode"><span class="id" type="var">forAll</span></span> combinator.  Here, we <i>do</i>
+    have some interesting information to record in the failure case &mdash;
+    namely, the argument that caused the failure. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">forAll</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">g</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>) (<span class="id" type="var">f</span> : <span class="id" type="var">A</span> → <span class="id" type="var">B</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Checker</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">a</span> &lt;- <span class="id" type="var">g</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">r</span> &lt;- <span class="id" type="var">checker</span> (<span class="id" type="var">f</span> <span class="id" type="var">a</span>) ;;<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> ⇒ <span class="id" type="var">ret</span> <span class="id" type="var">Success</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">B</span> <span class="id" type="var">showB</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">Failure</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Note that, rather than just returning <span class="inlinecode"><span class="id" type="var">Failure</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>, we package up
+    <span class="inlinecode"><span class="id" type="var">a</span></span> together with <span class="inlinecode"><span class="id" type="var">b</span></span>, which is the "reason" for the failure of <span class="inlinecode"><span class="id" type="var">f</span></span>
+    <span class="inlinecode"><span class="id" type="var">a</span></span>.  This allows us to write several <span class="inlinecode"><span class="id" type="var">forAll</span></span>s in sequence and
+    capture all of their results in a nested tuple. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground4</span>.<br/>
+
+<br/>
+<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground4.forAll</span> (<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3))) <span class="id" type="var">faultyMirrorP</span>).<br/>
+</div>
+
+<div class="doc">
+<pre>
+      [Failure: (Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) 
+                          (Node (0) (Node (2) (Leaf) (Leaf)) (Leaf)), tt), 
+      Success, 
+      Failure: (Node (2) (Node (3) (Node (3) (Leaf) (Leaf)) (Leaf)) (Leaf), tt), 
+      Success, Success, Success, 
+      Failure: (Node (1) (Node (2) (Leaf) (Node (3) (Leaf) (Leaf))) 
+                         (Node (0) (Leaf) (Node (1) (Leaf) (Leaf))), tt), 
+      Success, 
+      Failure: (Node (3) (Node (0) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                         (Node (0) (Leaf) (Node (2) (Leaf) (Leaf))), tt), 
+      Failure: (Node (2) (Node (2) (Node (0) (Leaf) (Leaf)) (Leaf)) 
+                         (Node (1) (Leaf) (Node (2) (Leaf) (Leaf))), tt), 
+      Success]
+</pre>
+
+<div class="paragraph"> </div>
+
+ The bug is found several times and actual counterexamples are
+    reported: nice!  (Indeed, what we've seen here basically what the
+    <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> command does; the only difference is that, instead of
+    running a fixed number of tests and returning their results in a
+    list, it runs tests only until the first counterexample is found.)
+
+<div class="paragraph"> </div>
+
+    However, these counterexamples leave something to be desired &mdash;
+    they are all much larger than is really needed to illustrate the
+    bad behavior of <span class="inlinecode"><span class="id" type="var">faultyMirrorP</span></span>.  This is where shrinking comes
+    in... 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="comment">(*&nbsp;BCP&nbsp;STOPPED&nbsp;HERE&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab56"></a><h1 class="section">Shrinking</h1>
+
+<div class="paragraph"> </div>
+
+ Shrinking, also known as delta debugging, is a process that, given
+    a counterexample to some property, searches (greedily) for smaller
+    counterexamples.  Given a shrinking function <span class="inlinecode"><span class="id" type="var">s</span></span> of type <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span>
+    <span class="inlinecode"><span class="id" type="var">A</span></span> and a counterexample <span class="inlinecode"><span class="id" type="var">x</span></span> of type <span class="inlinecode"><span class="id" type="var">A</span></span> that is known to falsify
+    some property <span class="inlinecode"><span class="id" type="var">p</span></span>, QuickChick (lazily) tries <span class="inlinecode"><span class="id" type="var">p</span></span> on all members of
+    <span class="inlinecode"><span class="id" type="var">s</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> until it finds another counterexample; then it repeats this
     process.
 
 <div class="paragraph"> </div>
@@ -787,7 +1146,8 @@ QuickChick quickly responds that this property passed 10000 tests,
 </div>
 
 <div class="doc">
-Armed with <span class="inlinecode"><span class="id" type="var">shrinkTree</span></span>, we use the <span class="inlinecode"><span class="id" type="var">forAllShrink</span></span> property
+<div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Explain it 
+</div>  Armed with <span class="inlinecode"><span class="id" type="var">shrinkTree</span></span>, we use the <span class="inlinecode"><span class="id" type="var">forAllShrink</span></span> property
     combinator that takes an additional argument, a shrinker 
 </div>
 <div class="code code-tight">
@@ -887,11 +1247,21 @@ Armed with <span class="inlinecode"><span class="id" type="var">shrinkTree</span
 </div>
 
 <div class="doc">
-<a name="lab55"></a><h1 class="section">Putting it all Together</h1>
+<a name="lab57"></a><h1 class="section">  </h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab58"></a><h1 class="section">Putting it all Together</h1>
 
 <div class="paragraph"> </div>
 
- QuickChick, just like QuickCheck, provides an <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span>
+ <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> typeclass magic to hide forAll (requires introducing Gen and GenSized) 
+</div>  QuickChick, just like QuickCheck, provides an <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span>
     typeclass parameterized over some type <span class="inlinecode"><span class="id" type="var">A</span></span> with two objects:
     <span class="inlinecode"><span class="id" type="var">arbitrary</span></span> and <span class="inlinecode"><span class="id" type="var">shrink</span></span>.
 
@@ -981,7 +1351,7 @@ QuickChick&nbsp;tern_mirror_spec&nbsp;directly&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab56"></a><h1 class="section">Avoiding Work  :)</h1>
+<a name="lab59"></a><h1 class="section">Avoiding Work  :)</h1>
 
 <div class="paragraph"> </div>
 
@@ -1008,7 +1378,7 @@ QuickChick&nbsp;tern_mirror_spec&nbsp;directly&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab57"></a><h1 class="section">Collecting Statistics</h1>
+<a name="lab60"></a><h1 class="section">Collecting Statistics</h1>
 
 <div class="paragraph"> </div>
 
@@ -1202,20 +1572,28 @@ If we were to write a dummy property to check our generators and
 
 <br/>
 <span class="comment">(*&nbsp;QuickChick&nbsp;insert_spec_sorted.&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;Much&nbsp;better!&nbsp;*)</span><br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;But&nbsp;are&nbsp;we&nbsp;done&nbsp;yet?&nbsp;*)</span><br/>
+<div class="doc">
+Much better! 
+<div class="paragraph"> </div>
+
+ But are we done yet? 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="comment">(*&nbsp;EX&nbsp;(hard)<br/>
 &nbsp;&nbsp;&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;Using&nbsp;"collect",&nbsp;figure&nbsp;out&nbsp;whether&nbsp;generating&nbsp;a&nbsp;sorted&nbsp;list&nbsp;of&nbsp;numbers<br/>
-&nbsp;&nbsp;&nbsp;between&nbsp;0&nbsp;and&nbsp;10&nbsp;is&nbsp;uniform&nbsp;in&nbsp;the&nbsp;frequencies&nbsp;of&nbsp;the&nbsp;numbers&nbsp;generated.<br/>
+&nbsp;&nbsp;&nbsp;between&nbsp;0&nbsp;and&nbsp;5&nbsp;is&nbsp;uniform&nbsp;in&nbsp;the&nbsp;frequencies&nbsp;of&nbsp;the&nbsp;numbers&nbsp;generated.<br/>
 <br/>
 &nbsp;&nbsp;&nbsp;Why?&nbsp;Write&nbsp;a&nbsp;different&nbsp;generator&nbsp;genSortedList'&nbsp;that&nbsp;achieves&nbsp;a&nbsp;more&nbsp;uniform<br/>
 &nbsp;&nbsp;&nbsp;distribution,&nbsp;preserving&nbsp;the&nbsp;uniformity&nbsp;in&nbsp;the&nbsp;lengths<br/>
 &nbsp;&nbsp;&nbsp;*)</span><br/>
+
+<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span><br/>
 
 <br/>
 <span class="comment">(*&nbsp;EX&nbsp;:&nbsp;Binary&nbsp;Search&nbsp;Trees&nbsp;*)</span><br/>
