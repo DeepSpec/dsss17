@@ -13,7 +13,7 @@ qc-depends:
 	@command -v quickChick >/dev/null 2>&1 || \
            { echo Please install QuickChick:; \
              echo   git clone https://github.com/QuickChick/QuickChick.git \
-             echo (and then see README.md for installation instructions) \
+             echo and then see README.md for installation instructions \
              exit 1; }
 	@if ! (opam list | grep --quiet ext-lib); then \
 	   echo Please install coq-ext-lib:; \
