@@ -10,7 +10,7 @@
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -53,7 +53,7 @@
 </div>
 
 <div class="doc">
-One possible specification for <span class="inlinecode"><span class="id" type="var">remove</span></span> might be this property 
+One possible specification for <span class="inlinecode"><span class="id" type="var">remove</span></span> might be this property... 
 </div>
 <div class="code code-tight">
 
@@ -62,12 +62,20 @@ One possible specification for <span class="inlinecode"><span class="id" type="v
 </div>
 
 <div class="doc">
-which says that <span class="inlinecode"><span class="id" type="var">x</span></span> never occurs in the result of <span class="inlinecode"><span class="id" type="var">remove</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> for
-    any <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">l</span></span>.  Sadly, this property is false, as we would
-    eventually discover if we were to try to prove it. 
+...which says that <span class="inlinecode"><span class="id" type="var">x</span></span> never occurs in the result of <span class="inlinecode"><span class="id" type="var">remove</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span>
+    for any <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">l</span></span>.
+
 <div class="paragraph"> </div>
 
- A different &mdash; and often much more efficient &mdash; way to discover
+    (<span class="inlinecode"><span class="id" type="var">Conjecture</span></span> <span class="inlinecode"><span class="id" type="var">foo</span>...</span> means the same as <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> <span class="inlinecode"><span class="id" type="var">foo</span>...</span> <span class="inlinecode"><span class="id" type="var">Admitted</span>.</span>
+    Formally, <span class="inlinecode"><span class="id" type="var">foo</span></span> is treated as an axiom in what follows.) 
+<div class="paragraph"> </div>
+
+ Sadly, this property is false, as we would (eventually) discover
+    if we were to try to prove it. 
+<div class="paragraph"> </div>
+
+ A different &mdash; possibly much more efficient &mdash; way to discover
     the discrepancy between the definition and specification is
     to <i>test</i> it: 
 </div>
@@ -89,11 +97,14 @@ The <span class="inlinecode"><span class="id" type="var">QuickChick</span></span
 </pre>
     This means that, if run <span class="inlinecode"><span class="id" type="var">remove</span></span> with <span class="inlinecode"><span class="id" type="var">x</span></span> being <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" type="var">l</span></span>
     the two-element list containing two zeros, then the property
-    <span class="inlinecode"><span class="id" type="var">removeP</span></span> fails. With this example in hand, we can see that the <span class="inlinecode"><span class="id" type="keyword">then</span></span>
-    branch of <span class="inlinecode"><span class="id" type="var">remove</span></span> fails to make a recursive call, which means
-    that only one occurence of <span class="inlinecode"><span class="id" type="var">x</span></span> will be deleted. The last
-    line of the output records that it took 17 tests to identify some
-    fault-inducing input and 12 "shrinks" to reduce it to a minimal
+    <span class="inlinecode"><span class="id" type="var">removeP</span></span> fails. 
+<div class="paragraph"> </div>
+
+ With this example in hand, we can see that the <span class="inlinecode"><span class="id" type="keyword">then</span></span> branch
+    of <span class="inlinecode"><span class="id" type="var">remove</span></span> fails to make a recursive call, which means that only
+    one occurence of <span class="inlinecode"><span class="id" type="var">x</span></span> will be deleted. The last line of the output
+    records that it took 17 tests to identify some fault-inducing
+    input and 12 "shrinks" to reduce it to a minimal
     counterexample. 
 <div class="paragraph"> </div>
 
@@ -173,13 +184,27 @@ Write a property that says "inserting a number <span class="inlinecode"><span cl
     need to make a digression to explain Coq's support for
     <i>typeclasses</i>, which QuickChick uses extensively both internally
     and in its programmatic interface to users.  This is
-    <a href="Typeclasses.html"><span class="inlineref">Typeclasses</span></a>. 
+    <a href="Typeclasses.html"><span class="inlineref">Typeclasses</span></a>.
+
 <div class="paragraph"> </div>
 
- <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Overview the rest of the chapters. 
-</div> 
+    Next (<a href="QC.html"><span class="inlineref">QC</span></a>) we'll cover the core concepts and features of
+    QuickChick itself.
+
+<div class="paragraph"> </div>
+
+    The <a href="TImp.html"><span class="inlineref">TImp</span></a> chapter develops a small case study around a typed
+    variant of the Imp language.
+
+<div class="paragraph"> </div>
+
+    Finally, a larger case study on property-based testing of a small
+    compiler appears as the <span class="inlinecode"><span class="id" type="var">CompilerTest</span></span> chapter of the <span class="inlinecode"><span class="id" type="var">vminus</span></span>
+    volume. 
 </div>
 <div class="code code-tight">
+
+<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 </div>
 

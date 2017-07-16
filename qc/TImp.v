@@ -1,4 +1,10 @@
-(** * TImp: A Case Study on Typed Imp *)
+(** * TImp: Case Study: a Typed Imperative Language *)
+
+(* BCP: Some random things to do soon:
+     - 80-column-ify
+     - Turn exercises into SF-style using EX tags
+     - Start producing a TERSE version that we can use for lecturing
+*)
 
 Set Warnings "-notation-overridden,-parsing".
 Set Warnings "-extraction-opaque-accessed,-extraction".
@@ -19,35 +25,36 @@ Require Import Equalities.
 Require Import QC.
 
 
-(* Leo: Backwards pointer to Imp somehow? *)
-(* Leo: Imp is in the first volume of SF? *)
-(** Having seen a basic overview of QuickChick in the previous chapter, we can
-    now dive into a more realistic case study: a typed variant of Imp.  The
-    original Imp variant presented in the first volume of Software Foundations
-    syntactically separates boolean and arithmetic expressions: [bexp] ranges
-    over boolean expressions, while [aexp] ranges over arithmetic ones.
-    Moreover, variables are only allowed in [aexp] and only take arithmetic
+(** Having seen a basic overview of QuickChick in the previous
+    chapter, we can now dive into a more realistic case study: a typed
+    variant of Imp, the simple imperative language introduced in
+    _Logical Foundations_.  The original Imp variant presented in the
+    first volume of Software Foundations syntactically separates
+    boolean and arithmetic expressions: [bexp] ranges over boolean
+    expressions, while [aexp] ranges over arithmetic ones.  Moreover,
+    variables are only allowed in [aexp] and only take arithmetic
     values.
     
-    In typed Imp (TImp) we collapse the expression syntax and allow variables to
-    range over both numbers and booleans. With the unified syntax, we introduce
-    the notion of well-typed Imp expressions and programs: where every variable
-    only ranges over values of a single type throughout the whole program.  We
-    then give an operational semantics to TImp in the form of a partial
-    evaluation function; partial, since in the unified syntax one could attempt
-    to write expressions such as [0 + True].
+    In typed Imp (TImp) we collapse the expression syntax and allow
+    variables to range over both numbers and booleans. With the
+    unified syntax, we introduce the notion of well-typed Imp
+    expressions and programs: where every variable only ranges over
+    values of a single type throughout the whole program.  We then
+    give an operational semantics to TImp in the form of a partial
+    evaluation function; partial, since in the unified syntax one
+    could attempt to write expressions such as [0 + True].
 
-    A common mantra in functional programming is "well-typed programs cannot go
-    wrong"; TImp is no exception to that rule. The soundness property for TImp
-    will state that evaluating well-typed expressions and programs always
-    succeeds. This is another example of a _conditional_ property. As we saw in
-    the previous chapter, testing such properties requires custom generators.
-    In this chapter, we will show how to scale the techniques for writing
-    generators to more realistic generators for well-typed expressions and
-    programs. In addition, we will also demonstrate the notion and necessity of
-    custom shrinkers preserving invariants, a problem dual to that of custom
-    generators.
- *)
+    A common mantra in functional programming is "well-typed programs
+    cannot go wrong"; TImp is no exception to that rule. The soundness
+    property for TImp will state that evaluating well-typed
+    expressions and programs always succeeds. This is another example
+    of a _conditional_ property. As we saw in the previous chapter,
+    testing such properties requires custom generators.  In this
+    chapter, we will show how to scale the techniques for writing
+    generators to more realistic generators for well-typed expressions
+    and programs. In addition, we will also demonstrate the notion and
+    necessity of custom shrinkers preserving invariants, a problem
+    dual to that of custom generators. *)
 
 (* ################################################################# *)
 (** * Atoms, Types and Contexts *)
@@ -56,14 +63,19 @@ Require Import QC.
 (** ** Atoms *)
 
 (* Leo: How can we cite things in SF-style? *)
+(* BCP: Do you mean bibliographic citations?  Or URLs?  Urls are
+   http://likethis and bib stuff is \Bib{Like This, 2017}, plus add
+   it to Bib.v (following the style of SF) and make sure Bib.v is in
+   the Makefile. *)
 (* Leo: Decide: atoms, [Atom]s or [Atoms]? *)
+(* BCP: I think switching back and forth between the first and second is fine. *)
 (** For the type of identifiers of TImp we are going to borrow (a simplified
     version of) [Atom] from Penn's Metatheory library. [Atom] is essentially a
     wrapper around [nat] which supports decidable equality and [fresh]: given
     any finite set of atoms, one can produce one that is distinct from all of
-    the atoms in the set. 
-  *)
+    the atoms in the set. *)
 
+(* BCP: Say what UsualDecidableType means *)
 Module Type ATOM <: UsualDecidableType.
 
   Parameter t : Set.
@@ -71,16 +83,18 @@ Module Type ATOM <: UsualDecidableType.
   Parameter fresh : list t -> t.
   Parameter nat_of: t -> nat.
 
+(* BCP: Say what this means.  Remember HIDEFROMHTML still leaves it in
+   the .v where people will want to understand it. *)
   Include HasUsualEq <+ UsualIsEq.
 End ATOM.
 
 Module Atom : ATOM.
 
-(** Internally, an [Atom] is just a natural number. *)
+(** Internally, an [Atom] is just a natural number... *)
 
   Definition t := nat.
 
-(** Which means decidable equality comes for free from the standard library: *)
+(** ...which means decidable equality comes for free from the standard library: *)
 
   Definition eq_dec := eq_nat_dec.
   
@@ -100,8 +114,7 @@ Module Atom : ATOM.
   Include HasUsualEq <+ UsualIsEq.
 
 (** We also need a way of printing atoms. To support that, we include a 
-    [nat_of] function that exposes the internal natural number. 
-  *)
+    [nat_of] function that exposes the internal natural number. *)
   
   Definition nat_of (a : nat) := a.
   
@@ -144,12 +157,14 @@ Inductive ty := TBool | TNat.
 Derive (Arbitrary, Show) for ty.
 
 (* LEO: Show output? (xxx is defined). Print the derived ones as well? *)
+(* BCP: My convention is to show the output only if it's interesting. *)
 
 (** The decidable equality instances are not yet derived fully automatically.
-    However, the boilerplate for it is largely straightforward.
-  *)
+    However, the boilerplate for it is largely straightforward. *)
 
 (* Leo: they've already seen the Dec = boilerplate right? *)
+(* BCP: No, I don't think so. And I guess I'd rather keep it here, to
+   avoid making Typeclases depend on SSR. *)
 
 Instance eq_dec_ty (x y : ty) : Dec (x = y).
 Proof. constructor; unfold ssrbool.decidable; decide equality. Defined.
@@ -182,8 +197,7 @@ Module Type Map (K:UsualDecidableType).
    Parameter get : t V -> K.t -> option V.
    Parameter set : t V -> K.t -> V -> t V.
       Parameter dom : t V -> list K.t.
-       
-    End withv.
+       End withv.
 
 End Map.
 
@@ -223,9 +237,8 @@ Module ListMap (K:UsualDecidableType) <: Map K.
 
 End ListMap.
 
-(** We insantiate this functor with [Atom], yielding [AtomMap] our 
-    map with [Atom] as the key type. 
-  *)
+(** We instantiate this functor with [Atom], yielding [AtomMap] our 
+    map with [Atom] as the key type. *)
 
 Module AtomMap := ListMap (Atom).
 
@@ -233,8 +246,11 @@ Module AtomMap := ListMap (Atom).
     holds precisely when the binding of some [Atom] [x] is equal to [a] in 
     [m] 
   *)
+(* BCP: My usual convention is to put ending comment brackets on the
+   same line as the end of the comment... *)
 
 (* bound_in? *)
+(* BCP: bound_to? *)
 Inductive bind_in {A} : @AtomMap.t A -> Atom.t -> A -> Prop :=
   | Bind : forall x m a, AtomMap.get m x = Some a -> bind_in m x a.
 
@@ -243,6 +259,10 @@ Inductive bind_in {A} : @AtomMap.t A -> Atom.t -> A -> Prop :=
     skip the next few paragraphs that deal with partially automating 
     the proofs for such instances. 
   *)
+(* BCP: Be explicit about where to skip to.  (Or perhaps break it up
+   into subsections so that people can just skip the whole
+   subsection?)  [Ah, I see that it's already done this way,
+   basically.] *)
 
 Instance dec_bind_in {A : Type} Gamma x (T : A) 
          `{D : forall (x y : A), Dec (x = y)}
@@ -374,6 +394,7 @@ Inductive exp : Type :=
   | ENot : exp -> exp
   | EAnd : exp -> exp -> exp.
 
+(* BCP: This comment is kind of a no-op.  Fine to just omit it and similar ones. *)
 (** To be able to print expressions we can derive [Show] *)
 
 Derive Show for exp.
@@ -400,6 +421,8 @@ Derive Show for exp.
 (** The following inductive relation characterizes well-typed expressions
     of a particular type. It is rather unsurprising, using [bind_in] to 
     access the typing context in the variable case *)
+
+(* BCP: Maybe define a Notation for this to lighten the presentation? *)
 
 Inductive has_type : context -> exp -> ty -> Prop := 
 | Ty_Var : forall x T Gamma, 
@@ -434,6 +457,8 @@ Inductive has_type : context -> exp -> ty -> Prop :=
     has_type Gamma (EAnd e1 e2) TBool.
 
 (* Move to Tactics.v *)
+(* BCP: And we may need to hack sf/Common.Makefile a bit so that we
+   can leave this file out of the TOC. *)
 Ltac solve_inductives Gamma :=
   repeat (match goal with 
       [ IH : forall _ _, _ |- _ ] =>
@@ -464,7 +489,7 @@ Proof with solve_sum.
 Defined.
 
 (* EX 4 : Derive [Arbitrary] for expressions and write a conditional 
-    property that is always true, if an expression is well-typed. Try to 
+    property that is always true if an expression is well-typed. Try to 
     check that property. What happens?  
 
     (You will need to provide a [Shrink] instance for [Atom]. The
@@ -476,13 +501,14 @@ Defined.
 (* ================================================================= *)
 (** ** Generator for Typed expressions *)
 
-(** Instead of generating expressions and filtering them using 
-    has_type, we can be smarter and generate well typed expressions 
-    for a given context directly. It is common for conditional generators 
-    to return [option]s of the underlying type, allowing the possibility of 
-    failure if a wrong choice is made. For example, if we wanted to generate
-    an expression of type [TNat] and chose to do that by generating a variable, 
-    then we might not be able to actually do that (e.g. if the context is empty). 
+(** Instead of generating expressions and filtering them using
+    has_type, we can be smarter and generate well typed expressions
+    for a given context directly. It is common for conditional
+    generators to return [option]s of the underlying type, allowing
+    the possibility of failure if a wrong choice is made. For example,
+    if we wanted to generate an expression of type [TNat] and chose to
+    do that by generating a variable, then we might not be able to
+    actually do that (e.g. if the context is empty).
    
 *)
 
@@ -539,11 +565,12 @@ Instance gOptMonad : `{Monad GOpt} :=
     [Ty_Var : forall (x : Atom.t) (T : ty) (Gamma : AtomMap.t),
               bind_in Gamma x T -> has_type Gamma (EVar x) T]
 
-    Since we want to generate expressions such that [has_type Gamma e T] holds given [Gamma] and [T], following this rule we would need to generate 
-    an expression of the form [EVar x] for some atom [x]. The side 
-    condition [bind_in Gamma x T] informs what that atom must be: it must 
-    be an [Atom] from the context with the appropriate type. That's exactly
-    what [gen_typed_atom_from_context] did.
+    Since we want to generate expressions such that [has_type Gamma e
+    T] holds given [Gamma] and [T], following this rule we would need
+    to generate an expression of the form [EVar x] for some atom
+    [x]. The side condition [bind_in Gamma x T] informs what that atom
+    must be: it must be an [Atom] from the context with the
+    appropriate type. That's exactly what [gen_typed_atom_from_context] did.
 
   *)
 
@@ -712,12 +739,10 @@ Defined.
     [sequenceGen] combinator will then chain all those generators in sequence,
     producing a generator for well-typed states *)
     
-
 Definition gen_typed_state (Gamma : context) : G state := 
   sequenceGen (List.map (fun '(x, T) =>
                            v <- gen_typed_value T;;
                            ret (x, v)) Gamma).
-
 
 (* ################################################################# *)
 (** * Evaluation *)
@@ -822,7 +847,6 @@ Definition expression_soundness_exec :=
     types, but we couldn't shrink to [e1] or [e2] as their type is wrong. 
  *)
    
-
 Fixpoint shrink_exp_typed (T : ty) (e : exp) : list exp :=
   match e with 
   | EVar _ => 
@@ -880,7 +904,7 @@ Definition shrink_typed_has_type :=
 (* QuickChick shrink_typed_has_type. *)
 
 (* ================================================================= *)
-(** ** Back to soundness *)
+(** ** Back to Soundness *)
 
 (** To lift the shrinker to optional expressions, QuickChick provides a [lift]
     function. *)

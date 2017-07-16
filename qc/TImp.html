@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>TImp: A Case Study on Typed Imp</title>
+<title>TImp: Case Study: a Typed Imperative Language</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,52 +29,58 @@
 
 <div id="main">
 
-<h1 class="libtitle">TImp<span class="subtitle">A Case Study on Typed Imp</span></h1>
+<h1 class="libtitle">TImp<span class="subtitle">Case Study: a Typed Imperative Language</span></h1>
 
 
 <div class="code code-tight">
 
 <br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;Some&nbsp;random&nbsp;things&nbsp;to&nbsp;do&nbsp;soon:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;80-column-ify<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Turn&nbsp;exercises&nbsp;into&nbsp;SF-style&nbsp;using&nbsp;EX&nbsp;tags<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Start&nbsp;producing&nbsp;a&nbsp;TERSE&nbsp;version&nbsp;that&nbsp;we&nbsp;can&nbsp;use&nbsp;for&nbsp;lecturing<br/>
+*)</span><br/>
 
 <br/>
 
 <br/>
-<span class="comment">(*&nbsp;Leo:&nbsp;Backwards&nbsp;pointer&nbsp;to&nbsp;Imp&nbsp;somehow?&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;Leo:&nbsp;Imp&nbsp;is&nbsp;in&nbsp;the&nbsp;first&nbsp;volume&nbsp;of&nbsp;SF?&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Having seen a basic overview of QuickChick in the previous chapter, we can
-    now dive into a more realistic case study: a typed variant of Imp.  The
-    original Imp variant presented in the first volume of Software Foundations
-    syntactically separates boolean and arithmetic expressions: <span class="inlinecode"><span class="id" type="var">bexp</span></span> ranges
-    over boolean expressions, while <span class="inlinecode"><span class="id" type="var">aexp</span></span> ranges over arithmetic ones.
-    Moreover, variables are only allowed in <span class="inlinecode"><span class="id" type="var">aexp</span></span> and only take arithmetic
+Having seen a basic overview of QuickChick in the previous
+    chapter, we can now dive into a more realistic case study: a typed
+    variant of Imp, the simple imperative language introduced in
+    <i>Logical Foundations</i>.  The original Imp variant presented in the
+    first volume of Software Foundations syntactically separates
+    boolean and arithmetic expressions: <span class="inlinecode"><span class="id" type="var">bexp</span></span> ranges over boolean
+    expressions, while <span class="inlinecode"><span class="id" type="var">aexp</span></span> ranges over arithmetic ones.  Moreover,
+    variables are only allowed in <span class="inlinecode"><span class="id" type="var">aexp</span></span> and only take arithmetic
     values.
 
 <div class="paragraph"> </div>
 
-    In typed Imp (TImp) we collapse the expression syntax and allow variables to
-    range over both numbers and booleans. With the unified syntax, we introduce
-    the notion of well-typed Imp expressions and programs: where every variable
-    only ranges over values of a single type throughout the whole program.  We
-    then give an operational semantics to TImp in the form of a partial
-    evaluation function; partial, since in the unified syntax one could attempt
-    to write expressions such as <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">True</span></span>.
+    In typed Imp (TImp) we collapse the expression syntax and allow
+    variables to range over both numbers and booleans. With the
+    unified syntax, we introduce the notion of well-typed Imp
+    expressions and programs: where every variable only ranges over
+    values of a single type throughout the whole program.  We then
+    give an operational semantics to TImp in the form of a partial
+    evaluation function; partial, since in the unified syntax one
+    could attempt to write expressions such as <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">True</span></span>.
 
 <div class="paragraph"> </div>
 
-    A common mantra in functional programming is "well-typed programs cannot go
-    wrong"; TImp is no exception to that rule. The soundness property for TImp
-    will state that evaluating well-typed expressions and programs always
-    succeeds. This is another example of a <i>conditional</i> property. As we saw in
-    the previous chapter, testing such properties requires custom generators.
-    In this chapter, we will show how to scale the techniques for writing
-    generators to more realistic generators for well-typed expressions and
-    programs. In addition, we will also demonstrate the notion and necessity of
-    custom shrinkers preserving invariants, a problem dual to that of custom
-    generators.
- 
+    A common mantra in functional programming is "well-typed programs
+    cannot go wrong"; TImp is no exception to that rule. The soundness
+    property for TImp will state that evaluating well-typed
+    expressions and programs always succeeds. This is another example
+    of a <i>conditional</i> property. As we saw in the previous chapter,
+    testing such properties requires custom generators.  In this
+    chapter, we will show how to scale the techniques for writing
+    generators to more realistic generators for well-typed expressions
+    and programs. In addition, we will also demonstrate the notion and
+    necessity of custom shrinkers preserving invariants, a problem
+    dual to that of custom generators. 
 <div class="paragraph"> </div>
 
 <a name="lab61"></a><h1 class="section">Atoms, Types and Contexts</h1>
@@ -88,7 +94,12 @@ Having seen a basic overview of QuickChick in the previous chapter, we can
 
 <br/>
 <span class="comment">(*&nbsp;Leo:&nbsp;How&nbsp;can&nbsp;we&nbsp;cite&nbsp;things&nbsp;in&nbsp;SF-style?&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;Do&nbsp;you&nbsp;mean&nbsp;bibliographic&nbsp;citations?&nbsp;&nbsp;Or&nbsp;URLs?&nbsp;&nbsp;Urls&nbsp;are<br/>
+&nbsp;&nbsp;&nbsp;<a href="http://likethis"><span class="inlineref">http://likethis</span></a>&nbsp;and&nbsp;bib&nbsp;stuff&nbsp;is&nbsp;\Bib{Like&nbsp;This,&nbsp;2017},&nbsp;plus&nbsp;add<br/>
+&nbsp;&nbsp;&nbsp;it&nbsp;to&nbsp;Bib.v&nbsp;(following&nbsp;the&nbsp;style&nbsp;of&nbsp;SF)&nbsp;and&nbsp;make&nbsp;sure&nbsp;Bib.v&nbsp;is&nbsp;in<br/>
+&nbsp;&nbsp;&nbsp;the&nbsp;Makefile.&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;Leo:&nbsp;Decide:&nbsp;atoms,&nbsp;<span class="inlinecode"><span class="id" type="var">Atom</span></span>s&nbsp;or&nbsp;<span class="inlinecode"><span class="id" type="var">Atoms</span></span>?&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;I&nbsp;think&nbsp;switching&nbsp;back&nbsp;and&nbsp;forth&nbsp;between&nbsp;the&nbsp;first&nbsp;and&nbsp;second&nbsp;is&nbsp;fine.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -97,11 +108,11 @@ For the type of identifiers of TImp we are going to borrow (a simplified
     wrapper around <span class="inlinecode"><span class="id" type="var">nat</span></span> which supports decidable equality and <span class="inlinecode"><span class="id" type="tactic">fresh</span></span>: given
     any finite set of atoms, one can produce one that is distinct from all of
     the atoms in the set. 
-  
 </div>
 <div class="code code-tight">
 
 <br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;Say&nbsp;what&nbsp;UsualDecidableType&nbsp;means&nbsp;*)</span><br/>
 <span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">ATOM</span> &lt;: <span class="id" type="var">UsualDecidableType</span>.<br/>
 
 <br/>
@@ -118,7 +129,7 @@ For the type of identifiers of TImp we are going to borrow (a simplified
 </div>
 
 <div class="doc">
-Internally, an <span class="inlinecode"><span class="id" type="var">Atom</span></span> is just a natural number. 
+Internally, an <span class="inlinecode"><span class="id" type="var">Atom</span></span> is just a natural number... 
 </div>
 <div class="code code-tight">
 
@@ -127,7 +138,7 @@ Internally, an <span class="inlinecode"><span class="id" type="var">Atom</span><
 </div>
 
 <div class="doc">
-Which means decidable equality comes for free from the standard library: 
+...which means decidable equality comes for free from the standard library: 
 </div>
 <div class="code code-tight">
 
@@ -159,7 +170,6 @@ To compute a fresh natural number given a list of natural numbers,
 <div class="doc">
 We also need a way of printing atoms. To support that, we include a 
     <span class="inlinecode"><span class="id" type="var">nat_of</span></span> function that exposes the internal natural number. 
-  
 </div>
 <div class="code code-tight">
 
@@ -231,17 +241,19 @@ TImp has two types of expressions: booleans and natural numbers.
 
 <br/>
 <span class="comment">(*&nbsp;LEO:&nbsp;Show&nbsp;output?&nbsp;(xxx&nbsp;is&nbsp;defined).&nbsp;Print&nbsp;the&nbsp;derived&nbsp;ones&nbsp;as&nbsp;well?&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;My&nbsp;convention&nbsp;is&nbsp;to&nbsp;show&nbsp;the&nbsp;output&nbsp;only&nbsp;if&nbsp;it's&nbsp;interesting.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 The decidable equality instances are not yet derived fully automatically.
-    However, the boilerplate for it is largely straightforward.
-  
+    However, the boilerplate for it is largely straightforward. 
 </div>
 <div class="code code-tight">
 
 <br/>
 <span class="comment">(*&nbsp;Leo:&nbsp;they've&nbsp;already&nbsp;seen&nbsp;the&nbsp;Dec&nbsp;=&nbsp;boilerplate&nbsp;right?&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;No,&nbsp;I&nbsp;don't&nbsp;think&nbsp;so.&nbsp;And&nbsp;I&nbsp;guess&nbsp;I'd&nbsp;rather&nbsp;keep&nbsp;it&nbsp;here,&nbsp;to<br/>
+&nbsp;&nbsp;&nbsp;avoid&nbsp;making&nbsp;Typeclases&nbsp;depend&nbsp;on&nbsp;SSR.&nbsp;*)</span><br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">eq_dec_ty</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>).<br/>
@@ -297,9 +309,7 @@ The decidable equality instances are not yet derived fully automatically.
 &nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">get</span> : <span class="id" type="var">t</span> <span class="id" type="var">V</span> → <span class="id" type="var">K.t</span> → <span class="id" type="var">option</span> <span class="id" type="var">V</span>.<br/>
 &nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="tactic">set</span> : <span class="id" type="var">t</span> <span class="id" type="var">V</span> → <span class="id" type="var">K.t</span> → <span class="id" type="var">V</span> → <span class="id" type="var">t</span> <span class="id" type="var">V</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">dom</span> : <span class="id" type="var">t</span> <span class="id" type="var">V</span> → <span class="id" type="var">list</span> <span class="id" type="var">K.t</span>.<br/>
-
-<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">End</span> <span class="id" type="var">withv</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">End</span> <span class="id" type="var">withv</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">End</span> <span class="id" type="var">Map</span>.<br/>
@@ -355,9 +365,8 @@ The implementation of the map is a simple association list.
 </div>
 
 <div class="doc">
-We insantiate this functor with <span class="inlinecode"><span class="id" type="var">Atom</span></span>, yielding <span class="inlinecode"><span class="id" type="var">AtomMap</span></span> our 
+We instantiate this functor with <span class="inlinecode"><span class="id" type="var">Atom</span></span>, yielding <span class="inlinecode"><span class="id" type="var">AtomMap</span></span> our 
     map with <span class="inlinecode"><span class="id" type="var">Atom</span></span> as the key type. 
-  
 </div>
 <div class="code code-tight">
 
@@ -372,9 +381,12 @@ We introduce a simple inductive proposition, <span class="inlinecode"><span clas
   
 </div>
 <div class="code code-tight">
+<span class="comment">(*&nbsp;BCP:&nbsp;My&nbsp;usual&nbsp;convention&nbsp;is&nbsp;to&nbsp;put&nbsp;ending&nbsp;comment&nbsp;brackets&nbsp;on&nbsp;the<br/>
+&nbsp;&nbsp;&nbsp;same&nbsp;line&nbsp;as&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;comment...&nbsp;*)</span><br/>
 
 <br/>
 <span class="comment">(*&nbsp;bound_in?&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;bound_to?&nbsp;*)</span><br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">bind_in</span> {<span class="id" type="var">A</span>} : @<span class="id" type="var">AtomMap.t</span> <span class="id" type="var">A</span> → <span class="id" type="var">Atom.t</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;| <span class="id" type="keyword">Bind</span> : ∀ <span class="id" type="var">x</span> <span class="id" type="var">m</span> <span class="id" type="var">a</span>, <span class="id" type="var">AtomMap.get</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">a</span> → <span class="id" type="var">bind_in</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span>.<br/>
 </div>
@@ -387,6 +399,10 @@ We can now decide whether <span class="inlinecode"><span class="id" type="var">b
   
 </div>
 <div class="code code-tight">
+<span class="comment">(*&nbsp;BCP:&nbsp;Be&nbsp;explicit&nbsp;about&nbsp;where&nbsp;to&nbsp;skip&nbsp;to.&nbsp;&nbsp;(Or&nbsp;perhaps&nbsp;break&nbsp;it&nbsp;up<br/>
+&nbsp;&nbsp;&nbsp;into&nbsp;subsections&nbsp;so&nbsp;that&nbsp;people&nbsp;can&nbsp;just&nbsp;skip&nbsp;the&nbsp;whole<br/>
+&nbsp;&nbsp;&nbsp;subsection?)&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Ah</span>,</span> <span class="inlinecode"><span class="id" type="var">I</span></span> <span class="inlinecode"><span class="id" type="var">see</span></span> <span class="inlinecode"><span class="id" type="var">that</span></span> <span class="inlinecode"><span class="id" type="var">it's</span></span> <span class="inlinecode"><span class="id" type="var">already</span></span> <span class="inlinecode"><span class="id" type="var">done</span></span> <span class="inlinecode"><span class="id" type="var">this</span></span> <span class="inlinecode"><span class="id" type="var">way</span>,</span>
+   <span class="inlinecode"><span class="id" type="var">basically</span>.</span>&nbsp;*)</span><br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bind_in</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) <br/>
@@ -590,6 +606,9 @@ We also need to generate a typing context to begin with. Given
 &nbsp;&nbsp;| <span class="id" type="var">ELe</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">ENot</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">EAnd</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span>.<br/>
+
+<br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;This&nbsp;comment&nbsp;is&nbsp;kind&nbsp;of&nbsp;a&nbsp;no-op.&nbsp;&nbsp;Fine&nbsp;to&nbsp;just&nbsp;omit&nbsp;it&nbsp;and&nbsp;similar&nbsp;ones.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -641,6 +660,9 @@ If we tried to derive <span class="inlinecode"><span class="id" type="var">Arbit
 <div class="code code-tight">
 
 <br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;Maybe&nbsp;define&nbsp;a&nbsp;Notation&nbsp;for&nbsp;this&nbsp;to&nbsp;lighten&nbsp;the&nbsp;presentation?&nbsp;*)</span><br/>
+
+<br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> := <br/>
 | <span class="id" type="var">Ty_Var</span> : ∀ <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind_in</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <br/>
@@ -675,6 +697,8 @@ If we tried to derive <span class="inlinecode"><span class="id" type="var">Arbit
 
 <br/>
 <span class="comment">(*&nbsp;Move&nbsp;to&nbsp;Tactics.v&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;BCP:&nbsp;And&nbsp;we&nbsp;may&nbsp;need&nbsp;to&nbsp;hack&nbsp;sf/Common.Makefile&nbsp;a&nbsp;bit&nbsp;so&nbsp;that&nbsp;we<br/>
+&nbsp;&nbsp;&nbsp;can&nbsp;leave&nbsp;this&nbsp;file&nbsp;out&nbsp;of&nbsp;the&nbsp;TOC.&nbsp;*)</span><br/>
 <span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_inductives</span> <span class="id" type="var">Gamma</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ <span class="id" type="var">IH</span> : ∀ <span class="id" type="var">_</span> <span class="id" type="var">_</span>, <span class="id" type="var">_</span> |- <span class="id" type="var">_</span> ] ⇒<br/>
@@ -714,7 +738,7 @@ Typing in TImp is decidable: given an expression <span class="inlinecode"><span 
 
 <br/>
 <span class="comment">(*&nbsp;EX&nbsp;4&nbsp;:&nbsp;Derive&nbsp;<span class="inlinecode"><span class="id" type="var">Arbitrary</span></span>&nbsp;for&nbsp;expressions&nbsp;and&nbsp;write&nbsp;a&nbsp;conditional&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;property&nbsp;that&nbsp;is&nbsp;always&nbsp;true,&nbsp;if&nbsp;an&nbsp;expression&nbsp;is&nbsp;well-typed.&nbsp;Try&nbsp;to&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;property&nbsp;that&nbsp;is&nbsp;always&nbsp;true&nbsp;if&nbsp;an&nbsp;expression&nbsp;is&nbsp;well-typed.&nbsp;Try&nbsp;to&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;check&nbsp;that&nbsp;property.&nbsp;What&nbsp;happens?&nbsp;&nbsp;<br/>
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(You&nbsp;will&nbsp;need&nbsp;to&nbsp;provide&nbsp;a&nbsp;<span class="inlinecode"><span class="id" type="var">Shrink</span></span>&nbsp;instance&nbsp;for&nbsp;<span class="inlinecode"><span class="id" type="var">Atom</span></span>.&nbsp;The<br/>
@@ -730,13 +754,14 @@ Typing in TImp is decidable: given an expression <span class="inlinecode"><span 
 
 <div class="paragraph"> </div>
 
- Instead of generating expressions and filtering them using 
-    has_type, we can be smarter and generate well typed expressions 
-    for a given context directly. It is common for conditional generators 
-    to return <span class="inlinecode"><span class="id" type="var">option</span></span>s of the underlying type, allowing the possibility of 
-    failure if a wrong choice is made. For example, if we wanted to generate
-    an expression of type <span class="inlinecode"><span class="id" type="var">TNat</span></span> and chose to do that by generating a variable, 
-    then we might not be able to actually do that (e.g. if the context is empty). 
+ Instead of generating expressions and filtering them using
+    has_type, we can be smarter and generate well typed expressions
+    for a given context directly. It is common for conditional
+    generators to return <span class="inlinecode"><span class="id" type="var">option</span></span>s of the underlying type, allowing
+    the possibility of failure if a wrong choice is made. For example,
+    if we wanted to generate an expression of type <span class="inlinecode"><span class="id" type="var">TNat</span></span> and chose to
+    do that by generating a variable, then we might not be able to
+    actually do that (e.g. if the context is empty).
 
 <div class="paragraph"> </div>
 
@@ -824,11 +849,12 @@ Which brings us to our first large sized generator for typed expressions.
 
 <div class="paragraph"> </div>
 
-    Since we want to generate expressions such that <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> holds given <span class="inlinecode"><span class="id" type="var">Gamma</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span>, following this rule we would need to generate 
-    an expression of the form <span class="inlinecode"><span class="id" type="var">EVar</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> for some atom <span class="inlinecode"><span class="id" type="var">x</span></span>. The side 
-    condition <span class="inlinecode"><span class="id" type="var">bind_in</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> informs what that atom must be: it must 
-    be an <span class="inlinecode"><span class="id" type="var">Atom</span></span> from the context with the appropriate type. That's exactly
-    what <span class="inlinecode"><span class="id" type="var">gen_typed_atom_from_context</span></span> did.
+    Since we want to generate expressions such that <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span>
+    <span class="inlinecode"><span class="id" type="var">T</span></span> holds given <span class="inlinecode"><span class="id" type="var">Gamma</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span>, following this rule we would need
+    to generate an expression of the form <span class="inlinecode"><span class="id" type="var">EVar</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> for some atom
+    <span class="inlinecode"><span class="id" type="var">x</span></span>. The side condition <span class="inlinecode"><span class="id" type="var">bind_in</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> informs what that atom
+    must be: it must be an <span class="inlinecode"><span class="id" type="var">Atom</span></span> from the context with the
+    appropriate type. That's exactly what <span class="inlinecode"><span class="id" type="var">gen_typed_atom_from_context</span></span> did.
 
 <div class="paragraph"> </div>
 
@@ -1265,7 +1291,7 @@ Similarly with generators, we can have a sanity check for our shrinking:
 </div>
 
 <div class="doc">
-<a name="lab74"></a><h2 class="section">Back to soundness</h2>
+<a name="lab74"></a><h2 class="section">Back to Soundness</h2>
 
 <div class="paragraph"> </div>
 

@@ -29,15 +29,20 @@ Fixpoint remove (x : nat) (l : list nat) : list nat :=
     | h::t => if beq_nat h x then t else h :: remove x t
   end.
 
-(** One possible specification for [remove] might be this property *)
+(** One possible specification for [remove] might be this property... *)
 
 Conjecture removeP : forall x l,  ~ (In x (remove x l)).
 
-(** which says that [x] never occurs in the result of [remove x l] for
-    any [x] and [l].  Sadly, this property is false, as we would
-    eventually discover if we were to try to prove it. *)
+(** ...which says that [x] never occurs in the result of [remove x l]
+    for any [x] and [l].
 
-(** A different -- and often much more efficient -- way to discover
+    ([Conjecture foo...] means the same as [Theorem foo... Admitted.]
+    Formally, [foo] is treated as an axiom in what follows.) *)
+
+(** Sadly, this property is false, as we would (eventually) discover
+    if we were to try to prove it. *)
+
+(** A different -- possibly much more efficient -- way to discover
     the discrepancy between the definition and specification is
     to _test_ it: *)
 
@@ -54,11 +59,13 @@ QuickChick removeP.
 
     This means that, if run [remove] with [x] being [0] and [l]
     the two-element list containing two zeros, then the property
-    [removeP] fails. With this example in hand, we can see that the [then]
-    branch of [remove] fails to make a recursive call, which means
-    that only one occurence of [x] will be deleted. The last
-    line of the output records that it took 17 tests to identify some
-    fault-inducing input and 12 "shrinks" to reduce it to a minimal
+    [removeP] fails. *)
+
+(** With this example in hand, we can see that the [then] branch
+    of [remove] fails to make a recursive call, which means that only
+    one occurence of [x] will be deleted. The last line of the output
+    records that it took 17 tests to identify some fault-inducing
+    input and 12 "shrinks" to reduce it to a minimal
     counterexample. *)
 
 (** **** Exercise: 1 star (insert)  *)
@@ -88,7 +95,6 @@ Fixpoint insert x l :=
 (* FILL IN HERE *)
 (** [] *)
 
-
 (* ################################################################# *)
 (** * Overview *)
 
@@ -105,8 +111,16 @@ Fixpoint insert x l :=
     need to make a digression to explain Coq's support for
     _typeclasses_, which QuickChick uses extensively both internally
     and in its programmatic interface to users.  This is
-    [Typeclasses]. *)
+    [Typeclasses].
+    
+    Next ([QC]) we'll cover the core concepts and features of
+    QuickChick itself.
 
-(**  Overview the rest of the chapters. 
- *)
+    The [TImp] chapter develops a small case study around a typed
+    variant of the Imp language.
+
+    Finally, a larger case study on property-based testing of a small
+    compiler appears as the [CompilerTest] chapter of the [vminus]
+    volume. *)
+
        

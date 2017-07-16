@@ -10,7 +10,7 @@
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -272,15 +272,18 @@ Other types can similarly be equipped with <span class="inlinecode"><span class=
 <div class="doc">
 The parameter <span class="inlinecode">`{<span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="var">A</span>}</span> is a <i>class constraint</i>, which states
     that the function <span class="inlinecode"><span class="id" type="var">showOne</span></span> is expected to be applied only to
-    types <span class="inlinecode"><span class="id" type="var">A</span></span> that belong to the <span class="inlinecode"><span class="id" type="keyword">Show</span></span> class. Concretely, this
-    constraint should be thought of as an extra parameter to <span class="inlinecode"><span class="id" type="var">showOne</span></span>
-    supplying <i>evidence</i> that <span class="inlinecode"><span class="id" type="var">A</span></span> is an instance of <span class="inlinecode"><span class="id" type="keyword">Show</span></span> &mdash; i.e., it
-    is essentially just a <span class="inlinecode"><span class="id" type="var">show</span></span> function for <span class="inlinecode"><span class="id" type="var">A</span></span>, which is implicitly
-    invoked by the expression <span class="inlinecode"><span class="id" type="var">show</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>.
+    types <span class="inlinecode"><span class="id" type="var">A</span></span> that belong to the <span class="inlinecode"><span class="id" type="keyword">Show</span></span> class.
 
 <div class="paragraph"> </div>
 
-    More interestingly, a single function can come with multiple class
+    Concretely, this constraint should be thought of as an extra
+    parameter to <span class="inlinecode"><span class="id" type="var">showOne</span></span> supplying <i>evidence</i> that <span class="inlinecode"><span class="id" type="var">A</span></span> is an
+    instance of <span class="inlinecode"><span class="id" type="keyword">Show</span></span> &mdash; i.e., it is essentially just a <span class="inlinecode"><span class="id" type="var">show</span></span>
+    function for <span class="inlinecode"><span class="id" type="var">A</span></span>, which is implicitly invoked by the expression
+    <span class="inlinecode"><span class="id" type="var">show</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>. 
+<div class="paragraph"> </div>
+
+ More interestingly, a single function can come with multiple class
     constraints: 
 </div>
 <div class="code code-tight">
@@ -311,11 +314,10 @@ In the body of <span class="inlinecode"><span class="id" type="var">showTwo</spa
     are many other situations where it is useful to be able to
     choose (and construct) specific functions depending on the type of
     an argument that is supplied to a generic function like <span class="inlinecode"><span class="id" type="var">show</span></span>.
-    Another typical example is boolean equality checkers.
-
+    Another typical example is boolean equality checkers. 
 <div class="paragraph"> </div>
 
-    Here is a declaration for a class <span class="inlinecode"><span class="id" type="var">Eq</span></span> describing types whose
+ Here is a declaration for a class <span class="inlinecode"><span class="id" type="var">Eq</span></span> describing types whose
     elements can be tested for equality. 
 </div>
 <div class="code code-tight">
@@ -380,11 +382,10 @@ One possible confusion should be addressed here: Why should we
 
 <div class="paragraph"> </div>
 
- What about a <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance for pairs?
-
+ What about a <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance for pairs? 
 <div class="paragraph"> </div>
 
-    Since we can have pairs of any types, we'll want to parameterize
+ Since we can have pairs of any types, we'll want to parameterize
     our <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance by two types.  Moreover, we'll need to
     constrain both of these types to be instances of <span class="inlinecode"><span class="id" type="keyword">Show</span></span>. 
 </div>
@@ -472,8 +473,10 @@ Similarly, here is an <span class="inlinecode"><span class="id" type="var">Eq</s
 
  We often want to organize typeclasses into hierarchies.  For
     example, we might want a typeclass <span class="inlinecode"><span class="id" type="var">Ord</span></span> for "ordered types" that
-    support both equality and a less-or-equal comparison operator.  A
-    possible, but bad, way to do this is to define a new class with
+    support both equality and a less-or-equal comparison operator. 
+<div class="paragraph"> </div>
+
+ A possible, but bad, way to do this is to define a new class with
     two associated functions: 
 </div>
 <div class="code code-tight">
@@ -582,10 +585,13 @@ Functions expecting to be instantiated with an instance of <span class="inlineco
 
  Typeclasses in Coq are a powerful tool, but the expressiveness of
     the Coq logic makes it hard to implement sanity checks like
-    Haskell's "overlapping instances" detector.  As a result, using
-    Coq's typeclasses effectively &mdash; and figuring out what is wrong
-    when things don't work &mdash; requires a clear understanding of the
-    underlying mechanisms at work. 
+    Haskell's "overlapping instances" detector.
+
+<div class="paragraph"> </div>
+
+    As a result, using Coq's typeclasses effectively &mdash; and figuring
+    out what is wrong when things don't work &mdash; requires a clear
+    understanding of the underlying mechanisms at work. 
 </div>
 
 <div class="doc">
@@ -593,23 +599,22 @@ Functions expecting to be instantiated with an instance of <span class="inlineco
 
 <div class="paragraph"> </div>
 
- The first thing to discuss is what the "backtick" notation means
-    in declarations of classes, instances, and functions using
-    typeclasses.  This is actually a quite generic mechanism, called
-    <i>implicit generalization</i>, that was added to Coq to support
-    typeclasses but that can also be used to good effect elsewhere.
+ The first thing to understand is exactly what the "backtick"
+    notation means in declarations of classes, instances, and
+    functions using typeclasses.  This is actually a quite generic
+    mechanism, called <i>implicit generalization</i>, that was added to Coq
+    to support typeclasses but that can also be used to good effect
+    elsewhere.
 
 <div class="paragraph"> </div>
 
     The basic idea is that unbound variables mentioned in bindings
     marked with <span class="inlinecode">`</span> are automatically bound in front of the binding
-    where they occur.
-
+    where they occur. 
 <div class="paragraph"> </div>
 
-    To enable this behavior for a particular unbound variable, say
-    <span class="inlinecode"><span class="id" type="var">A</span></span>, we first declare <span class="inlinecode"><span class="id" type="var">A</span></span> to be implicitly generalizable:
-
+ To enable this behavior for a particular variable, say <span class="inlinecode"><span class="id" type="var">A</span></span>, we
+    first declare <span class="inlinecode"><span class="id" type="var">A</span></span> to be implicitly generalizable: 
 </div>
 <div class="code code-tight">
 
@@ -691,10 +696,9 @@ The "implicit and maximally generalized" annotation on the last
 <div class="doc">
 The advantage of the latter form is that it gives a name that can
     be used, in the body, to explicitly refer to the supplied evidence
-    for <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>.  This can be extremely useful when things get
-    complicated and you want to make your code more explicit and less
-    automatic so you can better understand and control what's
-    happening. 
+    for <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>.  This can be useful when things get complicated and
+    you want to make your code more explicit and less automatic so you
+    can better understand and control what's happening. 
 <div class="paragraph"> </div>
 
  We can actually go one bit further and omit <span class="inlinecode"><span class="id" type="var">A</span></span> altogether, with
@@ -764,7 +768,10 @@ If we print out <span class="inlinecode"><span class="id" type="var">max1</span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max1&nbsp;=&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fun&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;(H&nbsp;:&nbsp;Eq&nbsp;A)&nbsp;(H<sub>0</sub>&nbsp;:&nbsp;@Ord&nbsp;A&nbsp;H)&nbsp;(x&nbsp;y&nbsp;:&nbsp;A)&nbsp;=&gt;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;@le&nbsp;A&nbsp;H&nbsp;H<sub>0</sub>&nbsp;x&nbsp;y&nbsp;then&nbsp;y&nbsp;else&nbsp;x<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;(H&nbsp;:&nbsp;Eq&nbsp;A),&nbsp;@Ord&nbsp;A&nbsp;H&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;(H&nbsp;:&nbsp;Eq&nbsp;A),&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Ord&nbsp;A&nbsp;H&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+*)</span><br/>
 
 <br/>
 <span class="id" type="keyword">Check</span> <span class="id" type="var">Ord</span>.<br/>
@@ -855,11 +862,10 @@ Writing <span class="inlinecode">`(...)</span>, with parentheses instead of curl
 
  Although records are not part of Coq's logical foundation, it does
     provide some simple syntactic sugar for defining and using
-    records.  
-
+    records. 
 <div class="paragraph"> </div>
 
-    Record types must be declared before they are used.  For example:
+ Record types must be declared before they are used.  For example:
 </div>
 <div class="code code-tight">
 
@@ -969,8 +975,8 @@ Record declarations can also be parameterized:
 
 <div class="paragraph"> </div>
 
-    Internally, a typeclass declaration is elaborated into a parameterized
-    <span class="inlinecode"><span class="id" type="keyword">Record</span></span> declaration: 
+    Internally, a typeclass declaration is elaborated into a
+    parameterized <span class="inlinecode"><span class="id" type="keyword">Record</span></span> declaration: 
 </div>
 <div class="code code-tight">
 
@@ -986,8 +992,9 @@ Record declarations can also be parameterized:
 </div>
 
 <div class="doc">
-<div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Actually, it prints as a variant. 
-</div> 
+(If you run the <span class="inlinecode"><span class="id" type="keyword">Print</span></span> command yourself, you'll see that <span class="inlinecode"><span class="id" type="keyword">Show</span></span>
+    actually displays as a <span class="inlinecode"><span class="id" type="var">Variant</span></span>; this is Coq's terminology for a
+    single-field record.) 
 <div class="paragraph"> </div>
 
  Analogously, <span class="inlinecode"><span class="id" type="keyword">Instance</span></span> declarations become record values: 
@@ -1041,11 +1048,10 @@ Note that the syntax for record values is slightly different from
  So far, all the mechanisms we've seen have been pretty simple
     syntactic sugar and binding munging.  The real "special sauce" of
     typeclasses is the way appropriate instances are automatically
-    inferred (and constructed!) during typechecking.
-
+    inferred (and constructed!) during typechecking. 
 <div class="paragraph"> </div>
 
-    For example, if we write <span class="inlinecode"><span class="id" type="var">show</span></span> <span class="inlinecode">42</span>, what we actually get is 
+ For example, if we write <span class="inlinecode"><span class="id" type="var">show</span></span> <span class="inlinecode">42</span>, what we actually get is 
     <span class="inlinecode">@<span class="id" type="var">show</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode"><span class="id" type="var">showNat</span></span> <span class="inlinecode">42</span>: 
 </div>
 <div class="code code-tight">
@@ -1060,11 +1066,10 @@ Note that the syntax for record values is slightly different from
 </div>
 
 <div class="doc">
-How does this happen?
-
+How does this happen? 
 <div class="paragraph"> </div>
 
-    First, since the arguments to <span class="inlinecode"><span class="id" type="var">show</span></span> are marked implicit, what we
+ First, since the arguments to <span class="inlinecode"><span class="id" type="var">show</span></span> are marked implicit, what we
     typed is automatically expanded to <span class="inlinecode">@<span class="id" type="var">show</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">42</span>.  The first <span class="inlinecode"><span class="id" type="var">_</span></span>
     should obviously be replaced by <span class="inlinecode"><span class="id" type="var">nat</span></span>.  But what about the second?
 
@@ -1160,8 +1165,7 @@ In the second line, the search procedure decides to try applying
 
 <div class="paragraph"> </div>
 
- <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Exercises needed. 
-</div> <a name="lab24"></a><h1 class="section">Typeclasses and Proofs</h1>
+<a name="lab24"></a><h1 class="section">Typeclasses and Proofs</h1>
 
 <div class="paragraph"> </div>
 
@@ -1239,10 +1243,12 @@ If we do not happen to have an appropriate proof already in the
 
 <div class="doc">
 Given a typeclass with propositional members, we can use these
-    members in proving things involving this typeclass.  Here, for
-    example, is a quick (and somewhat contrived) example of a proof of
-    a property that holds for arbitrary values from the <span class="inlinecode"><span class="id" type="var">EqDec</span></span>
-    class... 
+    members in proving things involving this typeclass. 
+<div class="paragraph"> </div>
+
+ Here, for example, is a quick (and somewhat contrived)
+    example of a proof of a property that holds for arbitrary values
+    from the <span class="inlinecode"><span class="id" type="var">EqDec</span></span> class... 
 </div>
 <div class="code code-tight">
 
@@ -1326,8 +1332,8 @@ The syntax <span class="inlinecode">:&gt;</span> indicates that each <span class
 
 <div class="paragraph"> </div>
 
- The ssreflect library defines what it means for a proposition P to
-    be decidable like this... 
+ The <span class="inlinecode"><span class="id" type="var">ssreflect</span></span> library defines what it means for a proposition
+    <span class="inlinecode"><span class="id" type="var">P</span></span> to be decidable like this... 
 </div>
 <div class="code code-tight">
 
@@ -1517,14 +1523,13 @@ Now we don't need to remember that, for example, the test for
 <li> randomness
 
 </li>
-<li> etc.
-
+<li> etc. 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    There are many good tutorials on the web about monadic programming
+ There are many good tutorials on the web about monadic programming
     in Haskell.  (Readers who have never seen monads before may want to
     refer to one of these to fully understand the examples here.) 
 <div class="paragraph"> </div>
@@ -1573,12 +1578,15 @@ The main definition provided by this library is the following typeclass:
  (If you <span class="inlinecode"><span class="id" type="keyword">Print</span></span> the actual definition, you'll see something more
     complicated, involving <span class="inlinecode"><span class="id" type="var">Polymorphic</span></span> <span class="inlinecode"><span class="id" type="keyword">Record</span></span> <span class="inlinecode"><span class="id" type="var">bla</span></span> <span class="inlinecode"><span class="id" type="var">bla</span>...</span>  <span class="inlinecode"><span class="id" type="var">The</span></span>
     <span class="inlinecode">[<span class="id" type="var">Polymorphic</span>]</span> <span class="inlinecode"><span class="id" type="var">part</span></span> <span class="inlinecode"><span class="id" type="var">refers</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">Coq's</span></span> <span class="inlinecode">"<span class="id" type="var">universe</span></span> <span class="inlinecode"><span class="id" type="var">polymorphism</span>,"</span> <span class="inlinecode"><span class="id" type="var">which</span></span>
-    <span class="inlinecode"><span class="id" type="var">does</span></span> <span class="inlinecode"><span class="id" type="var">not</span></span> <span class="inlinecode"><span class="id" type="var">concern</span></span> <span class="inlinecode"><span class="id" type="var">us</span></span> <span class="inlinecode"><span class="id" type="var">here</span>.)</span>
+    <span class="inlinecode"><span class="id" type="var">does</span></span> <span class="inlinecode"><span class="id" type="var">not</span></span> <span class="inlinecode"><span class="id" type="var">concern</span></span> <span class="inlinecode"><span class="id" type="var">us</span></span> <span class="inlinecode"><span class="id" type="var">here</span>.)</span> <span class="inlinecode"></span>
+<div class="paragraph"> </div>
 
-    <span class="inlinecode"><span class="id" type="var">That</span></span> <span class="inlinecode"><span class="id" type="var">is</span>,</span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">type</span></span> <span class="inlinecode"><span class="id" type="var">family</span></span> <span class="inlinecode">[<span class="id" type="var">m</span>]</span> <span class="inlinecode"><span class="id" type="var">is</span></span> <span class="inlinecode"><span class="id" type="var">an</span></span> <span class="inlinecode"><span class="id" type="var">instance</span></span> <span class="inlinecode"><span class="id" type="var">of</span></span> <span class="inlinecode"><span class="id" type="var">the</span></span> <span class="inlinecode">[<span class="id" type="var">Monad</span>]</span> <span class="inlinecode"><span class="id" type="var">class</span></span> <span class="inlinecode"><span class="id" type="keyword">if</span></span>
-    <span class="inlinecode"><span class="id" type="var">we</span></span> <span class="inlinecode"><span class="id" type="var">can</span></span> <span class="inlinecode"><span class="id" type="var">define</span></span> <span class="inlinecode"><span class="id" type="var">functions</span></span> <span class="inlinecode">[<span class="id" type="var">ret</span>]</span> <span class="inlinecode"><span class="id" type="var">and</span></span> <span class="inlinecode">[<span class="id" type="var">bind</span>]</span> <span class="inlinecode"><span class="id" type="var">of</span></span> <span class="inlinecode"><span class="id" type="var">the</span></span> <span class="inlinecode"><span class="id" type="var">appropriate</span></span> <span class="inlinecode"><span class="id" type="var">types</span>.</span>
-    <span class="inlinecode"><span class="id" type="var">For</span></span> <span class="inlinecode"><span class="id" type="var">example</span>,</span> <span class="inlinecode"><span class="id" type="var">we</span></span> <span class="inlinecode"><span class="id" type="var">can</span></span> <span class="inlinecode"><span class="id" type="var">define</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">monad</span></span> <span class="inlinecode"><span class="id" type="var">instance</span></span> <span class="inlinecode"><span class="id" type="keyword">for</span></span> <span class="inlinecode">[<span class="id" type="var">option</span>]</span> <span class="inlinecode"><span class="id" type="var">like</span></span>
-    <span class="inlinecode"><span class="id" type="var">this</span>:</span> <span class="inlinecode"></span>
+ That is, a type family <span class="inlinecode"><span class="id" type="var">m</span></span> is an instance of the <span class="inlinecode"><span class="id" type="var">Monad</span></span> class if
+    we can define functions <span class="inlinecode"><span class="id" type="var">ret</span></span> and <span class="inlinecode"><span class="id" type="var">bind</span></span> of the appropriate types. 
+<div class="paragraph"> </div>
+
+ For example, we can define a monad instance for <span class="inlinecode"><span class="id" type="var">option</span></span> like
+    this: 
 </div>
 <div class="code code-tight">
 
@@ -1601,13 +1609,12 @@ The other nice thing we get from the <span class="inlinecode"><span class="id" t
     we can write <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">&lt;-</span> <span class="inlinecode"><span class="id" type="var">m<sub>1</sub></span></span> <span class="inlinecode">;;</span> <span class="inlinecode"><span class="id" type="var">m<sub>2</sub></span></span>.  Or, if the result from <span class="inlinecode"><span class="id" type="var">m<sub>1</sub></span></span> is not
     needed in <span class="inlinecode"><span class="id" type="var">m<sub>2</sub></span></span>, then instead of <span class="inlinecode"><span class="id" type="var">bind</span></span> <span class="inlinecode"><span class="id" type="var">m<sub>1</sub></span></span> <span class="inlinecode">(<span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">m<sub>2</sub></span>)</span>, we can
     write <span class="inlinecode"><span class="id" type="var">m<sub>1</sub></span></span> <span class="inlinecode">;;</span> <span class="inlinecode"><span class="id" type="var">m<sub>2</sub></span></span>.  This allows us to write functions involving
-    "option plumbing" very compactly.
-
+    "option plumbing" very compactly. 
 <div class="paragraph"> </div>
 
-    For example, suppose we have a function that looks up the <span class="inlinecode"><span class="id" type="var">n</span></span>th
-    element of a list, returning <span class="inlinecode"><span class="id" type="var">None</span></span> if the list contains less than
-    <span class="inlinecode"><span class="id" type="var">n</span></span> elements. 
+ For example, suppose we have a function that looks up the
+    <span class="inlinecode"><span class="id" type="var">n</span></span>th element of a list, returning <span class="inlinecode"><span class="id" type="var">None</span></span> if the list contains
+    less than <span class="inlinecode"><span class="id" type="var">n</span></span> elements. 
 </div>
 <div class="code code-tight">
 
@@ -1634,40 +1641,67 @@ We can write a function that sums the first three elements of a
 </div>
 
 <div class="doc">
-<div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Explain... 
+One final convenience for programming with monads is a collection
+    of operators for "lifting" functions on ordinary values to
+    functions on monadic computations.  <span class="inlinecode"><span class="id" type="var">ExtLib</span></span> defines three &mdash; one
+    for unary functions, one for binary, and one for ternary.  Their
+    definitions (slightly simplified) look like this: 
+</div>
+<div class="code code-tight">
 
-<div class="paragraph"> </div>
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">liftM</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">m</span> : <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">M</span> : <span class="id" type="var">Monad</span> <span class="id" type="var">m</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">T</span> <span class="id" type="var">U</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">f</span> : <span class="id" type="var">T</span> → <span class="id" type="var">U</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">m</span> <span class="id" type="var">T</span> → <span class="id" type="var">m</span> <span class="id" type="var">U</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">bind</span> <span class="id" type="var">x</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">f</span> <span class="id" type="var">x</span>)).<br/>
 
-  Polymorphic Definition liftM@{d c}
-              {m : Type@{d} -&gt; Type@{c<span style="letter-spacing:-.4em;">}</span>}
-              {M : Monad m}
-              {T U : Type@{d<span style="letter-spacing:-.4em;">}</span>} (f : T -&gt; U) : m T -&gt; m U :=
-    fun x =&gt; bind x (fun x =&gt; ret (f x)).
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">liftM2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">m</span> : <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">M</span> : <span class="id" type="var">Monad</span> <span class="id" type="var">m</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">T</span> <span class="id" type="var">U</span> <span class="id" type="var">V</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">f</span> : <span class="id" type="var">T</span> → <span class="id" type="var">U</span> → <span class="id" type="var">V</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">m</span> <span class="id" type="var">T</span> → <span class="id" type="var">m</span> <span class="id" type="var">U</span> → <span class="id" type="var">m</span> <span class="id" type="var">V</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> ⇒ <span class="id" type="var">bind</span> <span class="id" type="var">x</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">liftM</span> (<span class="id" type="var">f</span> <span class="id" type="var">x</span>) <span class="id" type="var">y</span>).<br/>
 
-<div class="paragraph"> </div>
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">liftM3</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">m</span> : <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">M</span> : <span class="id" type="var">Monad</span> <span class="id" type="var">m</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" type="var">T</span> <span class="id" type="var">U</span> <span class="id" type="var">V</span> <span class="id" type="var">W</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">f</span> : <span class="id" type="var">T</span> → <span class="id" type="var">U</span> → <span class="id" type="var">V</span> → <span class="id" type="var">W</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">m</span> <span class="id" type="var">T</span> → <span class="id" type="var">m</span> <span class="id" type="var">U</span> → <span class="id" type="var">m</span> <span class="id" type="var">V</span> → <span class="id" type="var">m</span> <span class="id" type="var">W</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span> ⇒ <span class="id" type="var">bind</span> <span class="id" type="var">x</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">liftM2</span> (<span class="id" type="var">f</span> <span class="id" type="var">x</span>) <span class="id" type="var">y</span> <span class="id" type="var">z</span>).<br/>
+</div>
 
-  Polymorphic Definition liftM2@{d c}
-              {m : Type@{d} -&gt; Type@{c<span style="letter-spacing:-.4em;">}</span>}
-              {M : Monad m}
-              {T U V : Type@{d<span style="letter-spacing:-.4em;">}</span>} (f : T -&gt; U -&gt; V) : m T -&gt; m U -&gt; m V :=
-    Eval cbv beta iota zeta delta <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">liftM</span></span> <span class="inlinecode"></span> in
-      fun x y =&gt; bind x (fun x =&gt; liftM (f x) y).
+<div class="doc">
+For example, suppose we have two <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span>s and we would like
+    to calculate their sum (unless one of them is <span class="inlinecode"><span class="id" type="var">None</span></span>, in which
+    case we want <span class="inlinecode"><span class="id" type="var">None</span></span>).  Instead of this... 
+</div>
+<div class="code code-tight">
 
-<div class="paragraph"> </div>
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">sum3opt</span> (<span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> : <span class="id" type="var">option</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>1</sub></span> &lt;- <span class="id" type="var">n<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> &lt;- <span class="id" type="var">n<sub>2</sub></span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">x<sub>1</sub></span> + <span class="id" type="var">x<sub>2</sub></span>).<br/>
+</div>
 
-  Polymorphic Definition liftM3@{d c}
-              {m : Type@{d} -&gt; Type@{c<span style="letter-spacing:-.4em;">}</span>}
-              {M : Monad m}
-              {T U V W : Type@{d<span style="letter-spacing:-.4em;">}</span>} (f : T -&gt; U -&gt; V -&gt; W) : m T -&gt; m U -&gt; m V -&gt; m W :=
-    Eval cbv beta iota zeta delta <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">liftM2</span></span> <span class="inlinecode"></span> in
-      fun x y z =&gt; bind x (fun x =&gt; liftM2 (f x) y z).
+<div class="doc">
+...we can use <span class="inlinecode"><span class="id" type="var">liftM2</span></span> we can write it more compactly: 
+</div>
+<div class="code code-tight">
 
-<div class="paragraph"> </div>
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">sum3opt'</span> (<span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span> : <span class="id" type="var">option</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">liftM2</span> <span class="id" type="var">plus</span> <span class="id" type="var">n<sub>1</sub></span> <span class="id" type="var">n<sub>2</sub></span>.<br/>
+</div>
 
-</div>  The <span class="inlinecode"><span class="id" type="var">ext</span>-<span class="id" type="var">lib</span></span> Github repository also includes some examples of
-    using monads.  <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> ... and some good discussion of how to use and not use them! 
-</div>  <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> URL needed 
-</div> 
+<div class="doc">
+The <span class="inlinecode">/<span class="id" type="var">examples</span></span> directory in the <span class="inlinecode"><span class="id" type="var">ext</span>-<span class="id" type="var">lib</span></span> Github
+    repository (<a href="https://github.com/coq-ext-lib/coq-ext-lib"><span class="inlineref">https://github.com/coq-ext-lib/coq-ext-lib</span></a>) includes
+    some further examples of using monads in Coq. 
 <div class="paragraph"> </div>
 
 <a name="lab32"></a><h2 class="section">Others</h2>
@@ -1732,16 +1766,15 @@ We can write a function that sums the first three elements of a
 <span class="id" type="var">Fail</span> <span class="id" type="keyword">Check</span> (<span class="id" type="var">foo</span> <span class="id" type="var">bool</span>).<br/>
 <span class="comment">(*&nbsp;==&gt;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;command&nbsp;has&nbsp;indeed&nbsp;failed&nbsp;with&nbsp;message:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;term&nbsp;"bool"&nbsp;has&nbsp;type&nbsp;"Set"&nbsp;while&nbsp;it&nbsp;is&nbsp;expected&nbsp;to&nbsp;have&nbsp;type<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bool&nbsp;-&gt;&nbsp;bool".&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;term&nbsp;"bool"&nbsp;has&nbsp;type&nbsp;"Set"&nbsp;while&nbsp;it&nbsp;is&nbsp;expected&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;have&nbsp;type&nbsp;"bool&nbsp;-&gt;&nbsp;bool".&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Huh?!
-
+Huh?! 
 <div class="paragraph"> </div>
 
-    Here's what happened:
+ Here's what happened:
 
 <div class="paragraph"> </div>
 
@@ -1783,9 +1816,12 @@ Huh?!
 
  One of the ways in which Coq's typeclasses differ most from
     Haskell's is the lack, in Coq, of an automatic check for
-    "overlapping instances."  That is, it is completely legal to
-    define a given type to be an instance of a given class in two
-    different ways: 
+    "overlapping instances."
+
+<div class="paragraph"> </div>
+
+    That is, it is completely legal to define a given type to be an
+    instance of a given class in two different ways. 
 </div>
 <div class="code code-tight">
 
@@ -1820,17 +1856,27 @@ Huh?!
 <div class="doc">
 When this happens, it is unpredictable which instance will be
     found first by the instance search process; here it just happened
-    to be the second.  The problem is that, in more complex
-    situations, it may not be obvious when there are overlapping
-    instances.  (The reason Coq doesn't do the overlapping instances
-    check is because its type system is much more complex, so much so
-    that it is very challenging in general to decide whether two given
-    instances overlap.) 
+    to be the second.
+
+<div class="paragraph"> </div>
+
+    The problem is that, in more complex situations, it may not be
+    obvious when there are overlapping instances.
+
+<div class="paragraph"> </div>
+
+    (The reason Coq doesn't do the overlapping instances check is
+    because its type system is much more complex than Haskell's &mdash; so
+    much so that it is very challenging in general to decide whether
+    two given instances overlap.) 
 <div class="paragraph"> </div>
 
  One way to deal with overlapping instances is to "curate" the hint
-    database by explicitly adding and removing specific instances.  To
-    remove things, use <span class="inlinecode"><span class="id" type="var">Remove</span></span> <span class="inlinecode"><span class="id" type="var">Hints</span></span>: 
+    database by explicitly adding and removing specific instances.  
+
+<div class="paragraph"> </div>
+
+    To remove things, use <span class="inlinecode"><span class="id" type="var">Remove</span></span> <span class="inlinecode"><span class="id" type="var">Hints</span></span>: 
 </div>
 <div class="code code-tight">
 
@@ -1855,10 +1901,13 @@ To add them back (or to add arbitrary constants that have the
 
 <br/>
 <span class="id" type="var">Remove</span> <span class="id" type="var">Hints</span> <span class="id" type="var">baz1</span> : <span class="id" type="var">typeclass_instances</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Another&nbsp;way&nbsp;of&nbsp;controlling&nbsp;which&nbsp;instances&nbsp;are&nbsp;chosen&nbsp;by&nbsp;proof<br/>
-&nbsp;&nbsp;&nbsp;search&nbsp;is&nbsp;to&nbsp;assign&nbsp;_priorities_&nbsp;to&nbsp;overlapping&nbsp;instances:&nbsp;*)</span><br/>
+<div class="doc">
+Another way of controlling which instances are chosen by proof
+    search is to assign <i>priorities</i> to overlapping instances: 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">baz3</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">baz</span> | 2 :=<br/>
@@ -1939,13 +1988,12 @@ To add them back (or to add arbitrary constants that have the
 </div>
 
 <div class="doc">
-In this case, it's pretty clear what the problem is.  To fix it,
-    we just have to define a new instance.  But in more complex
-    situations it can be trickier.
-
+In this case, it's pretty clear what the problem is.  To fix
+    it, we just have to define a new instance.  But in more complex
+    situations it can be trickier. 
 <div class="paragraph"> </div>
 
-    A few simple tricks can be very helpful:
+ A few simple tricks can be very helpful:
 
 <div class="paragraph"> </div>
 
@@ -1962,14 +2010,13 @@ In this case, it's pretty clear what the problem is.  To fix it,
 
 </li>
 <li> Turn on tracing of instance search with <span class="inlinecode"><span class="id" type="keyword">Set</span></span> <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span>
-        <span class="inlinecode"><span class="id" type="var">Debug</span>.</span>
-
+        <span class="inlinecode"><span class="id" type="var">Debug</span>.</span> 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    The <span class="inlinecode"><span class="id" type="keyword">Set</span></span> <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span> <span class="inlinecode"><span class="id" type="var">Debug</span></span> command has a variant that causes it
+ The <span class="inlinecode"><span class="id" type="keyword">Set</span></span> <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span> <span class="inlinecode"><span class="id" type="var">Debug</span></span> command has a variant that causes it
     to print even more information: <span class="inlinecode"><span class="id" type="keyword">Set</span></span> <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span> <span class="inlinecode"><span class="id" type="var">Debug</span></span> <span class="inlinecode"><span class="id" type="var">Verbosity</span></span>
     <span class="inlinecode">2.</span>  Writing just <span class="inlinecode"><span class="id" type="keyword">Set</span></span> <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span> <span class="inlinecode"><span class="id" type="var">Debug</span></span> is equivalent to <span class="inlinecode"><span class="id" type="keyword">Set</span></span>
     <span class="inlinecode"><span class="id" type="keyword">Typeclasses</span></span> <span class="inlinecode"><span class="id" type="var">Debug</span></span> <span class="inlinecode"><span class="id" type="var">Verbosity</span></span> <span class="inlinecode">1.</span> 
@@ -2002,11 +2049,10 @@ The <span class="inlinecode"><span class="id" type="var">UNDEFINED</span></span>
 <div class="paragraph"> </div>
 
  One annoying way that typeclass instantiation can go wrong is by
-    simply diverging.  Here is a small example of how this can happen.
-
+    simply diverging.  Here is a small example of how this can happen. 
 <div class="paragraph"> </div>
 
-    Declare a typeclass involving two types parameters <span class="inlinecode"><span class="id" type="var">A</span></span> and <span class="inlinecode"><span class="id" type="var">B</span></span> &mdash;
+ Declare a typeclass involving two types parameters <span class="inlinecode"><span class="id" type="var">A</span></span> and <span class="inlinecode"><span class="id" type="var">B</span></span> &mdash;
     say, a silly typeclass that can be inhabited by arbitrary
     functions from <span class="inlinecode"><span class="id" type="var">A</span></span> to <span class="inlinecode"><span class="id" type="var">B</span></span>: 
 </div>
@@ -2053,7 +2099,7 @@ Declare instances for getting from <span class="inlinecode"><span class="id" typ
 
 <div class="doc">
 Notice that these two instances don't automatically get us from
-    <span class="inlinecode"><span class="id" type="var">bool</span></span> to <span class="inlinecode"><span class="id" type="var">string</span></span>... 
+    <span class="inlinecode"><span class="id" type="var">bool</span></span> to <span class="inlinecode"><span class="id" type="var">string</span></span>: 
 </div>
 <div class="code code-tight">
 
@@ -2062,9 +2108,9 @@ Notice that these two instances don't automatically get us from
 </div>
 
 <div class="doc">
-... and try to define a generic instance that combines an instance
-    from <span class="inlinecode"><span class="id" type="var">A</span></span> to <span class="inlinecode"><span class="id" type="var">B</span></span> and an instance from <span class="inlinecode"><span class="id" type="var">B</span></span> to <span class="inlinecode"><span class="id" type="var">C</span></span>:  <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> Words missing... 
-</div> 
+Now we can try to fix this by defining a generic instance that
+    combines an instance from <span class="inlinecode"><span class="id" type="var">A</span></span> to <span class="inlinecode"><span class="id" type="var">B</span></span> and an instance from <span class="inlinecode"><span class="id" type="var">B</span></span> to
+    <span class="inlinecode"><span class="id" type="var">C</span></span>: 
 </div>
 <div class="code code-tight">
 
@@ -2074,7 +2120,7 @@ Notice that these two instances don't automatically get us from
 </div>
 
 <div class="doc">
-Check that it works: 
+This does get us from <span class="inlinecode"><span class="id" type="var">bool</span></span> to <span class="inlinecode"><span class="id" type="var">string</span></span> automatically: 
 </div>
 <div class="code code-tight">
 
@@ -2084,9 +2130,9 @@ Check that it works:
 </div>
 
 <div class="doc">
-At this point we may think we are in a good state, but in fact we
-    are in a state of great peril: If we happen to ask for an instance
-    that doesn't exist, the search procedure will diverge. 
+However, although this example seemed to work, we are actually in
+    a state of great peril: If we happen to ask for an instance that
+    doesn't exist, the search procedure will diverge. 
 </div>
 <div class="code code-tight">
 
