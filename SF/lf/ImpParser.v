@@ -226,7 +226,7 @@ end.
 
 (** Parse arithmetic expressions *)
 
-Fixpoint parsePrimaryExp (steps:nat) 
+Fixpoint parsePrimaryExp (steps:nat)
                          (xs : list token)
                        : optionE (aexp * list token) :=
   match steps with
@@ -294,27 +294,27 @@ match steps with
          SomeE (BTrue,rest)
      OR DO (u,rest) <-- expect "false" xs;
          SomeE (BFalse,rest)
-     OR DO (e,rest) <-- 
-            firstExpect "not" 
-               (parseAtomicExp steps') 
+     OR DO (e,rest) <--
+            firstExpect "not"
+               (parseAtomicExp steps')
                xs;
          SomeE (BNot e, rest)
-     OR DO (e,rest) <-- 
-              firstExpect "(" 
+     OR DO (e,rest) <--
+              firstExpect "("
                 (parseConjunctionExp steps') xs;
-          (DO (u,rest') <== expect ")" rest; 
+          (DO (u,rest') <== expect ")" rest;
               SomeE (e, rest'))
      OR DO (e, rest) <== parseProductExp steps' xs;
             (DO (e', rest') <--
-              firstExpect "==" 
+              firstExpect "=="
                 (parseAExp steps') rest;
               SomeE (BEq e e', rest')
              OR DO (e', rest') <--
-               firstExpect "<=" 
+               firstExpect "<="
                  (parseAExp steps') rest;
                SomeE (BLe e e', rest')
              OR
-               NoneE 
+               NoneE
       "Expected '==' or '<=' after arithmetic expression")
 end
 
@@ -337,24 +337,24 @@ Definition parseBExp := parseConjunctionExp.
 Check parseConjunctionExp.
 
 Definition testParsing {X : Type}
-           (p : nat -> 
+           (p : nat ->
                 list token ->
                 optionE (X * list token))
            (s : string) :=
-  let t := tokenize s in 
+  let t := tokenize s in
   p 100 t.
 
 (*
-Eval compute in 
+Eval compute in
   testParsing parseProductExp "x*y*(x*x)*x".
 
-Eval compute in 
-  testParsing parseConjunctionExp "not((x==x||x*x<=(x*x)*x)&&x==x". 
+Eval compute in
+  testParsing parseConjunctionExp "not((x==x||x*x<=(x*x)*x)&&x==x".
 *)
 
 (** Parsing commands: *)
 
-Fixpoint parseSimpleCommand (steps:nat) 
+Fixpoint parseSimpleCommand (steps:nat)
                             (xs : list token) :=
   match steps with
   | 0 => NoneE "Too many recursive calls"
@@ -364,19 +364,19 @@ Fixpoint parseSimpleCommand (steps:nat)
     OR DO (e,rest) <--
          firstExpect "IF" (parseBExp steps') xs;
        DO (c,rest')  <==
-         firstExpect "THEN" 
+         firstExpect "THEN"
            (parseSequencedCommand steps') rest;
        DO (c',rest'') <==
-         firstExpect "ELSE" 
+         firstExpect "ELSE"
            (parseSequencedCommand steps') rest';
        DO (u,rest''') <==
          expect "END" rest'';
        SomeE(IFB e THEN c ELSE c' FI, rest''')
     OR DO (e,rest) <--
-         firstExpect "WHILE" 
+         firstExpect "WHILE"
            (parseBExp steps') xs;
        DO (c,rest') <==
-         firstExpect "DO" 
+         firstExpect "DO"
            (parseSequencedCommand steps') rest;
        DO (u,rest'') <==
          expect "END" rest';
@@ -396,7 +396,7 @@ with parseSequencedCommand (steps:nat)
       DO (c, rest) <==
         parseSimpleCommand steps' xs;
       DO (c', rest') <--
-        firstExpect ";;" 
+        firstExpect ";;"
           (parseSequencedCommand steps') rest;
         SomeE(c ;; c', rest')
       OR

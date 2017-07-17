@@ -19,7 +19,7 @@ Module Id_Decidable <: DecidableType with Definition t := id.
   Definition eq (x y: t) := x = y.
   Lemma eq_equiv: Equivalence eq.
   Proof.
-    constructor; red; unfold eq; intros; congruence. 
+    constructor; red; unfold eq; intros; congruence.
   Qed.
   Definition eq_dec: forall (x y: t), {eq x y} + {~eq x y}.
   Proof.
@@ -102,7 +102,7 @@ Proof.
 - auto.
 - destruct (VS.subset (F t) t) eqn:SUBSET.
 + left. apply VS.subset_spec; auto.
-+ apply IHn. 
++ apply IHn.
 Qed.
 
 Hypothesis F_stable:
@@ -114,11 +114,11 @@ Proof.
   assert (forall n x, VS.Subset x default -> VS.Subset (iter n x) default).
   { induction n; intros; simpl.
   - red; auto.
-  - destruct (VS.subset (F x) x) eqn:SUBSET. 
+  - destruct (VS.subset (F x) x) eqn:SUBSET.
     + auto.
     + apply IHn; auto.
-  } 
-  unfold fixpoint. apply H. apply VSP.subset_empty. 
+  }
+  unfold fixpoint. apply H. apply VSP.subset_empty.
 Qed.
 
 End FIXPOINT.
@@ -167,8 +167,8 @@ Proof.
     (fun x : VS.t => VS.union (VS.union (fv_bexp b) L) (live c x))
           (VS.union (VS.union (fv_bexp b) (fv_com c)) L)).
   simpl in L'. fold L'. intros [A|A].
-- split. fsetdec. split; fsetdec. 
-- split. rewrite A. fsetdec. 
+- split. fsetdec. split; fsetdec.
+- split. rewrite A. fsetdec.
   split. rewrite A. fsetdec.
   eapply VSP.subset_trans. apply live_upper_bound. rewrite A. fsetdec.
 Qed.
@@ -247,10 +247,10 @@ Lemma aeval_agree:
 Proof.
   induction a; simpl; intros.
 - auto.
-- apply H. fsetdec. 
-- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec. 
+- apply H. fsetdec.
 - f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
-- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec. 
+- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
+- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
 Qed.
 
 Lemma beval_agree:
@@ -285,7 +285,7 @@ Lemma agree_update_dead:
   agree L s1 s2 -> ~VS.In x L ->
   agree L (t_update s1 x v) s2.
 Proof.
-  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:BEQ. 
+  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:BEQ.
 - apply beq_id_true_iff in BEQ. subst x0. contradiction.
 - apply H; auto.
 Qed.
@@ -316,7 +316,7 @@ Proof.
   exists st1; split. constructor. auto.
 
 - (* := *)
-  simpl in H0. destruct (VS.mem x L) eqn:LIVE_AFTER. 
+  simpl in H0. destruct (VS.mem x L) eqn:LIVE_AFTER.
   + (* x is live after *)
     assert (aeval st1 a1 = n).
     { rewrite <- H. symmetry. eapply aeval_agree. eauto. fsetdec. }
@@ -325,8 +325,8 @@ Proof.
     apply agree_update_live. eapply agree_mon. eauto. fsetdec.
   + (* x is dead after *)
     exists st1; split.
-    apply E_Skip. 
-    apply agree_update_dead. auto. 
+    apply E_Skip.
+    apply agree_update_dead. auto.
     rewrite <- VS.mem_spec. congruence.
 
 - (* seq *)
@@ -362,8 +362,8 @@ Proof.
   assert (beval st1 b = false).
   { rewrite <- H. symmetry. eapply beval_agree; eauto. }
   exists st1; split.
-  apply E_WhileFalse. auto. 
-  eapply agree_mon; eauto. 
+  apply E_WhileFalse. auto.
+  eapply agree_mon; eauto.
 
 - (* while loop *)
   destruct (live_while_charact b c L) as [P [Q R]].
@@ -372,9 +372,9 @@ Proof.
   destruct (IHceval1 (live (WHILE b DO c END) L) st1) as [st2 [E1 A1]].
     eapply agree_mon; eauto.
   destruct (IHceval2 L st2) as [st3 [E2 A2]].
-    auto. 
+    auto.
   exists st3; split.
-  apply E_WhileTrue with st2; auto. 
+  apply E_WhileTrue with st2; auto.
   auto.
 Qed.
 

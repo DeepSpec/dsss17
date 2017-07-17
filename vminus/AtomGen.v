@@ -16,7 +16,7 @@ Fixpoint get_fresh_atoms n l :=
   end.
 
 Definition fresh_store : list Atom.t := get_fresh_atoms 100 [].
-Definition gen_fresh (atom_store : list Atom.t) : G Atom.t := 
+Definition gen_fresh (atom_store : list Atom.t) : G Atom.t :=
   oneof (returnGen (Atom.fresh [])) (List.map returnGen atom_store).
 
 Fixpoint index_of_atom_in_list (a : Atom.t) (l : list Atom.t) : option nat :=

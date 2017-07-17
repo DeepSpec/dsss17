@@ -43,7 +43,7 @@ Notation uid := Uid.t.
 
 (** Addresses of mutable state *)
 
-Module Addr := Atom. 
+Module Addr := Atom.
 Notation addr := Addr.t.
 
 (** All come equipped with decidable equality. *)
@@ -81,14 +81,14 @@ Hint Resolve eq_dec_val.
     instructions.
 *)
 
-Inductive bop : Set := 
+Inductive bop : Set :=
  | bop_add   (* addition *)
  | bop_sub   (* subtraction *)
  | bop_mul   (* multiplication *)
  | bop_eq    (* equality *)
  | bop_le    (* less-than-or-equal *)
  | bop_and   (* both non-zero *)
-.  
+.
 
 Definition eq_dec_bop : forall (b1 b2:bop), {b1 = b2} + {b1 <> b2}.
 Proof.
@@ -103,7 +103,7 @@ Hint Resolve eq_dec_bop.
 (** * Basic block terminators *)
 
 (** Each basic block is a sequence of commands (defined next) ending
-    in a _terminator_, which is just a control flow operation.  
+    in a _terminator_, which is just a control flow operation.
     Terminators cannot appear in the middle of a well-formed basic block.
     (We will define well-formed Vminus programs later.)
 *)
@@ -124,7 +124,7 @@ Hint Resolve eq_dec_tmn.
 (* ################################################################# *)
 (** * Commands *)
 
-(** Vminus has only a few commands: binary operations, 
+(** Vminus has only a few commands: binary operations,
     terminators, phi nodes, and [load] and [store] operations. *)
 
 (** Each [phiarg] associates a value with a predessor block, given by
@@ -136,7 +136,7 @@ Definition eq_dec_phiarg:
   forall phiarg1 phiarg2: phiarg, {phiarg1 = phiarg2} + {phiarg1 <> phiarg2}.
 Proof.
   decide equality.
-Defined.  
+Defined.
 Instance eq_phiarg : eq_dec phiarg := eq_dec_phiarg.
 Hint Resolve eq_dec_phiarg.
 
@@ -146,7 +146,7 @@ Proof.
   decide equality.
 Defined.
 Hint Resolve eq_dec_list_phiarg.
-    
+
 (** Vminus Commands *)
 
 Inductive cmd : Set :=
@@ -159,15 +159,15 @@ Inductive cmd : Set :=
 Definition eq_dec_cmd: forall cmd1 cmd2: cmd, {cmd1 = cmd2} + {~(cmd1 = cmd2)}.
 Proof.
   decide equality.
-Defined.  
+Defined.
 Instance eq_cmd : eq_dec cmd := eq_dec_cmd.
 Hint Resolve eq_dec_cmd.
 
 (** An instruction associates a unique local identifier with one of the
     above commands. The local identifier serves two purposes:
 
-    - it uniquely identifies this occurrence of the command 
-    - it serves as the value 
+    - it uniquely identifies this occurrence of the command
+    - it serves as the value
 
 
 *)
@@ -178,7 +178,7 @@ Definition eq_dec_insn:
   forall insn1 insn2: insn, {insn1 = insn2} + {~(insn1 = insn2)}.
 Proof.
   decide equality.
-Defined. 
+Defined.
 Instance eq_insn : eq_dec insn := eq_dec_insn.
 Hint Resolve eq_dec_insn.
 
@@ -198,7 +198,7 @@ Definition insn_uses (i:insn) : list val :=
 
 (** Which labels appear in an instruction? *)
 Definition insn_lbls (i:insn) : list lbl :=
-  match i with 
+  match i with
     | (_, cmd_tmn (tmn_jmp l)) => [l]
     | (_, cmd_tmn (tmn_cbr _ l1 l2)) => [l1; l2]
     | _ => []
@@ -212,18 +212,18 @@ Definition insn_phis (i:insn) : list phiarg :=
   end.
 
 (** Is it a terminator? *)
-Definition is_tmn (i:insn) : Prop := 
+Definition is_tmn (i:insn) : Prop :=
   match i with (_, cmd_tmn _) => True | _ => False end.
 
 (** Is is a phi node? *)
-Definition is_phi (i:insn) : Prop := 
+Definition is_phi (i:insn) : Prop :=
   match i with (_, cmd_phi _) => True | _ => False end.
 
 Lemma is_phi_decidable : forall i, {is_phi i} + {~is_phi i}.
 Proof.
   intros [? c].
   destruct c; simpl; tauto.
-Qed.  
+Qed.
 
 (** Does it define its uid? *)
 Definition defs_uid (i:insn) : Prop :=

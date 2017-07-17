@@ -19,14 +19,14 @@ Import V.Opsem.
 Generalizable All Variables.
 
 Definition show_image_given_domain `{Show A}
-           (f: Atom.t -> A) (l: list Atom.t) 
-           (prefix: string) : string := 
+           (f: Atom.t -> A) (l: list Atom.t)
+           (prefix: string) : string :=
   ((List.fold_left
       (fun accum atom =>
          accum ++ "(" ++ prefix ++ " " ++ (show atom) ++ ", "
                ++ show (f atom) ++ ") ")
       l "[") ++ "]")%string.
-                   
+
 (** Opsem **)
 
 Definition show_memory
@@ -54,7 +54,7 @@ Record vminus_state : Type :=
 
 Definition gen_loc_from_atom_list
            (atom_list : list Atom.t) : G loc :=
-  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list => 
+  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list =>
   returnGen (fun (a : Atom.t) =>
                match (index_of_atom_in_list a atom_list) with
                | None => None
@@ -64,7 +64,7 @@ Definition gen_loc_from_atom_list
 
 Definition gen_mem_from_atom_list
            (atom_list : list Atom.t) : G mem :=
-  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list => 
+  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list =>
   returnGen (fun (a : Atom.t) =>
                match (index_of_atom_in_list a atom_list) with
                | None => 0
@@ -136,7 +136,7 @@ Definition generate_dummy_insns n: list insn :=
   in List.rev (helper n).
 
 (* TODO: proper generator *)
-(* Returns a CFG with a single block containing instrs ++ instrs_after, 
+(* Returns a CFG with a single block containing instrs ++ instrs_after,
     and the pc in that block that begins at instrs_after *)
 Definition wrap_code_in_cfg (p: pc) (instrs instrs_after: list insn)
   : ListCFG.t * pc :=

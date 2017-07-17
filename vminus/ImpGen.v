@@ -58,7 +58,7 @@ Instance show_bexp: Show bexp :=
   {| show :=
        fix show_bexp_func b := (
          match b with
-         | BTrue => "true" 
+         | BTrue => "true"
          | BFalse => "false"
          | BEq a1 a2 => (show a1) ++ " = " ++ (show a2)
          | BLe a1 a2 => (show a1) ++ " <= " ++ (show a2)
@@ -140,14 +140,14 @@ Record imp_state : Type := mk_imp_state { imp_st: state; imp_dom: list Atom.t }.
 Definition gen_state_from_atom_list
            `{Gen nat}
            (atom_list : list Atom.t) : G state :=
-  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list => 
+  bindGen (vectorOf (List.length atom_list) arbitrary) (fun nat_list =>
   returnGen (fun (a : Atom.t) =>
                match (index_of_atom_in_list a atom_list) with
                | None => 0
                | Some i =>
                  List.nth i nat_list 0
                end)).
- 
+
 Instance gen_imp_state : GenSized imp_state :=
   {| arbitrarySized n :=
        let mem_dom := get_fresh_atoms n [] in
@@ -157,14 +157,14 @@ Instance gen_imp_state : GenSized imp_state :=
   |}.
 
 Definition show_image_given_domain `{Show A}
-           (f: Atom.t -> A) (l: list Atom.t) 
-           (prefix: string) : string := 
+           (f: Atom.t -> A) (l: list Atom.t)
+           (prefix: string) : string :=
   ((List.fold_left
       (fun accum atom =>
          accum ++ "(" ++ prefix ++ " " ++ (show atom) ++ ", "
                ++ show (f atom) ++ ") ")
       l "[") ++ "]")%string.
-                   
+
 Instance show_imp_state: Show imp_state :=
   {| show x :=
      "imp_state: " ++ (show_image_given_domain (imp_st x)

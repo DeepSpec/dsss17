@@ -23,11 +23,11 @@
  ---------------------------------------------------------------------------- *)
 
 (* Acknowledgements --------------------------------------------------------- *)
-(* 
+(*
   This file is heavily based on:
-      - lib/Lattice.v 
-      - backend/Kildall.v 
-  from the CompCert development,  modified to remove dependencies and 
+      - lib/Lattice.v
+      - backend/Kildall.v
+  from the CompCert development,  modified to remove dependencies and
   optimizations.
 *)
 
@@ -45,11 +45,11 @@ Module Type FORWARD_SOLVER.
   Module FMP := FMapProps N NM.
 
   Include EqLeNotation L.
-  Notation "a !! b" := (FMP.find_default a b L.bot) 
+  Notation "a !! b" := (FMP.find_default a b L.bot)
                          (at level 1, format "a !! b").
   Notation nlmap := (NM.t L.t).
 
-  Parameter fixpoint: forall 
+  Parameter fixpoint: forall
     (succs: N.t -> list N.t)
     (trans: N.t -> L.t -> L.t)
     (inits: nlmap),
@@ -68,8 +68,8 @@ Module Type FORWARD_SOLVER.
   Axiom fixpoint_invariant : forall succs trans inits
     (P: N.t -> L.t -> Prop)
     (Pinits: forall n, P n inits!!n)
-    (Ptrans: forall n ln s ls, 
-      In s (succs n) -> 
+    (Ptrans: forall n ln s ls,
+      In s (succs n) ->
       P n ln -> P s ls -> P s (L.join ls (trans n ln))),
     forall res n, fixpoint succs trans inits = Some res -> P n res!!n.
 
@@ -81,7 +81,7 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
 
   Module L := LAT.
   Module N := PC.
-  
+
   Include EqLeNotation L.
 
   (* TODO: can define a total order for PCs to use more efficient sets/maps *)
@@ -104,27 +104,27 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
   Definition prop_succ (out:L.t) (s:state) (n:N.t) : state :=
     let oldl := s.(lmap)!!n in
     let newl := L.join oldl out in
-    if L.eq_dec oldl newl 
+    if L.eq_dec oldl newl
     then s else mkst (NM.add n newl s.(lmap)) (n::s.(wlist)).
 
   Definition step (s:state) : NM.t L.t + state :=
     match s.(wlist) with
       | nil => inl s.(lmap)
-      | n::rem => 
+      | n::rem =>
         inr (fold_left (prop_succ (trans n s.(lmap)!!n))
                        (succs n) (mkst s.(lmap) rem))
     end.
 
   Definition make_init_state : state :=
     mkst inits (map (@fst _ _) (NM.elements inits)).
-  
+
   Definition fixpoint := Iter.iterate step make_init_state.
 
 
   (* correctness *)
 
   Definition n_invar (s:state) (n:N.t) : Prop :=
-    In n s.(wlist) \/ forall m, In m (succs n) -> 
+    In n s.(wlist) \/ forall m, In m (succs n) ->
       trans n s.(lmap)!!n <= s.(lmap)!!m.
 
   Definition state_invar (s:state) : Prop :=
@@ -138,10 +138,10 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     destruct (L.eq_dec _ _). apply H.
     destruct H. simpl; intuition.
       destruct (N.eq_dec n n').
-        simpl; intuition. right. intros. 
+        simpl; intuition. right. intros.
         destruct (N.eq_dec n' m); subst s'; simpl.
-          rewrite find_default_neq, find_default_eq; auto. 
-            transitivity (lmap s)!!m. apply H; auto. 
+          rewrite find_default_neq, find_default_eq; auto.
+            transitivity (lmap s)!!m. apply H; auto.
             subst n'; apply L.le_join_l.
           rewrite find_default_neq, find_default_neq; auto.
   Qed.
@@ -163,14 +163,14 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
   Lemma step_state_invar : forall s s',
     state_invar s -> inr s' = step s -> state_invar s'.
   Proof.
-    unfold step, state_invar; intros s s' Hinv Hstep. 
+    unfold step, state_invar; intros s s' Hinv Hstep.
     destruct (wlist s) eqn:Hwls. discriminate Hstep.
     injection Hstep; clear Hstep. intros Heqs' n.
 
     destruct (N.eq_dec t n).
 
     (* n_invar is restablished for n *)
-    subst t. unfold n_invar. 
+    subst t. unfold n_invar.
     destruct(in_dec N.eq_dec n (wlist s')) as [|Hwl]; [auto | right].
     intros m Hin. rewrite prop_n_out; eauto; simpl.
     generalize Hwl; clear Hwl. pattern s', m.
@@ -179,7 +179,7 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
       intros a b b'.
       set (r := prop_succ _ a b').
       intros. unfold prop_succ in r. destruct (L.eq_dec _ _). apply H0; auto.
-      unfold r. simpl. destruct (N.eq_dec b' b). 
+      unfold r. simpl. destruct (N.eq_dec b' b).
         rewrite find_default_eq; auto. apply L.le_join_r.
         rewrite find_default_neq; auto. apply H0. contradict Hwl; simpl; auto.
 
@@ -195,7 +195,7 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     unfold state_invar, n_invar in Hinv |- *.
     simpl. specialize (Hinv n). rewrite Hwls in Hinv. destruct Hinv.
     assumption. left. destruct H; intuition. right. apply H.
-  Qed. 
+  Qed.
 
   Lemma fixpoint_solution: forall res n s,
     fixpoint = Some res ->
@@ -203,21 +203,21 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     In s (succs n) ->
     trans n res!!n <= res!!s.
   Proof.
-    unfold fixpoint; intros. pattern res. 
-    eapply Iter.iter_prop with 
+    unfold fixpoint; intros. pattern res.
+    eapply Iter.iter_prop with
       (step:=step) (P:=state_invar) (a:=make_init_state); eauto.
     intros a Ha.
-    unfold step. destruct (wlist a) eqn:Heql. 
-    specialize (Ha n). destruct Ha. 
+    unfold step. destruct (wlist a) eqn:Heql.
+    specialize (Ha n). destruct Ha.
       auto. rewrite Heql in *. contradiction. auto.
 
-    eapply step_state_invar. apply Ha. 
+    eapply step_state_invar. apply Ha.
     unfold step. rewrite Heql. auto.
 
     left. simpl. apply in_map_iff.
     pose proof (NMFacts.elements_in_iff inits n0) as [He _].
     specialize (He H2). destruct He as [e Hine].
-    apply InA_alt in Hine as [y [Heq Hk]]. 
+    apply InA_alt in Hine as [y [Heq Hk]].
     inversion Heq; eauto.
   Qed.
 
@@ -227,10 +227,10 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     forall n, nl1!!n <= nl2!!n.
 
   Lemma le_nlmap_refl : forall nl, le_nlmap nl nl.
-  Proof. 
-    unfold le_nlmap. reflexivity. 
+  Proof.
+    unfold le_nlmap. reflexivity.
   Qed.
-  
+
   Instance le_nlmap_trans : Transitive le_nlmap.
     unfold Transitive, le_nlmap; intros. transitivity y !! n; auto.
   Qed.
@@ -245,7 +245,7 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     unfold le_nlmap, prop_succ; intros.
     destruct (L.eq_dec _ _). reflexivity.
     simpl. destruct (N.eq_dec n n0).
-      subst. rewrite find_default_eq; auto. 
+      subst. rewrite find_default_eq; auto.
       rewrite find_default_neq; auto. reflexivity.
   Qed.
 
@@ -253,24 +253,24 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     inr st' = step st ->
     le_nlmap st.(lmap) st'.(lmap).
   Proof.
-    unfold step; intros. destruct (wlist st). 
+    unfold step; intros. destruct (wlist st).
     discriminate. injection H. intro Heqs.
     pattern st'. eapply fold_left_1.
-    intros. transitivity (lmap a). 
+    intros. transitivity (lmap a).
       assumption. apply prop_succ_le_nlmap.
     apply Heqs. apply le_nlmap_refl.
   Qed.
-    
+
   Lemma fixpoint_entry : forall res n,
     fixpoint = Some res -> inits!!n <= res!!n.
   Proof.
     unfold fixpoint. intros. pattern res.
     eapply Iter.iter_prop with (step:=step). intros.
-    destruct (step a) eqn:Hstep. 
+    destruct (step a) eqn:Hstep.
     unfold step in Hstep. destruct (wlist a); try discriminate.
-    injection Hstep. intro; subst t. apply H0. 
-    simpl in *. transitivity (lmap a)!!n. auto. 
-    apply step_le_nlmap. auto. 
+    injection Hstep. intro; subst t. apply H0.
+    simpl in *. transitivity (lmap a)!!n. auto.
+    apply step_le_nlmap. auto.
     change inits with (lmap make_init_state).
     cbv beta. reflexivity. apply H.
   Qed.
@@ -279,16 +279,16 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     (P: N.t -> L.t -> Prop)
     (Pinits: forall n, P n inits!!n)
     (Ptrans: forall n ln s ls,
-      In s (succs n) -> 
+      In s (succs n) ->
       P n ln -> P s ls -> P s (L.join ls (trans n ln))),
     forall res n, fixpoint = Some res -> P n res!!n.
   Proof.
     intros until 2.
-    unfold fixpoint. intros. pattern res. 
+    unfold fixpoint. intros. pattern res.
     eapply Iter.iter_prop with (step:=step); eauto.
 
     intro. destruct (step a) eqn:Hstep.
-    
+
     (* last step  Q implies P *)
     unfold step in Hstep. destruct (wlist a); try discriminate.
     instantiate (1:=fun s => forall n, P n s.(lmap)!!n).
@@ -298,13 +298,13 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
     simpl. intros. unfold step in Hstep.
     destruct (wlist a); try discriminate.
     injection Hstep; clear Hstep; intro Heqs.
-    
+
     pattern s. eapply fold_left_1 with (f:=prop_succ _); eauto.
-    intros. unfold prop_succ. 
+    intros. unfold prop_succ.
     destruct (L.eq_dec _ _); simpl; auto.
     destruct (N.eq_dec b n0).
-    rewrite find_default_eq; auto. 
-      subst b. apply Ptrans; auto. 
+    rewrite find_default_eq; auto.
+      subst b. apply Ptrans; auto.
     rewrite find_default_neq; auto.
     auto.
   Qed.
@@ -313,4 +313,4 @@ Module ForwardSolver (PC:UsualDecidableType) (LAT:LATTICE):
 
 End ForwardSolver.
 
-  
+

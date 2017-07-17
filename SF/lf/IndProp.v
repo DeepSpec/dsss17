@@ -1444,27 +1444,27 @@ Inductive nostutter {X:Type} : list X -> Prop :=
 
 Example test_nostutter_1: nostutter [3;1;4;1;5;6].
 (* FILL IN HERE *) Admitted.
-(* 
+(*
   Proof. repeat constructor; apply beq_nat_false_iff; auto.
   Qed.
 *)
 
 Example test_nostutter_2:  nostutter (@nil nat).
 (* FILL IN HERE *) Admitted.
-(* 
+(*
   Proof. repeat constructor; apply beq_nat_false_iff; auto.
   Qed.
 *)
 
 Example test_nostutter_3:  nostutter [5].
 (* FILL IN HERE *) Admitted.
-(* 
+(*
   Proof. repeat constructor; apply beq_nat_false; auto. Qed.
 *)
 
 Example test_nostutter_4:      not (nostutter [3;1;1;4]).
 (* FILL IN HERE *) Admitted.
-(* 
+(*
   Proof. intro.
   repeat match goal with
     h: nostutter _ |- _ => inversion h; clear h; subst

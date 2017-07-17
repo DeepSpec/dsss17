@@ -15,8 +15,8 @@
 Require Import Equalities List.
 Set Implicit Arguments.
 
-(** An _environment_ maps values of type [K.t] to values of type 
-    V. This module implements updateable environments using Coq 
+(** An _environment_ maps values of type [K.t] to values of type
+    V. This module implements updateable environments using Coq
     functions and proves some simple facts about equality. *)
 
 Module Make_Env (K:UsualDecidableType).
@@ -34,7 +34,7 @@ Section WithV.
   Theorem update_eq : forall v k1 k2 st,
     K.eq k1 k2 -> (update st k1 v) k2 = v.
   Proof.
-    intros. unfold update. 
+    intros. unfold update.
     destruct (K.eq_dec k1 k2); intuition.
   Qed.
 
@@ -46,7 +46,7 @@ Section WithV.
   Qed.
 
   Theorem update_shadow : forall v1 v2 k1 k2 st,
-    K.eq k1 k2 -> 
+    K.eq k1 k2 ->
     (update (update st k1 v1) k1 v2) k2 = (update st k1 v2) k2.
   Proof.
     intros. unfold update.
@@ -56,11 +56,11 @@ Section WithV.
   Theorem update_same : forall v1 k1 k2 (st : t),
     st k2 = v1 -> (update st k1 v1) k2 = st k2.
   Proof.
-    intros. unfold update. 
+    intros. unfold update.
     destruct (K.eq_dec k1 k2); subst; reflexivity.
   Qed.
 
-  
+
 End WithV.
 End Make_Env.
 

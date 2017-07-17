@@ -190,14 +190,14 @@ Lemma fv_nom_swap : forall z y n,
 Proof.
   (* WORKED IN CLASS *)
   induction n; intros; simpl; unfold swap_var; default_simp.
-Qed. 
+Qed.
 Lemma shuffle_swap : forall w y n z,
     w <> z -> y <> z ->
     (swap w y (swap y z n)) = (swap w z (swap w y n)).
 Proof.
   (* WORKED IN CLASS *)
   induction n; intros; simpl; unfold swap_var; default_simp.
-Qed. 
+Qed.
 (*************************************************************)
 (** ** Exercises                                             *)
 (*************************************************************)
@@ -214,13 +214,13 @@ Lemma swap_symmetric : forall t x y,
 Proof.
   (* SOLUTION: *)
   induction t;  simpl; unfold swap_var; default_simp.
-Qed.   
+Qed.
 Lemma swap_involutive : forall t x y,
     swap x y (swap x y t) = t.
 Proof.
   (* SOLUTION: *)
   induction t;  simpl; unfold swap_var; default_simp.
-Qed.   
+Qed.
 (** *** Challenge exercise: equivariance
 
     Equivariance is the property that all functions and
@@ -233,7 +233,7 @@ Lemma swap_var_equivariance : forall v x y z w,
 Proof.
   (* SOLUTION: *)
   unfold swap_var; default_simp.
-Qed.   
+Qed.
 Lemma swap_equivariance : forall t x y z w,
     swap x y (swap z w t) = swap (swap_var x y z) (swap_var x y w) (swap x y t).
 Proof.
@@ -242,7 +242,7 @@ Proof.
   - rewrite swap_var_equivariance. auto.
   - rewrite swap_var_equivariance. rewrite IHt. auto.
   - rewrite IHt1. rewrite IHt2. auto.
-Qed. 
+Qed.
 Lemma notin_fv_nom_equivariance : forall x0 x y t ,
   x0 `notin` fv_nom t ->
   swap_var x y x0  `notin` fv_nom (swap x y t).
@@ -252,7 +252,7 @@ Proof.
   - unfold swap_var; default_simp.
   - unfold swap_var in *. default_simp.
   - destruct_notin. eauto.
-Qed. 
+Qed.
 (* HINT: For a helpful fact about sets of atoms, check AtomSetImpl.union_1 *)
 
 Lemma in_fv_nom_equivariance : forall x y x0 t,
@@ -282,7 +282,7 @@ Proof.
   - rewrite swap_equivariance in IHaeq.
     eapply aeq_abs_diff; auto.
     eapply notin_fv_nom_equivariance; auto.
-Qed. 
+Qed.
 
 
 (*************************************************************)
@@ -404,7 +404,7 @@ Proof.
   intros D t VV.
   destruct t; simpl in *; try discriminate.
   auto.
-Qed. 
+Qed.
 
 (*************************************************************)
 (** * Size based reasoning                                   *)
@@ -491,14 +491,14 @@ Lemma subst_eq_var : forall u x,
 Proof.
   (* SOLUTION: *)
   intros. unfold subst. default_simp.
-Qed. 
+Qed.
 Lemma subst_neq_var : forall u x y,
     x <> y ->
     subst u x (n_var y) = n_var y.
 Proof.
   (* SOLUTION: *)
   intros. unfold subst. default_simp.
-Qed. 
+Qed.
 Lemma subst_app : forall u x t1 t2,
     subst u x (n_app t1 t2) = n_app (subst u x t1) (subst u x t2).
 Proof. (* SOLUTION: *)
@@ -509,7 +509,7 @@ Proof. (* SOLUTION: *)
   auto.
   omega.
   omega.
-Qed. 
+Qed.
 Lemma subst_abs : forall u x y t1,
     subst u x (n_abs y t1) =
        if (x == y) then (n_abs y t1)
@@ -518,4 +518,4 @@ Lemma subst_abs : forall u x y t1,
 Proof. (* SOLUTION: *)
   intros. unfold subst. default_simp.
   rewrite swap_size_eq. auto.
-Qed. 
+Qed.

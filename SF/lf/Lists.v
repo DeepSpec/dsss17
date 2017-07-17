@@ -1010,7 +1010,7 @@ Proof.
 
 Module PartialMap.
 Export NatList.
-  
+
 Inductive partial_map : Type :=
   | empty  : partial_map
   | record : id -> nat -> partial_map -> partial_map.

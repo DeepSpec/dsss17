@@ -13,7 +13,7 @@ Set Contextual Implicit.
 Global Generalizable All Variables.
 Global Set Automatic Coercions Import.
 From Coq Require Export Morphisms RelationClasses Setoid.
-Require Import List Bool String Utf8. 
+Require Import List Bool String Utf8.
 Export ListNotations.
 From Coq.Program Require Export Basics Syntax.
 
@@ -44,8 +44,8 @@ Class Equiv A := equiv: relation A.
 Infix "≡" := equiv (at level 70, no associativity).
 Notation "(≡)" := equiv (only parsing).
 Notation "( X ≡)" := (equiv X) (only parsing).
-Notation "(≡ X )" := (λ Y, Y ≡ X) (only parsing). 
-Notation "(≢)" := (λ X Y, ¬X ≡ Y) (only parsing). 
+Notation "(≡ X )" := (λ Y, Y ≡ X) (only parsing).
+Notation "(≢)" := (λ X Y, ¬X ≡ Y) (only parsing).
 Notation "X ≢ Y":= (¬X ≡ Y) (at level 70, no associativity).
 Notation "( X ≢)" := (λ Y, X ≢ Y) (only parsing).
 Notation "(≢ X )" := (λ Y, Y ≢ X) (only parsing).
@@ -65,7 +65,7 @@ Class LeibnizEquiv A `{Equiv A} := leibniz_equiv x y : x ≡ y → x = y.
 Lemma leibniz_equiv_iff `{LeibnizEquiv A, !Reflexive (@equiv A _)} (x y : A) :
   x ≡ y ↔ x = y.
 Proof. split. apply leibniz_equiv. intros ->; reflexivity. Qed.
- 
+
 Ltac fold_leibniz := repeat
   match goal with
   | H : context [ @equiv ?A _ _ _ ] |- _ =>
@@ -154,7 +154,7 @@ Defined.
 Instance eq_dec_option {A} `(EA:eq_dec A) : eq_dec (option A).
 Proof.
   decide_eq_dec.
-Defined.  
+Defined.
 
 Instance eq_dec_list {A} `(EA:eq_dec A) : eq_dec (list A).
 Proof.
@@ -193,7 +193,7 @@ Proof.
   split.
   - apply List.map_id.
   - apply List.map_map.
-Defined. (* CHKoh: Originally Qed. *)    
+Defined. (* CHKoh: Originally Qed. *)
 
 (* ================================================================= *)
 (** ** Monads ------------------------------------------------------------------- *)
@@ -255,7 +255,7 @@ Definition map_monad `{Monad F} {A B} (f:A -> F B) (l:list A) : F (list B) :=
       | a::l' =>
         'b <- f a;
         'bs <- loop l';
-        mret (b::bs)  
+        mret (b::bs)
       end
   in loop l.
 
@@ -264,7 +264,7 @@ Next Obligation.
   split.
   - intros A X. exact (Some X).
   - intros A B X X0.  destruct X. apply X0. exact a. exact None.
-Defined.    
+Defined.
 
 Program Instance option_monad_eq_laws : (@MonadLaws option) _ _ _ _ _.
 Next Obligation.
@@ -272,14 +272,14 @@ Next Obligation.
 Defined.
 Next Obligation.
   destruct a; try reflexivity.
-Defined.  
+Defined.
 
 Program Instance list_monad : (@Monad list) list_functor := _.
 Next Obligation.
   split.
   - intros A X. exact ([X]).
   - intros A B. exact (fun l f => flat_map f l).
-Defined.    
+Defined.
 
 Program Instance list_monad_eq_laws : (@MonadLaws list) _ _ _ _ _.
 Next Obligation.
@@ -334,7 +334,7 @@ Next Obligation.
 Defined.
 Next Obligation.
   destruct a; try reflexivity.
-Defined.  
+Defined.
 
 (* Continuations ------------------------------------------------------------ *)
 
@@ -375,7 +375,7 @@ Definition st_ret {M A} : A -> ST M A := fun (x:A) => fun (m: M) => (m, x).
 Hint Unfold st_ret.
 
 Definition st_bind {M A B} : (ST M A) -> (A -> ST M B) -> ST M B :=
-  fun s => fun f => fun m => let (m', x) := s m in f x m'.            
+  fun s => fun f => fun m => let (m', x) := s m in f x m'.
 Hint Unfold st_bind.
 
 Instance st_functor {M} : (@Functor (ST M)) := (@st_map M).
@@ -456,7 +456,7 @@ Instance string_of_bool : StringOf bool := fun (b:bool) => if b then "true" else
 
 Instance string_of_pair {A B} `(SA:StringOf A) `(SB:StringOf B) : StringOf (A * B)%type :=
   fun p => "(" ++ string_of (fst p) ++ ", " ++ string_of (snd p) ++ ")".
-  
+
 Instance string_of_option {A} `(SA:StringOf A) : StringOf (option A) :=
   fun opt => match opt with None => "None" | Some x => "Some " ++ (string_of x) end.
 
@@ -489,7 +489,7 @@ Definition digit_to_string (x:Z) : string :=
 Fixpoint to_string_b10' fuel (x:Z) : string :=
   match fuel with
   | 0 => "ERR: not enough fuel"
-  | S f => 
+  | S f =>
     match x with
     | Z0 => "0"
     | _ => let '(q,r) := (Z.div_eucl x 10) in

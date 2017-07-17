@@ -150,7 +150,7 @@ Qed.
   the final state of a terminating program is unique,
   and that a program cannot both terminate and diverge,
   or terminate and go wrong, or diverge and go wrong.
-  These results follow from the generic determinism properties 
+  These results follow from the generic determinism properties
   found at the end of module [Sequence]. *)
 
 Remark stop_irred:
@@ -166,7 +166,7 @@ Proof.
   unfold mach_terminates; intros. destruct H as (pc1 & A1 & B1), H0 as (pc2 & A2 & B2).
   assert (((pc1, nil, st1) : configuration) = ((pc2, nil, st2) : configuration)).
   { eapply finseq_unique; eauto using machine_deterministic, stop_irred. }
-  congruence. 
+  congruence.
 Qed.
 
 Lemma terminates_goeswrong_exclusive:
@@ -190,7 +190,7 @@ Qed.
 Lemma goeswrong_diverges_exclusive:
   forall C st, mach_goes_wrong C st -> mach_diverges C st -> False.
 Proof.
-  unfold mach_terminates, mach_diverges; intros. 
+  unfold mach_terminates, mach_diverges; intros.
   destruct H as (pc2 & stk2 & st2 & A2 & B2 & C2).
   eapply infseq_finseq_excl with (R := transition C); eauto using machine_deterministic, stop_irred.
 Qed.
@@ -202,7 +202,7 @@ Qed.
   [ceval_step] function from the [Imp] chapter of Software Foundations,
   which provides an executable interpreter for the Imp language.
 
-  To ensure termination of the machine interpreter, we need to bound 
+  To ensure termination of the machine interpreter, we need to bound
   the number of instructions it can execute.  The result of the
   machine interpreter, therefore, is of the following type:
 *)
@@ -399,11 +399,11 @@ Lemma codeseq_at_tail:
   codeseq_at C pc (i :: C') ->
   codeseq_at C (pc + 1) C'.
 Proof.
-  intros. inversion H. 
+  intros. inversion H.
   change (C1 ++ (i :: C') ++ C3)
     with (C1 ++ (i :: nil) ++ C' ++ C3).
   rewrite <- app_ass. constructor. rewrite app_length. auto.
-Qed. 
+Qed.
 
 Lemma codeseq_at_app_left:
   forall C pc C1 C2,
@@ -458,31 +458,31 @@ Proof.
   induction a; simpl; intros.
 
 - (* ANum *)
-  apply star_one. apply trans_const. eauto with codeseq. 
+  apply star_one. apply trans_const. eauto with codeseq.
 
 - (* AId *)
-  apply star_one. apply trans_var. eauto with codeseq. 
+  apply star_one. apply trans_var. eauto with codeseq.
 
 - (* APlus *)
   eapply star_trans.
-  apply IHa1. eauto with codeseq. 
+  apply IHa1. eauto with codeseq.
   eapply star_trans.
-  apply IHa2. eauto with codeseq. 
-  apply star_one. normalize. apply trans_add. eauto with codeseq. 
+  apply IHa2. eauto with codeseq.
+  apply star_one. normalize. apply trans_add. eauto with codeseq.
 
 - (* AMinus *)
   eapply star_trans.
-  apply IHa1. eauto with codeseq. 
+  apply IHa1. eauto with codeseq.
   eapply star_trans.
-  apply IHa2. eauto with codeseq. 
-  apply star_one. normalize. apply trans_sub. eauto with codeseq. 
+  apply IHa2. eauto with codeseq.
+  apply star_one. normalize. apply trans_sub. eauto with codeseq.
 
 - (* AMult *)
   eapply star_trans.
-  apply IHa1. eauto with codeseq. 
+  apply IHa1. eauto with codeseq.
   eapply star_trans.
-  apply IHa2. eauto with codeseq. 
-  apply star_one. normalize. apply trans_mul. eauto with codeseq. 
+  apply IHa2. eauto with codeseq.
+  apply star_one. normalize. apply trans_mul. eauto with codeseq.
 Qed.
 
 (** Here is a similar proof for the compilation of boolean expressions. *)
@@ -502,7 +502,7 @@ Proof.
     apply star_one. apply trans_branch_forward with ofs. eauto with codeseq. auto.
   + (* BTrue, false *)
     repeat rewrite plus_0_r. apply star_refl.
- 
+
 - (* BFalse *)
   destruct cond; simpl.
   + (* BFalse, true *)
@@ -511,37 +511,37 @@ Proof.
     apply star_one. apply trans_branch_forward with ofs. eauto with codeseq. auto.
 
 - (* BEq *)
-  eapply star_trans. 
-  apply compile_aexp_correct with (a := a). eauto with codeseq. 
   eapply star_trans.
-  apply compile_aexp_correct with (a := a0). eauto with codeseq. 
+  apply compile_aexp_correct with (a := a). eauto with codeseq.
+  eapply star_trans.
+  apply compile_aexp_correct with (a := a0). eauto with codeseq.
   apply star_one. normalize.
   destruct cond.
   + (* BEq, true *)
     apply trans_beq with ofs. eauto with codeseq.
     destruct (beq_nat (aeval st a) (aeval st a0)); simpl; omega.
   + (* BEq, false *)
-    apply trans_bne with ofs. eauto with codeseq. 
+    apply trans_bne with ofs. eauto with codeseq.
     destruct (beq_nat (aeval st a) (aeval st a0)); simpl; omega.
 
 - (* BLe *)
-  eapply star_trans. 
-  apply compile_aexp_correct with (a := a). eauto with codeseq. 
   eapply star_trans.
-  apply compile_aexp_correct with (a := a0). eauto with codeseq. 
+  apply compile_aexp_correct with (a := a). eauto with codeseq.
+  eapply star_trans.
+  apply compile_aexp_correct with (a := a0). eauto with codeseq.
   apply star_one. normalize.
   destruct cond.
   + (* BLe, true *)
     apply trans_ble with ofs. eauto with codeseq.
     destruct (leb (aeval st a) (aeval st a0)); simpl; omega.
   + (* BLe, false *)
-    apply trans_bgt with ofs. eauto with codeseq. 
+    apply trans_bgt with ofs. eauto with codeseq.
     destruct (leb (aeval st a) (aeval st a0)); simpl; omega.
 
 - (* BNot *)
   replace (eqb (negb (beval st b)) cond)
      with (eqb (beval st b) (negb cond)).
-  apply IHb; auto. 
+  apply IHb; auto.
   destruct (beval st b); destruct cond; auto.
 
 - (* BAnd *)
@@ -554,13 +554,13 @@ Proof.
   + (* BAnd, true *)
     destruct (beval st b1); simpl.
     * (* b1 evaluates to true *)
-      normalize. apply IHb2. eauto with codeseq. 
+      normalize. apply IHb2. eauto with codeseq.
     * (* b1 evaluates to false *)
       normalize. apply star_refl.
   + (* BAnd, false *)
     destruct (beval st b1); simpl.
     * (* b1 evaluates to true *)
-      normalize. apply IHb2. eauto with codeseq. 
+      normalize. apply IHb2. eauto with codeseq.
     * (* b1 evaluates to false *)
       replace ofs' with (length code_b2 + ofs). normalize. apply star_refl.
       unfold ofs'; omega.
@@ -585,23 +585,23 @@ Proof.
 - (* := *)
   simpl in *. subst n.
   eapply star_trans. apply compile_aexp_correct. eauto with codeseq.
-  apply star_one. normalize. apply trans_setvar. eauto with codeseq. 
+  apply star_one. normalize. apply trans_setvar. eauto with codeseq.
 
 - (* sequence *)
   simpl in *.
-  eapply star_trans. apply IHceval1. eauto with codeseq. 
-  normalize. apply IHceval2. eauto with codeseq. 
+  eapply star_trans. apply IHceval1. eauto with codeseq.
+  normalize. apply IHceval2. eauto with codeseq.
 
 - (* if true *)
   simpl in *.
   set (code1 := compile_com c1) in *.
   set (codeb := compile_bexp b false (length code1 + 1)) in *.
   set (code2 := compile_com c2) in *.
-  eapply star_trans. 
+  eapply star_trans.
   apply compile_bexp_correct with (b := b) (cond := false) (ofs := length code1 + 1).
-  eauto with codeseq. 
+  eauto with codeseq.
   rewrite H. simpl. rewrite plus_0_r. fold codeb. normalize.
-  eapply star_trans. apply IHceval. eauto with codeseq. 
+  eapply star_trans. apply IHceval. eauto with codeseq.
   apply star_one. eapply trans_branch_forward. eauto with codeseq. omega.
 
 - (* if false *)
@@ -609,18 +609,18 @@ Proof.
   set (code1 := compile_com c1) in *.
   set (codeb := compile_bexp b false (length code1 + 1)) in *.
   set (code2 := compile_com c2) in *.
-  eapply star_trans. 
+  eapply star_trans.
   apply compile_bexp_correct with (b := b) (cond := false) (ofs := length code1 + 1).
-  eauto with codeseq. 
+  eauto with codeseq.
   rewrite H. simpl. fold codeb. normalize.
   replace (pc + length codeb + length code1 + S(length code2))
      with (pc + length codeb + length code1 + 1 + length code2).
-  apply IHceval. eauto with codeseq. omega. 
+  apply IHceval. eauto with codeseq. omega.
 
 - (* while false *)
-  simpl in *. 
+  simpl in *.
   eapply star_trans.
-  apply compile_bexp_correct with (b := b) (cond := false) (ofs := length (compile_com c) + 1). 
+  apply compile_bexp_correct with (b := b) (cond := false) (ofs := length (compile_com c) + 1).
   eauto with codeseq.
   rewrite H. simpl. normalize. apply star_refl.
 
@@ -628,10 +628,10 @@ Proof.
   apply star_trans with (pc, stk, st').
   simpl in *.
   eapply star_trans.
-  apply compile_bexp_correct with (b := b) (cond := false) (ofs := length (compile_com c) + 1). 
-  eauto with codeseq. 
+  apply compile_bexp_correct with (b := b) (cond := false) (ofs := length (compile_com c) + 1).
+  eauto with codeseq.
   rewrite H; simpl. rewrite plus_0_r.
-  eapply star_trans. apply IHceval1. eauto with codeseq. 
+  eapply star_trans. apply IHceval1. eauto with codeseq.
   apply star_one.
   eapply trans_branch_backward. eauto with codeseq. omega.
   apply IHceval2. auto.
@@ -645,7 +645,7 @@ Proof.
   intros. unfold compile_program. red.
   exists (length (compile_com c)); split.
   apply code_at_app. auto.
-  apply compile_com_correct_terminating with (pc := 0). auto. 
+  apply compile_com_correct_terminating with (pc := 0). auto.
   apply codeseq_at_intro with (C1 := nil). auto.
 Qed.
 
@@ -670,7 +670,7 @@ Admitted.
 (** *** Exercise (3 stars, optional) *)
 (** The manufacturer of our virtual machine offers a cheaper variant
   that lacks the [Ibge] and [Ibgt] conditional branches.  The only
-  conditional branches available are [Ibeq] (branch if equal) and 
+  conditional branches available are [Ibeq] (branch if equal) and
   [Ibne] (branch if different).  Modify the definition of [compile_bexp] and
   its correctness proof to target this cheaper virtual machine.
   Hint: study Coq's definition of subtraction between natural numbers
@@ -752,7 +752,7 @@ Inductive match_config (C: code): com * cont * state -> configuration -> Prop :=
        |                                   |
        v                                   v
     c' / k' / st' ----------------------- machstate'
-                      match_config 
+                      match_config
 >>
 Hypotheses:
 - Left: one transition in the small-step continuation semantics for Imp.
@@ -785,7 +785,7 @@ Abort.
   takes infinitely many transitions, but every such transition is matched
   by zero transitions of the virtual machine.  In this case, the source
   program diverges, but the machine code can do anything: it can diverge,
-  as expected, but it can also terminate cleanly or go wrong. 
+  as expected, but it can also terminate cleanly or go wrong.
   The simulation lemma above is too weak to rule out the last two cases!
 
   We therefore need a stronger simulation result that rules out stuttering.
@@ -794,7 +794,7 @@ Abort.
   configuration must strictly decrease.  This ensures that only a finite
   number of stuttering steps can be taken before the machine actually does
   a transition.  Here is the revised simulation diagram:
- 
+
 <<
                       match_config
      c / k / st  ----------------------- machconfig
@@ -803,7 +803,7 @@ Abort.
        |                                   |
        v                                   v
     c' / k' / st' ----------------------- machconfig'
-                      match_config 
+                      match_config
 >>
 Note the stronger conclusion on the right:
 - either the virtual machine does one or several transitions
@@ -831,7 +831,7 @@ Fixpoint com_size (c: com) : nat :=
   | WHILE b DO c1 END => com_size c1 + 1
   end.
 
-Remark com_size_nonzero: forall c, com_size c > 0. 
+Remark com_size_nonzero: forall c, com_size c > 0.
 Proof.
   induction c; simpl; omega.
 Qed.
@@ -855,10 +855,10 @@ Lemma compile_cont_Kstop_inv:
   star (transition C) (pc, nil, m) (pc', nil, m)
   /\ code_at C pc' = Some Ihalt.
 Proof.
-  intros. dependent induction H. 
+  intros. dependent induction H.
 - exists pc; split. apply star_refl. auto.
 - destruct IHcompile_cont as [pc'' [A B]]; auto.
-  exists pc''; split; auto. eapply star_step; eauto. eapply trans_branch_forward; eauto. 
+  exists pc''; split; auto. eapply star_step; eauto. eapply trans_branch_forward; eauto.
 Qed.
 
 Lemma compile_cont_Kseq_inv:
@@ -869,10 +869,10 @@ Lemma compile_cont_Kseq_inv:
   /\ codeseq_at C pc' (compile_com c)
   /\ compile_cont C k (pc' + length(compile_com c)).
 Proof.
-  intros. dependent induction H. 
-  exists pc; split. apply star_refl. split; congruence. 
+  intros. dependent induction H.
+  exists pc; split. apply star_refl. split; congruence.
   destruct (IHcompile_cont _ _ eq_refl) as [pc'' [A [B D]]].
-  exists pc''; split; auto. eapply star_step; eauto. eapply trans_branch_forward; eauto. 
+  exists pc''; split; auto. eapply star_step; eauto. eapply trans_branch_forward; eauto.
 Qed.
 
 Lemma compile_cont_Kwhile_inv:
@@ -885,10 +885,10 @@ Lemma compile_cont_Kwhile_inv:
 Proof.
   intros. dependent induction H.
 - exists (pc + 1 - ofs); split.
-  apply plus_one. eapply trans_branch_backward; eauto. 
+  apply plus_one. eapply trans_branch_backward; eauto.
   split; congruence.
 - destruct (IHcompile_cont _ _ _ (refl_equal _)) as [pc'' [A [B D]]].
-  exists pc''; split; auto. eapply plus_left. eapply trans_branch_forward; eauto. apply plus_star; auto. 
+  exists pc''; split; auto. eapply plus_left. eapply trans_branch_forward; eauto. apply plus_star; auto.
 Qed.
 
 Remark code_at_inv:
@@ -896,7 +896,7 @@ Remark code_at_inv:
 Proof.
   induction C; simpl; intros.
   inversion H.
-  destruct pc. inversion H. exists (@nil instruction); exists (i :: C); auto. 
+  destruct pc. inversion H. exists (@nil instruction); exists (i :: C); auto.
   destruct (IHC _ _ H) as [C1 [C2 [A B]]].
   exists (a :: C1); exists C2; split. simpl; congruence. simpl; congruence.
 Qed.
@@ -904,7 +904,7 @@ Qed.
 Remark code_at_codeseq:
   forall C pc i, code_at C pc = Some i -> codeseq_at C pc nil.
 Proof.
-  intros. destruct (code_at_inv _ _ _ H) as [C1 [C2 [A B]]]. 
+  intros. destruct (code_at_inv _ _ _ H) as [C1 [C2 [A B]]].
   subst. change C2 with (nil ++ C2). constructor. auto.
 Qed.
 
@@ -934,19 +934,19 @@ Lemma simulation_step:
        \/ (star (transition C) machstate1 machstate2 /\ measure impstate2 < measure impstate1))
    /\ match_config C impstate2 machstate2.
 Proof.
-  intros until machstate1; intros KSTEP MATCH. 
+  intros until machstate1; intros KSTEP MATCH.
   inversion KSTEP; clear KSTEP; subst; inversion MATCH; clear MATCH; subst; simpl in *.
 
 - (* assign *)
   econstructor; split.
-  left. eapply plus_right. eapply compile_aexp_correct; eauto with codeseq. 
-  eapply trans_setvar; eauto with codeseq. 
+  left. eapply plus_right. eapply compile_aexp_correct; eauto with codeseq.
+  eapply trans_setvar; eauto with codeseq.
   normalize. apply match_config_skip. auto.
 
 - (* seq *)
   econstructor; split.
-  right; split. apply star_refl. omega. 
-  normalize. constructor. eauto with codeseq. eapply ccont_seq; eauto with codeseq. 
+  right; split. apply star_refl. omega.
+  normalize. constructor. eauto with codeseq. eapply ccont_seq; eauto with codeseq.
 
 - (* if true *)
   set (code1 := compile_com c1) in *.
@@ -957,8 +957,8 @@ Proof.
   apply compile_bexp_correct with (b := b) (cond := false) (ofs := length code1 + 1).
   eauto with codeseq.
   omega.
-  rewrite H; simpl. fold codeb. normalize. constructor; eauto with codeseq. 
-  eapply ccont_branch; eauto with codeseq. 
+  rewrite H; simpl. fold codeb. normalize. constructor; eauto with codeseq.
+  eapply ccont_branch; eauto with codeseq.
   change (S (length code2)) with (1 + length code2) in H5. normalize. auto.
 
 - (* if false *)
@@ -970,7 +970,7 @@ Proof.
   apply compile_bexp_correct with (b := b) (cond := false) (ofs := length code1 + 1).
   eauto with codeseq.
   omega.
-  rewrite H; simpl. fold codeb. normalize. constructor; eauto with codeseq. 
+  rewrite H; simpl. fold codeb. normalize. constructor; eauto with codeseq.
   change (S (length code2)) with (1 + length code2) in H5. normalize. auto.
 
 - (* while true *)
@@ -995,21 +995,21 @@ Proof.
   right; split.
   apply compile_bexp_correct with (b := b) (cond := false) (ofs := length codec + 1).
   eauto with codeseq.
-  generalize (com_size_nonzero c). omega. 
-  rewrite H; simpl. fold codeb. normalize. apply match_config_skip. auto. 
+  generalize (com_size_nonzero c). omega.
+  rewrite H; simpl. fold codeb. normalize. apply match_config_skip. auto.
 
 - (* skip seq *)
   normalize.
   destruct (compile_cont_Kseq_inv _ _ _ _ st H4) as [pc' [X [Y Z]]].
   econstructor; split.
   right; split. eexact X. omega.
-  constructor; auto. 
+  constructor; auto.
 
 - (* skip while *)
   normalize.
   destruct (compile_cont_Kwhile_inv _ _ _ _ _ st H4) as [pc' [X [Y Z]]].
   econstructor; split.
-  left. eexact X. 
+  left. eexact X.
   constructor; auto.
 Qed.
 
@@ -1053,7 +1053,7 @@ Proof.
 - (* one or more transitions *)
   destruct (simulation _ _ _ H H1) as [S2' [P Q]].
   destruct (IHstar _ Q) as [S2'' [U V]].
-  exists S2''; split. 
+  exists S2''; split.
   eapply star_trans; eauto. destruct P. apply plus_star; auto. destruct H2; auto.
   auto.
 Qed.
@@ -1073,7 +1073,7 @@ Lemma simulation_infseq_productive:
    /\ infseq step1 S1'
    /\ match_states S1' S2'.
 Proof.
-  induction N; intros. 
+  induction N; intros.
 - (* N = 0 *)
   exfalso. omega.
 - (* N > 0 *)
@@ -1099,14 +1099,14 @@ Lemma simulation_infseq:
   match_states S1 S2 ->
   infseq step2 S2.
 Proof.
-  intros. 
+  intros.
   apply infseq_coinduction_principle_2 with
     (X := fun S2 => exists S1, infseq step1 S1 /\ match_states S1 S2).
-  intros. destruct H1 as [S [A B]]. 
-  destruct (simulation_infseq_productive (measure S + 1) S a) 
+  intros. destruct H1 as [S [A B]].
+  destruct (simulation_infseq_productive (measure S + 1) S a)
   as [S1' [S2' [P [Q R]]]].
   omega. auto. auto.
-  exists S2'; split. auto. exists S1'; auto. 
+  exists S2'; split. auto. exists S1'; auto.
   exists S1; auto.
 Qed.
 
@@ -1130,12 +1130,12 @@ Theorem compile_program_correct_terminating_2:
   mach_terminates (compile_program c) st st'.
 Proof.
   intros.
-  assert (exists machconf2, 
+  assert (exists machconf2,
            star (transition (compile_program c)) (0, nil, st) machconf2
            /\ match_config (compile_program c) (SKIP, Kstop, st') machconf2).
   eapply simulation_star; eauto. eapply simulation_step. apply match_config_initial.
-  destruct H0 as [machconf2 [STAR MS]]. 
-  inversion MS; subst. simpl in *. normalize. 
+  destruct H0 as [machconf2 [STAR MS]].
+  inversion MS; subst. simpl in *. normalize.
   destruct (compile_cont_Kstop_inv _ _ st' H5) as [pc' [A B]].
   red. exists pc'; split. auto. eapply star_trans; eauto.
 Qed.
@@ -1148,7 +1148,7 @@ Theorem compile_program_correct_diverging:
   kdiverges c st ->
   mach_diverges (compile_program c) st.
 Proof.
-  intros; red; intros. 
+  intros; red; intros.
   eapply simulation_infseq with (match_states := match_config (compile_program c)); eauto.
   eapply simulation_step. apply match_config_initial.
 Qed.
@@ -1160,13 +1160,13 @@ Qed.
   left on the stack; then [a2] is evaluated; then an [Iadd] instruction
   is performed.  For commutative operators like [+] and [*], we
   could just as well evaluate [a2] first, then [a1], then combine
-  their results.  
+  their results.
 
   This can help producing more efficient code in terms of how much
   stack space is required by the evaluation.  Consider the expression
   [1 + (2 + (3 + ... (N-1 + N)))].  With left-to-right evaluation,
   it uses [N+1] stack entries.  With right-to-left evaluation,
-  it uses only 2 stack entries.  
+  it uses only 2 stack entries.
 
   In this exercise, we explore the effect of different evaluation orders
   on stack usage.  Let us first parameterize [compile_aexp] with
@@ -1288,20 +1288,20 @@ Definition compile_aexp_optimal (a: aexp) : code :=
   will use no more stack space than evaluating [a2].  So, evaluating
   [a1 + a2] can be done with no extra space than evaluating just [a2].
   This would not be the case if we started with [a1], then evaluated [a2]:
-  in this case, one more stack slot would be needed. 
+  in this case, one more stack slot would be needed.
 
   If both arguments have the same stack needs, the two evaluation
   orders use exactly the same amount of space, so it does not matter
   which one we choose. *)
 
-(** We can show the optimality of the strategy by observing that 
+(** We can show the optimality of the strategy by observing that
   its stack usage is the minimum predicted by [stack_needs]. *)
 
 Lemma stack_usage_optimal_ord:
   forall a, stack_usage optimal_ord a = stack_needs a.
 Proof.
   (* FILL IN HERE *)
-Admitted.  
+Admitted.
 
 (** So far, we've reasoned informally on the stack usage of a particular
   evaluation strategy.  Now, let us formally connect this reasoning with the

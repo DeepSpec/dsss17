@@ -25,9 +25,9 @@
    operating on arrays.  But it works just as well as a functional
    program operating on linked lists! *)
 
-Require Import Perm. 
+Require Import Perm.
 
-Fixpoint insert (i:nat) (l: list nat) := 
+Fixpoint insert (i:nat) (l: list nat) :=
   match l with
   | nil => i::nil
   | h::t => if i <=? h then i::h::t else h :: insert i t
@@ -69,7 +69,7 @@ Eval compute in insert 7 [1; 3; 4; 8; 12; 14; 18].
    The value Y is the number of bytes in one list node: 2 to 4 words,
    depending on how the implementation handles constructor-tags.
    We write (4-3) to indicate that four list nodes are constructed,
-   while three list nodes become eligible for garbage collection.  
+   while three list nodes become eligible for garbage collection.
 
    We will not _prove_ such things about the time and space cost, but
    they are _true_ anyway, and we should keep them in
@@ -81,7 +81,7 @@ Eval compute in insert 7 [1; 3; 4; 8; 12; 14; 18].
 (** A sorting algorithm must rearrange the elements into a list that
     is totally ordered. *)
 
-Inductive sorted: list nat -> Prop := 
+Inductive sorted: list nat -> Prop :=
 | sorted_nil:
     sorted nil
 | sorted_1: forall x,
@@ -99,7 +99,7 @@ Definition sorted' (al: list nat) :=
     Later on, we'll prove that the two definitions really are
     equivalent.  For now, let's use the first one to define what it
     means to be a correct sorting algorthm. *)
-    
+
 Definition is_a_sorting_algorithm (f: list nat -> list nat) :=
   forall al, Permutation al (f al) /\ sorted (f al).
 
@@ -113,7 +113,7 @@ Definition is_a_sorting_algorithm (f: list nat -> list nat) :=
     useful for proving [sort_perm] below.  Your proof will be by
     induction, but you'll need some of the permutation facts from the
     library, so first remind yourself by doing [SearchAbout]. *)
-  
+
 SearchAbout Permutation.
 
 Lemma insert_perm: forall x l, Permutation (x::l) (insert x l).

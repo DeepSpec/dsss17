@@ -90,7 +90,7 @@ Proof. (* WORKED IN CLASS *)
   default_simp.
   unfold close_exp_wrt_exp.
   default_simp.
-Qed. 
+Qed.
 (***********************************************************************)
 (** ** Connecting free variable functions.                             *)
 (***********************************************************************)
@@ -177,7 +177,7 @@ Lemma decode_lc : forall c, lc_exp (decode c).
 Proof.
   intros [[h e] s]; default_simp.
   (* SOLUTION: *)
-Qed. 
+Qed.
 (***********************************************************************)
 (** ** Properties of apply_heap *)
 (***********************************************************************)
@@ -219,7 +219,7 @@ Lemma apply_heap_open : forall h e e0,
 Proof.
 (* SOLUTION: *)
   alist induction h; intros; default_simp.
-Qed. 
+Qed.
 Hint Rewrite apply_heap_open : lngen.
 
 (** This last lemma "unsimpl"s the [apply_heap] function. *)
@@ -289,7 +289,7 @@ Proof.
   generalize 0 as k.
   generalize e. clear e.
   induction e; default_simp.
-Qed. 
+Qed.
 (** One difficulty of [swap_spec] is that we need to use the induction
     not on direct subterms, but on those that have had a swapping applied
     to them. Swapping preserves the size of a nominal term, so we can
@@ -402,7 +402,7 @@ Proof.
   - rewrite (close_exp_wrt_exp_freshen y x); auto.
     rewrite swap_spec; auto.
     congruence.
-Qed. 
+Qed.
 Lemma nom_to_exp_eq_aeq : forall n1 n2, nom_to_exp n1 = nom_to_exp n2 -> aeq n1 n2.
 Proof.
   (* SOLUTION: *)
@@ -425,7 +425,7 @@ Proof.
       rewrite <- H0.
       autorewrite with lngen.
       auto.
-Qed. 
+Qed.
 (***********************************************************************)
 (** * Scoped configurations                                            *)
 (***********************************************************************)
@@ -499,7 +499,7 @@ Proof.
     rewrite subst_exp_fresh_eq; auto.
     (* SOLUTION: *)
     rewrite scoped_get with (D2:= dom h\u D ); default_simp; eauto.
-Qed. 
+Qed.
 (***********************************************************************)
 (** ** Scoped stacks                                                    *)
 (***********************************************************************)
@@ -524,7 +524,7 @@ Proof.
   (* WORKED IN CLASS *)
   induction s; intros; try destruct a; default_simp.
   rewrite IHs; auto.
-Qed. 
+Qed.
 
 (***********************************************************************)
 (** * Simulation                                                       *)
@@ -627,7 +627,7 @@ Proof.
       simpl.
       rewrite apply_heap_app.
       auto.
-(* SOLUTION: *) Qed. 
+(* SOLUTION: *) Qed.
 (** *** Exercise [simulate_done]
 
     Show that if the machine says [Done] then the LN term is a value.
@@ -650,7 +650,7 @@ Proof. (* SOLUTION: *)
        econstructor; eauto.
   - destruct e; inversion H.
     simpl in Heqb. destruct (get x h); inversion H.
-Qed. 
+Qed.
 
 
 (** *** Challenge exercise [simulate_error]
@@ -714,7 +714,7 @@ Proof.
     rewrite apply_heap_get_none in STEP; auto.
     eapply no_step_stack with (e0 := var_f x); auto.
        intros [e0' SS]. inversion SS. eauto.
-Qed. 
+Qed.
 (***********************************************************************)
 
 (** *** Challenge exercise [machine_is_scoped]
@@ -774,4 +774,4 @@ Proof.
     auto.
     fsetdec.
     simpl. fsetdec.
-Qed. 
+Qed.

@@ -106,7 +106,7 @@ Check cons.
 
 (** Having to supply a type argument for each use of a list
     constructor may seem an awkward burden, but we will soon see
-    ways of reducing that burden. *) 
+    ways of reducing that burden. *)
 
 Check (cons nat 2 (cons nat 1 (nil nat))).
 
@@ -805,7 +805,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     type parameters where necessary and use Coq to check that you've
     done so correctly.  (This exercise is not to be turned in; it is
     probably easiest to do it on a _copy_ of this file that you can
-    throw away afterwards.) 
+    throw away afterwards.)
 *)
 (** [] *)
 

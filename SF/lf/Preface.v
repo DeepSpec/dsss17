@@ -313,7 +313,7 @@
     readers.  Advanced exercises are for readers who want an extra
     challenge and a deeper cut at the material.
 
-    _Please do not post solutions to the exercises in a public place_. 
+    _Please do not post solutions to the exercises in a public place_.
     Software Foundations is widely used both for self-study and for
     university courses.  Having solutions easily available makes it
     much less useful for courses, which typically have graded homework
@@ -361,13 +361,13 @@
         Benjamin Pierce.
 
     To get started, please send an email to Benjamin Pierce, describing
-    yourself and how you plan to use the materials and including 
-       (1) the above copyright transfer text and 
+    yourself and how you plan to use the materials and including
+       (1) the above copyright transfer text and
        (2) the result of doing "htpasswd -s -n NAME"
-    where NAME is your preferred user name. 
+    where NAME is your preferred user name.
 
-    We'll set you up with access to the subversion repository and 
-    developers' mailing lists.  In the repository you'll find a 
+    We'll set you up with access to the subversion repository and
+    developers' mailing lists.  In the repository you'll find a
     file [INSTRUCTORS] with further instructions. *)
 
 (* ################################################################# *)

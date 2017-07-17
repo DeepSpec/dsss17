@@ -32,7 +32,7 @@ Axiom update_neq : forall v k1 k2 m, k2 <> k1 -> get (set m k1 v) k2 = get m k2.
 Axiom get_in_dom : forall m k v, get m k = Some v -> In k (dom m).
 Axiom dom_in_get : forall m k, In k (dom m) -> exists v, get m k = Some v.
 Axiom get_forallb2 : forall m f,
-                       (forall k v, get m k = Some v -> f k v = true) 
+                       (forall k v, get m k = Some v -> f k v = true)
                        <-> forallb2 f m = true.
 End withv.
 
@@ -48,7 +48,7 @@ Definition t := list (K.t * V).
 
 Definition empty : t := [].
 
-Fixpoint get m k : option V := 
+Fixpoint get m k : option V :=
   match m with
     | [] => None
     | (k', v) :: m' => if K.eq_dec k k'
@@ -81,7 +81,7 @@ Fixpoint forallb2' (f:K.t -> V -> bool) (m:t) (d:list K.t) : bool :=
                       | None => false
                       | Some v => f k v && forallb2' f m d'
                     end
-     end.  
+     end.
 
 Definition forallb2 (f:K.t -> V -> bool) (m:t) : bool :=
   forallb2' f m (dom m).
@@ -105,14 +105,14 @@ Lemma get_in_dom : forall m k v,
   get m k = Some v -> In k (dom m).
 Proof.
   induction m; intros k v. inversion 1.
-  destruct a as [k' v']; simpl in *. intros. destruct (K.eq_dec k k'); intuition eauto. 
+  destruct a as [k' v']; simpl in *. intros. destruct (K.eq_dec k k'); intuition eauto.
 Qed.
 
 Lemma dom_in_get : forall m k,
   In k (dom m) -> exists v, get m k = Some v.
 Proof.
   induction m. inversion 1.
-  destruct a as [k' v']; simpl in *. 
+  destruct a as [k' v']; simpl in *.
   intro k. destruct (K.eq_dec k k') as [|Heq]; intros. intuition eauto.
   inversion H; eauto; contradict Heq; auto.
 Qed.
@@ -129,13 +129,13 @@ Proof.
   pose proof (dom_in_get m) as Hd.
   set (d := dom m) in *. clearbody d.
 
-  induction d. reflexivity. simpl. 
+  induction d. reflexivity. simpl.
   destruct (get m a) eqn:Hget.
   rewrite IHd; auto. assert (f a v = true).
   apply Hpf. eapply H; eauto. rewrite H0. simpl. reflexivity.
   intros. apply Hd. simpl. right. auto.
-  
-  ecase (Hd a) as [v Hv]; try (left; auto). 
+
+  ecase (Hd a) as [v Hv]; try (left; auto).
   rewrite Hv in Hget. inversion Hget.
 
   - (* Case "<-". *)
@@ -145,17 +145,17 @@ Proof.
   induction d. inversion Hd.
   simpl in H.
   destruct (K.eq_dec a k). subst a. rewrite H0 in H.
-  apply Hpf; auto. destruct (f k v); auto. 
+  apply Hpf; auto. destruct (f k v); auto.
   apply IHd. destruct (get m a); try solve [inversion H].
   destruct (f a v0).
   destruct (forallb2' f m d); auto.
   destruct (forallb2' f m d); auto.
   inversion Hd; intuition.
-Qed.  
+Qed.
 
 Lemma get_forallb2 : forall m f,
-  (forall k v, get m k = Some v -> f k v = true) 
-  <-> 
+  (forall k v, get m k = Some v -> f k v = true)
+  <->
   forallb2 f m = true.
 Proof.
   intros. unfold forallb2.
@@ -165,12 +165,12 @@ Proof.
   pose proof (dom_in_get m) as Hd.
   set (d := dom m) in *. clearbody d.
 
-  induction d. reflexivity. simpl. 
+  induction d. reflexivity. simpl.
   destruct (get m a) eqn:Hget.
   rewrite H; auto. rewrite IHd; auto. intros.
   apply Hd. simpl. right; auto.
-  
-  ecase (Hd a) as [v Hv]; try (left; auto). 
+
+  ecase (Hd a) as [v Hv]; try (left; auto).
   rewrite Hv in Hget. inversion Hget.
 
   - (* Case "<-". *)
@@ -186,7 +186,7 @@ Proof.
   destruct (forallb2' f m d); auto.
   destruct (f a v0); auto.
   inversion Hd; intuition.
-Qed.  
+Qed.
 
 End withv.
 

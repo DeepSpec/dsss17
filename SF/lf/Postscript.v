@@ -5,7 +5,7 @@
 (* ################################################################# *)
 (** * Looking Back *)
 
-(** We've covered quite a bit of ground so far.  Here's a quick review...  
+(** We've covered quite a bit of ground so far.  Here's a quick review...
 
    - _Functional programming_:
           - "declarative" programming style (recursion over persistent

@@ -23,13 +23,13 @@ Require Import Vminus.CFG.
     too.  Once we have established that the two semantics correspond,
     it is easy to prove that the relational semantics is deterministic
     because it is equivalent to the executable semantics, which is
-    given by a function.  
-    
+    given by a function.
+
     The development is parameterized by a control-flow graph, making
     the operational semantics independent of its representation.
 
     Later, as a demonstration of using these semantics, we will prove
-    the correctness of an Imp to Vminus compiler and some program  
+    the correctness of an Imp to Vminus compiler and some program
     transformations as the Vminus level.
 *)
 
@@ -42,15 +42,15 @@ Module Opsem.
   (**  ------------------------------------------------------------------------- *)
   (** *** The state of a Vminus program: *)
 
-  (** The local environment is a _partial_ map from [uid]s to 
+  (** The local environment is a _partial_ map from [uid]s to
       natural numbers. *)
-  
+
   Module Locals := Make_Env(Uid).
   Notation loc := (Locals.t (option nat)).
   Notation update := Locals.update.
 
-  (** The Vminus memory is a _total_ map from addresses to 
-      natural numbers.  (This is a bit artificial, but is a simplification 
+  (** The Vminus memory is a _total_ map from addresses to
+      natural numbers.  (This is a bit artificial, but is a simplification
       that aligns with the variant of Imp we use in this development.)
   *)
 
@@ -61,19 +61,19 @@ Module Opsem.
       current program counter.  It also remembers the environment
       in effect at the end of the of the predecessor block, for
       use in phi instructions (see below). *)
-  
+
   Record state := mkst { st_mem  : mem
                        ; st_pc   : pc
                        ; st_loc  : loc
                        ; st_ppc  : pc     (* predecessor pc *)
-                       ; st_ploc : loc    (* predecessor locals *) 
+                       ; st_ploc : loc    (* predecessor locals *)
                        }.
 
   (**  ------------------------------------------------------------------------- *)
   (** *** Evaluating values. *)
 
   (** Simply look up the uid in the local environment. (May fail!) *)
-  
+
   Definition eval_val (loc:loc) (v:val) : option nat :=
     match v with
       | val_nat n => Some n
@@ -98,22 +98,22 @@ Module Opsem.
 
   Definition eval_bop (loc:loc) (bop:bop) (v1 v2:val) : option nat :=
     match eval_val loc v1, eval_val loc v2 with
-      | Some n1, Some n2 => Some (bop_denote bop n1 n2) 
+      | Some n1, Some n2 => Some (bop_denote bop n1 n2)
       | _, _ => None
     end.
 
   (**  ------------------------------------------------------------------------- *)
   (** *** Evaluating phi nodes *)
-  (** To evaluate a phi instruction, we need to know from which 
+  (** To evaluate a phi instruction, we need to know from which
       predecessor block control reached this phi node, as well as
       the local environment in effect at the end of that block.
-      
-      We look up the value associated with the predecessor label 
-      in the phi arg list, and interpret it in the predecessor's 
+
+      We look up the value associated with the predecessor label
+      in the phi arg list, and interpret it in the predecessor's
       local environment, which are supplied to [eval_phi].
   *)
 
-  Definition eval_phi (ploc:loc) (pl:lbl) (pas:list phiarg) 
+  Definition eval_phi (ploc:loc) (pl:lbl) (pas:list phiarg)
     : option nat :=
     match assoc Lbl.eq_dec pl pas with
       | Some v => eval_val ploc v
@@ -122,7 +122,7 @@ Module Opsem.
 
   (**  ------------------------------------------------------------------------- *)
   (** *** Control transfers *)
-  
+
   (** Given the current locals and the terminator, determine
       the label of the next block to jump to (if any). *)
 
@@ -145,26 +145,26 @@ Module Opsem.
   | step_bop : forall mem pc loc bop v1 v2 uid n ppc ploc,
       insn_at_pc g pc (uid, cmd_bop bop v1 v2) ->
       Some n = eval_bop loc bop v1 v2 ->
-      step g (mkst mem pc loc ppc ploc) 
-             (mkst mem (incr_pc pc) 
+      step g (mkst mem pc loc ppc ploc)
+             (mkst mem (incr_pc pc)
                        (update loc uid (Some n)) ppc ploc)
 
-  (** Evaluate the right-hand side in the predecessor's 
-     local environment. [lbl_of ppc] is the source block of the 
+  (** Evaluate the right-hand side in the predecessor's
+     local environment. [lbl_of ppc] is the source block of the
      control-flow edge that we jumped from to reach the current block. *)
 
   | step_phi : forall mem pc loc pas uid n ppc ploc,
       insn_at_pc g pc (uid, cmd_phi pas) ->
       Some n = eval_phi ploc (lbl_of ppc) pas ->
       step g (mkst mem pc loc ppc ploc)
-             (mkst mem (incr_pc pc) 
+             (mkst mem (incr_pc pc)
                        (update loc uid (Some n)) ppc ploc)
 
-  (** Find the successor block (if any), update the pc. 
+  (** Find the successor block (if any), update the pc.
       Record the current pc and locals as the "predecessor" state
       for use by any [phi] nodes in the successor block. *)
 
-  | step_tmn : forall mem pc l' loc tmn uid ppc ploc, 
+  | step_tmn : forall mem pc l' loc tmn uid ppc ploc,
       insn_at_pc g pc (uid, cmd_tmn tmn) ->
       Some l' = eval_tmn loc tmn ->
       step g (mkst mem pc loc ppc ploc)
@@ -175,14 +175,14 @@ Module Opsem.
   | step_load : forall mem pc loc uid addr ppc ploc,
       insn_at_pc g pc (uid, cmd_load addr) ->
       step g (mkst mem pc loc ppc ploc)
-             (mkst mem (incr_pc pc) 
+             (mkst mem (incr_pc pc)
                        (update loc uid (Some (mem addr))) ppc ploc)
 
   | step_store : forall mem pc loc uid addr v n ppc ploc,
       insn_at_pc g pc (uid, cmd_store addr v) ->
       Some n = eval_val loc v ->
       step g (mkst mem pc loc ppc ploc)
-             (mkst (Memory.update mem addr n) 
+             (mkst (Memory.update mem addr n)
                    (incr_pc pc) loc ppc ploc).
 
 
@@ -190,10 +190,10 @@ Module Opsem.
  (** *** Definition of the initial state. *)
 
  (** The initial state starts with the program counter at the beginning of the
-     entry block in an empty environment.  The "predecessor state" can be 
-     set arbitrarily -- we will prove that in any well-formed CFG, the 
+     entry block in an empty environment.  The "predecessor state" can be
+     set arbitrarily -- we will prove that in any well-formed CFG, the
      entry block cannot have any phi nodes. *)
-  
+
   Definition init_state (g:Cfg.t) (m: mem) : state :=
     (mkst m
           (block_entry (entry_block g))
@@ -202,37 +202,37 @@ Module Opsem.
           (Locals.empty None)).
 
 
-  (**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)
   (** * Small-step, executable operational semantics *)
 
-  (** This version of the semantics is just a straight forward interpreter, 
-      implemented monadically in an error monad to deal with partiality. 
-       
+  (** This version of the semantics is just a straight forward interpreter,
+      implemented monadically in an error monad to deal with partiality.
+
       It uses [fetch] where the relational specification uses [insn_at_pc], but
       is otherwise a fairly direct transliteration of the relational version.
 
-      Note: the monad notation and definitions come from [Classes.v], a 
+      Note: the monad notation and definitions come from [Classes.v], a
       general purpose library that collects together some commonly used
       typeclasses and instances.
 
-      - [mret] is the "return" of a monad    
+      - [mret] is the "return" of a monad
       - the notation  ['x <- e1; e2] is the "bind"
       - [trywith] lifts the [option] monad into the [err] monad
   *)
-  (**  ------------------------------------------------------------------------- *)  
-  
+  (**  ------------------------------------------------------------------------- *)
+
   Fixpoint eval_step (g : Cfg.t) (s : state) : err state :=
     let 'mkst mem pc loc ppc ploc := s in
-    '(uid, insn) <- trywith "no instruction fetched" (Cfg.fetch g pc); 
+    '(uid, insn) <- trywith "no instruction fetched" (Cfg.fetch g pc);
     match insn with
-    | cmd_bop bop v1 v2 =>    
+    | cmd_bop bop v1 v2 =>
       'n <- trywith "cannot evalute binop command"  (eval_bop loc bop v1 v2);
       mret (mkst mem (incr_pc pc) (update loc uid (Some n)) ppc ploc)
 
     | cmd_phi pas =>
       'n <- trywith "cannot evaluate phi" (eval_phi ploc (lbl_of ppc) pas);
       mret (mkst mem (incr_pc pc) (update loc uid (Some n)) ppc ploc)
-           
+
     | cmd_tmn tmn =>
       'l' <- trywith "cannot evaluate terminator" (eval_tmn loc tmn);
       mret (mkst mem (block_entry l') loc pc loc)
@@ -244,8 +244,8 @@ Module Opsem.
       'n <- trywith "cannot evaluate address to store to" (eval_val loc v);
         mret (mkst (Memory.update mem addr n) (incr_pc pc) loc ppc ploc)
     end.
-  
-  (**  ------------------------------------------------------------------------- *)  
+
+  (**  ------------------------------------------------------------------------- *)
   (** *** Helper functions for many-steps of evaluation *)
 
   Fixpoint eval_until_pc (g : Cfg.t) (s : state)
@@ -272,20 +272,20 @@ Module Opsem.
     eval_until_pc g s' target_pc fuel.
 
 
-  (**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)
   (** ** Correspondence between relational and executable definitions *)
 
   (** Given that the relational and executable semantics share most of their "core"
-      functionality, it is pretty easy to prove that the two are equivalent.  
+      functionality, it is pretty easy to prove that the two are equivalent.
    *)
-  
-  (** This tactic helps drive the evaluator by looking for a hypothesis that is 
+
+  (** This tactic helps drive the evaluator by looking for a hypothesis that is
       "stuck" on a [trywith] because it can't be simplified without further case
-      analysis.  The tactic destructs the blocking expression, and is able to 
+      analysis.  The tactic destructs the blocking expression, and is able to
       automatically discharge the goal by applying one of the [step] constructors,
       which is provided as an argument.
   *)
-  
+
   Ltac eval_step_with_step next_state constructor_rule
        cfg_well_formed fetched :=
     match goal with
@@ -314,7 +314,7 @@ Module Opsem.
   Proof.
     intros g s s' wf_g; unfold eval_step;
       destruct s as [mem curr_pc curr_loc previous_pc previous_loc];
-      destruct (Cfg.fetch g curr_pc) as 
+      destruct (Cfg.fetch g curr_pc) as
           [[uid [bop v1 v2 | pas | term | addr | addr v]] | ] eqn:fetched; simpl;
       intros H;
       [eval_step_with_step s' step_bop wf_g fetched |
@@ -323,7 +323,7 @@ Module Opsem.
        eval_step_with_step s' step_load wf_g fetched |
        eval_step_with_step s' step_store wf_g fetched | inversion H].
   Qed.
-  
+
   Lemma evaluator_complete: forall g s s',
       Cfg.wf_cfg g -> step g s s' -> eval_step g s = inr s'.
   Proof.
@@ -339,7 +339,7 @@ Module Opsem.
     try rewrite insn_at_pc_is; simpl;
     try rewrite <- eval_insn_ok; try reflexivity.
   Qed.
-  
+
   Theorem evaluator_correct: forall g s s',
       Cfg.wf_cfg g -> eval_step g s = inr s' <-> step g s s'.
   Proof.
@@ -349,18 +349,18 @@ Module Opsem.
     apply evaluator_complete.
   Qed.
 
-(** ------------------------------------------------------------------------- *)  
+(** ------------------------------------------------------------------------- *)
 (* ################################################################# *)
 (** * Determinism of [step] *)
 
-(** A direct consequence of the equivalence between the relational and 
-    functional specifications is that we can prove that [step] is 
-    deterministic.  
+(** A direct consequence of the equivalence between the relational and
+    functional specifications is that we can prove that [step] is
+    deterministic.
 
     Note: one can prove that [step] is deterministic _without_ using the
     correspondence with the evaluator, but it requires significantly more work!
     It might be informative to try doing that proof. *)
-  
+
 Lemma step_deterministic : forall g s s1 s2, wf_cfg g ->
   step g s s1 -> step g s s2 -> s1 = s2.
 Proof.
@@ -371,21 +371,21 @@ Proof.
 Qed.
 
 
-  
+
 End Opsem.
 End Make.
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
 (* ================================================================= *)
 (** ** Instantiating the operational semantics to ListCFG *)
 
 (** For interesting applications of the operational semantics, such as building
     a compiler or writing program transformations, we need to pick a concrete
-    representation of the CFG module.  For this development, we use the 
+    representation of the CFG module.  For this development, we use the
     [ListCFG] definition.
  *)
 
 Require Vminus.ListCFG.
 Module Import V := Make ListCFG.ListCFG.
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)

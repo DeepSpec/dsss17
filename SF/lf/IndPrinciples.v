@@ -230,7 +230,7 @@ Check tree_ind.
             (forall m : mytype X, P m ->
                forall n : nat, P (constr3 X m n)) ->
             forall m : mytype X, P m
-*) 
+*)
 (** [] *)
 
 (** **** Exercise: 1 star, optional (foo)  *)
@@ -244,7 +244,7 @@ Check tree_ind.
              (forall f1 : nat -> foo X Y,
                (forall n : nat, P (f1 n)) -> P (quux X Y f1)) ->
              forall f2 : foo X Y, P f2
-*) 
+*)
 (** [] *)
 
 (** **** Exercise: 1 star, optional (foo')  *)

@@ -25,10 +25,10 @@ Unset Printing Records.
 (* ================================================================= *)
 (** ** Correspondence between concrete and abstract CFGs. *)
 
-(** Asserts that the instruction sequence found at program point p in 
+(** Asserts that the instruction sequence found at program point p in
     the control-flow graph g is exactly the list [is]. *)
 
-Fixpoint insns_at_pc (g:ListCFG.t) (p:pc) (is:list insn) : Prop := 
+Fixpoint insns_at_pc (g:ListCFG.t) (p:pc) (is:list insn) : Prop :=
   match is with
     | nil => True
     | i :: is' => ListCFG.insn_at_pc g p i /\ insns_at_pc g (incr_pc p) is'
@@ -63,7 +63,7 @@ Qed.
 (** ** Auxiliary definitions. *)
 
 Definition ids_preserved (cs:list uid) (st st':state) : Prop :=
-  forall uid n, In uid cs -> 
+  forall uid n, In uid cs ->
     st_loc st uid = Some n -> st_loc st' uid = Some n.
 
 Definition good_return (cs:list uid) (v:val) : Prop :=
@@ -99,7 +99,7 @@ Lemma comp_bop_correct : forall b comp1 comp2 eval1 eval2
     comp_correct (comp_bop b comp1 comp2)
                  (fun m => bop_denote b (eval1 m) (eval2 m)).
 Proof.
-  unfold comp_correct. 
+  unfold comp_correct.
   intros b comp1 comp2 eval1 eval2.
   intros until v. intros Hcomp Hinsns.
 
@@ -111,12 +111,12 @@ Proof.
 
   subst.
   repeat rewrite <- app_assoc in Hinsns.
-  eelim IHa1; [| eauto ..]. 
+  eelim IHa1; [| eauto ..].
   intros st1 (Hinv1 & His1 & Hstep1 & Hpres1 & Hret1 & Hincr1 & Heval1).
-  eelim IHa2; [| eauto ..]. 
+  eelim IHa2; [| eauto ..].
   intros st2 (Hinv2 & His2 & Hstep2 & Hpres2 & Hret2 & Hincr2 & Heval2).
   clear IHa1 IHa2.
-  
+
   rename st2 into st2'; set (st2:=st2') in *; destruct st2'.
   eexists {| st_pc  := incr_pc (st_pc st2);
              st_loc := Locals.update (st_loc st2) (Uid.fresh cs2) _ |}. simpl.
@@ -129,12 +129,12 @@ Proof.
 
   (* star (Opsem.step g) *)
   split. eapply star_trans; eauto. eapply star_trans; eauto.
-    eapply star_one. eapply step_bop. inversion His2; eauto.  
-    unfold eval_bop. simpl in Heval2. rewrite Heval2. 
+    eapply star_one. eapply step_bop. inversion His2; eauto.
+    unfold eval_bop. simpl in Heval2. rewrite Heval2.
     replace (eval_val st_loc0 _) with (Some (eval1 (st_mem st))).
-    reflexivity. symmetry. 
+    reflexivity. symmetry.
 
-    destruct rl1; auto. simpl. 
+    destruct rl1; auto. simpl.
     unfold good_return in *.
     rename t into t0.
     assert (In t0 cs1). apply Hret1; auto.
@@ -151,12 +151,12 @@ Proof.
   split. red. intros uid' Hid. injection Hid; inversion Hc2. left; auto.
 
   (* ctx_incr *)
-  split. transitivity cs1; auto. transitivity cs2; auto. 
+  split. transitivity cs1; auto. transitivity cs2; auto.
   unfold ctx_incr. inversion Hc2; intros. right; auto.
 
   (* eval_val *)
   simpl. rewrite Locals.update_eq.
-  replace (st_mem st1) with (st_mem st). subst. reflexivity. 
+  replace (st_mem st1) with (st_mem st). subst. reflexivity.
   inversion Hinv1; auto. reflexivity.
 Qed.
 
@@ -168,12 +168,12 @@ Proof.
   induction a; [ | | eapply comp_bop_correct; auto ..].
 
   - (* Case "ANum". *)
-  unfold comp_correct; intros. inversion H; subst; clear H. 
+  unfold comp_correct; intros. inversion H; subst; clear H.
   exists st. repeat split; try red; auto using star_refl. discriminate.
 
   - (* Case "AId". *)
   unfold comp_correct. intros cs cs' g st is k v Hcomp Hinsns.
-  simpl in Hcomp. 
+  simpl in Hcomp.
   destruct (fresh cs) as [cs1 idr] eqn:Hc.
   inversion Hcomp. clear Hcomp. subst.
 
@@ -186,7 +186,7 @@ Proof.
   inversion Hinsns; eauto.
   simpl in *.
   unfold fresh in Hc. inversion Hc. apply H.
-  split. red; simpl; intros. rewrite Locals.update_neq; auto. 
+  split. red; simpl; intros. rewrite Locals.update_neq; auto.
     inversion Hc. contradict H. rewrite <- H. apply Uid.fresh_not_in.
   split. red. intros. inversion Hc. injection H; intro. subst idr uid. left; auto.
   split. inversion Hc; red; intuition.
@@ -201,11 +201,11 @@ Proof.
   induction b.
 
   - (* Case "BTrue". *)
-  unfold comp_correct; intros. inversion H; subst; clear H. 
+  unfold comp_correct; intros. inversion H; subst; clear H.
   exists st; repeat split; try red; auto using star_refl. discriminate.
 
   - (* Case "BFalse". *)
-  unfold comp_correct; intros. inversion H; subst; clear H. 
+  unfold comp_correct; intros. inversion H; subst; clear H.
   exists st; repeat split; try red; auto using star_refl. discriminate.
 
   - (* Case "BEq". *)
@@ -226,24 +226,24 @@ Proof.
   - (* Case "BAnd". *)
   simpl. evar (SPEC : mem -> nat). replace (fun (m:mem) => b2n _) with SPEC.
   subst SPEC. apply (comp_bop_correct bop_and); eauto.
-  subst SPEC. apply functional_extensionality. intro. 
+  subst SPEC. apply functional_extensionality. intro.
   simpl. destruct (beval b1 x), (beval b2 x); auto.
 Qed.
 
 
 (**
-  - First we define some helper definitions for compiling assignments and 
+  - First we define some helper definitions for compiling assignments and
     conditionals.
     - To simplify the simulation: each store is compiled to its own basic block.
   - Then we define the command compilation context as a state monad.
     - Generate fresh uids (like the [ectmon])
-    - Generate fresh block labels 
+    - Generate fresh block labels
     - Add instructions to the (partial) CFG
   - Then we define the translation of commands (recursively).
 *)
 
 
-Lemma comp_store_correct : 
+Lemma comp_store_correct :
   forall g a v le lr cs st,
   insns_at_pc g (block_entry le) (strun (comp_store a v lr) cs) ->
   st_pc st = (block_entry le) ->
@@ -257,14 +257,14 @@ Proof.
   match type of H with context[let (_,_) := ?x in _] => destruct x eqn:Hc end.
   destruct p as [x is].
   simpl in H. symmetry in Hc.
-  
+
   rewrite <- H0 in H.
   eelim (comp_aexp_correct a); eauto.
   intros st' H'. decompose [and] H'; clear H'.
   rename st' into st''. set (st' := st'') in *. destruct st''.
 
   eexists.
-  split. eapply plus_star_trans'. eauto. 
+  split. eapply plus_star_trans'. eauto.
   eapply plus_left. eapply step_store. apply H3. eauto.
   eapply star_step. eapply step_tmn. inversion H3. apply H9.
   reflexivity.
@@ -295,13 +295,13 @@ Proof.
   rename st' into st''. set (st' := st'') in *. destruct st''.
 
   eexists.
-  split. eapply plus_star_trans'. eauto. 
-  eapply plus_one. eapply step_tmn. 
+  split. eapply plus_star_trans'. eauto.
+  eapply plus_one. eapply step_tmn.
   apply H3. simpl in *. rewrite H8. reflexivity.
   simpl. split; auto.
   destruct (beval b (st_mem st)); simpl; auto.
 Qed.
-  
+
 
 (* ================================================================= *)
 (* ** Compiling Commands *)
@@ -317,7 +317,7 @@ Notation ctmon := (ST cstate).
 Definition fresh_lbl : ctmon lbl :=
   fun cs =>
   let '(ls, is, bs) := cs in
-  let l := Lbl.fresh ls in 
+  let l := Lbl.fresh ls in
   (l::ls, is, ListCFG.update bs l [], l).
 
 Definition raise_ectmon {T} (ec:ectmon T) : ctmon T :=
@@ -387,13 +387,13 @@ Lemma simulation_step' :
     match_states g r (c', mem') st'.
 Proof.
   intros. generalize dependent st. revert r.
-  
+
   dependent induction H; intros;
   inversion H0 as [? ? ? ? H']; inversion H'; subst.
 
   - (* Case "S_Ass". *)
   eapply comp_store_correct in H6 as [st' [? [? ?]]]; eauto.
-  eexists. split. apply plus_star. apply H1. econstructor; eauto. apply MC_Skip. 
+  eexists. split. apply plus_star. apply H1. econstructor; eauto. apply MC_Skip.
 
   - (* Case "S_Seq". *)
     specialize (IHstep c1 c1' (st_mem st) mem').
@@ -402,9 +402,9 @@ Proof.
     lapply K.
     intros [st' [? ?]].
     exists st'. split; auto.
-    inversion H3. 
+    inversion H3.
     econstructor; eauto. econstructor; eauto.
-    econstructor; eauto.  
+    econstructor; eauto.
 
   - (* Case "S_SeqSkip". *)
   exists st. split. apply star_refl.
@@ -413,16 +413,16 @@ Proof.
 
   - (* Case "S_IfTrue". *)
   eapply comp_cond_correct in H14 as [st' [? [? ?]]].
-  exists st'. split. apply plus_star; eauto. econstructor. 
+  exists st'. split. apply plus_star; eauto. econstructor.
   eauto. rewrite H in H3. auto. symmetry; auto. auto.
 
   - (* Case "S_IfFalse". *)
   eapply comp_cond_correct in H14 as [st' [? [? ?]]].
-  exists st'. split. apply plus_star; eauto. econstructor. 
+  exists st'. split. apply plus_star; eauto. econstructor.
   eauto. rewrite H in H3. auto. symmetry; auto. auto.
 
   - (* Case "S_While". *)
-  exists st. split. apply star_refl. 
+  exists st. split. apply star_refl.
   econstructor; eauto. eapply MC_If; eauto.
   econstructor; eauto. apply MC_Skip; eauto.
 Qed.
@@ -431,10 +431,10 @@ Qed.
 (** * Stuttering *)
 
 (** The proof above goes through, but does not ensure that if the
-    source program diverges the compiled program does not go wrong! 
+    source program diverges the compiled program does not go wrong!
 
     To fix it, we need to ensure that there is no "infinite stuttering"
-    in which the source program takes an infinite number of steps while 
+    in which the source program takes an infinite number of steps while
     the target terminates (or gets stuck).
 *)
 
@@ -471,7 +471,7 @@ Lemma com_size_seq : forall c1 c1' c2,
   com_size c1' < com_size c1 ->
   com_size (c1';; c2) < com_size (c1;; c2).
 Proof.
-  unfold com_size; destruct c1, c1'; 
+  unfold com_size; destruct c1, c1';
   try solve [simpl; intros; omega].
 Qed.
 
@@ -480,14 +480,14 @@ Lemma com_size_seqskip : forall c,
 Proof.
   unfold com_size; destruct c;
   try solve [simpl; try match goal with
-                        | |- context[while_head ?X] => 
+                        | |- context[while_head ?X] =>
                              pose proof (while_head_bound X)
                         end; intros; omega].
 Qed.
 
 
 (* lift to states *)
-Definition imp_size (st:com * mem) : nat := 
+Definition imp_size (st:com * mem) : nat :=
   let (c, _) := st in com_size c.
 
 
@@ -508,38 +508,38 @@ Lemma transl_sim_step_final :
     match_states g r imp_st' vmn_st'.
 Proof.
   intros. generalize dependent vmn_st. revert r.
-  
+
   dependent induction H; intros r vmn_st Hst;
   inversion Hst as [? ? ? ? Hcfg]; inversion Hcfg; subst.
 
   - (* Case "S_Ass". *)
   eapply comp_store_correct in H6 as [st' [? [? ?]]]; eauto.
   eexists. split; eauto. econstructor; eauto.
-  
+
   - (* Case "S_Seq". *)
   specialize (IHstep l2 vmn_st).
-  lapply IHstep. intros [vmn_st' [? ?]]. exists vmn_st'. split. 
-  simpl in *; intuition. inversion H2; subst. 
+  lapply IHstep. intros [vmn_st' [? ?]]. exists vmn_st'. split.
+  simpl in *; intuition. inversion H2; subst.
   econstructor; eauto. econstructor; eauto.
 
   - (* Case "S_SeqSkip". *)
-  exists vmn_st. split. right. 
-  split. apply star_refl. unfold imp_size. 
+  exists vmn_st. split. right.
+  split. apply star_refl. unfold imp_size.
   simpl; intuition. inversion H7; subst. econstructor; eauto.
 
   - (* Case "S_IfTrue". *)
   eapply comp_cond_correct in H13 as [st' [? [? ?]]]; eauto.
-  exists st'. split; eauto. econstructor; eauto. 
-  rewrite H in H2; auto. 
+  exists st'. split; eauto. econstructor; eauto.
+  rewrite H in H2; auto.
 
   - (* Case "S_IfFalse". *)
   eapply comp_cond_correct in H13 as [st' [? [? ?]]]; eauto.
-  exists st'. split; eauto. econstructor; eauto.  
-  rewrite H in H2; auto. 
+  exists st'. split; eauto. econstructor; eauto.
+  rewrite H in H2; auto.
 
   - (* Case "S_While". *)
-  exists vmn_st. split. right; intuition. apply star_refl. 
-  econstructor; eauto. 
+  exists vmn_st. split. right; intuition. apply star_refl.
+  econstructor; eauto.
 Qed.
 
 (** Is this enough? *)
@@ -583,7 +583,7 @@ Qed.
 (** Compilation only "extends" the compilation state:
     - Uids and labels change only monotonically.
     - Compilation never removes code.
-  *) 
+  *)
 
 Inductive cstate_incr : cstate -> cstate -> Prop :=
   cstate_incr_intro : forall ls ls' ids ids' g g',
@@ -605,7 +605,7 @@ Inductive cstate_incr_strong : cstate -> cstate -> Prop :=
 
 Instance cstate_incr_strong_trans : Transitive cstate_incr_strong.
 Proof.
-  red. inversion 1. inversion 1. subst. constructor. 
+  red. inversion 1. inversion 1. subst. constructor.
   auto. intros. transitivity (ListCFG.lookup g' l); eauto.
 Qed.
 
@@ -628,7 +628,7 @@ Proof.
 Qed.
 
 
-Lemma ectmon_incr_strong : 
+Lemma ectmon_incr_strong :
   forall (A:Type) (m:ectmon A) (r:A) cs cs' ,
   raise_ectmon m cs = (cs', r) ->
   cstate_incr_strong cs cs'.
@@ -636,7 +636,7 @@ Proof.
   destruct cs as [[? ?] ?], cs' as [[? ?] ?].
   inversion 1.
   destruct (m l0). inversion H1; subst; clear H1.
-  constructor; auto; intros. 
+  constructor; auto; intros.
 Qed.
 
 
@@ -668,7 +668,7 @@ Ltac bind_step H :=
 Ltac compile :=
   repeat
     match goal with
-    | [ x : Compiler.cstate |- _] => destruct x as [[?lbls ?ids] ?bs] 
+    | [ x : Compiler.cstate |- _] => destruct x as [[?lbls ?ids] ?bs]
 (*    | [ H : context[Compiler.add_insns _ _ _] |- _ ] => simpl in H *)
     | [ H : context[let (_,_) := ?x in _] |- _] => destruct x as [?l ?r] eqn:?Heq
     | [ H : (_, _) = (_, _) |- _] => inversion H; subst; clear H
@@ -681,11 +681,11 @@ Proof.
   induction c; intros cst cst' e r Htr; simpl in Htr; compile.
 
   - (* Case "CSkip".*)
-    reflexivity. 
+    reflexivity.
 
-  - (* Case "CAss". *) 
+  - (* Case "CAss". *)
   eapply fresh_add_incr_strong; eauto.
-  eapply ectmon_incr_strong; eauto. 
+  eapply ectmon_incr_strong; eauto.
 
   - (* Case "CSeq". *)
   eapply transitivity.
@@ -694,7 +694,7 @@ Proof.
   -  (* Case "CIf". *)
   eapply transitivity. eapply IHc1; eauto.
   eapply transitivity. eapply IHc2; eauto.
-  eapply fresh_add_incr_strong; eauto. 
+  eapply fresh_add_incr_strong; eauto.
   eapply ectmon_incr_strong; eauto.
 
   - (* Case "CWhile". *)
@@ -702,7 +702,7 @@ Proof.
   eauto. eapply transitivity. eapply IHc; eauto.
   eapply ectmon_incr_strong; eauto. eauto.
 Qed.
-  
+
 
 Lemma cstate_incr_weaken : forall cst cst',
   cstate_incr_strong cst cst' ->
@@ -729,7 +729,7 @@ Lemma match_init : forall c le lr csti cst x g' e,
   match_config c (e, g', le, lr).
 Proof.
   induction c; intros le lr csti cst x g' e Hcomp Hincr; simpl in Hcomp; compile.
-  
+
   - (* Case "CSkip". *)
   apply MC_Skip.
 
@@ -742,10 +742,10 @@ Proof.
     inversion Heq1; subst; clear Heq1.
 
     eapply MC_Ass, cfg_insns_at.
-    inversion Hincr. subst. 
+    inversion Hincr. subst.
     apply H5. left; auto.
-    apply comp_store_not_nil. rewrite ListCFG.update_eq; auto. 
-    f_equal. rewrite surjective_pairing in Hc' at 1. 
+    apply comp_store_not_nil. rewrite ListCFG.update_eq; auto.
+    f_equal. rewrite surjective_pairing in Hc' at 1.
     inversion Hc'. reflexivity.
 
   - (* Case "CSeq". *)
@@ -757,7 +757,7 @@ Proof.
 
     + eapply IHc1; eauto.
       eapply transitivity. eapply comp_com_incr; eauto.
-      eapply transitivity; eauto. eapply cstate_incr_weaken. 
+      eapply transitivity; eauto. eapply cstate_incr_weaken.
       eapply fresh_add_incr_strong; eauto.
       eapply ectmon_incr_strong; eauto.
 
@@ -774,16 +774,16 @@ Proof.
       inversion Hincr. subst.
       apply H5. left; auto.
       apply comp_cond_not_nil.
-      rewrite ListCFG.update_eq; auto. 
+      rewrite ListCFG.update_eq; auto.
       f_equal.
-      rewrite surjective_pairing in Heq1 at 1. 
+      rewrite surjective_pairing in Heq1 at 1.
       inversion Heq1. reflexivity.
-      
+
   - (* Case "CWhile". *)
     eapply MC_While with (cs:=ids2).
 
     + simpl in Heq. inversion Heq; subst. clear Heq.
-    
+
       eapply IHc. eauto.
       apply comp_com_incr_strong in Heq0.
       apply ectmon_incr_strong in Heq1.
@@ -793,7 +793,7 @@ Proof.
       apply add_insns_incr in Heq2; eauto.
 
       inversion Heq1. subst. rewrite <- H6.
-      inversion Heq0. subst. rewrite <- H8. 
+      inversion Heq0. subst. rewrite <- H8.
       rewrite ListCFG.update_eq; auto.
       left. auto.
       inversion Heq0. subst. apply H2. left. auto.
@@ -801,18 +801,18 @@ Proof.
     + inversion Heq.  subst.
 
       apply cfg_insns_at.
-      inversion Hincr. subst. 
+      inversion Hincr. subst.
       apply H5.
 
       apply comp_com_incr_strong in Heq0.
-      apply ectmon_incr_strong in Heq1.      
+      apply ectmon_incr_strong in Heq1.
       inversion Heq0. subst.
       inversion Heq2. subst.
       inversion Heq1. subst.
       apply H3. apply H2. left. reflexivity.
-      
+
       apply comp_cond_not_nil.
-      
+
       inversion Heq2. subst. rewrite ListCFG.update_eq; auto.
       f_equal. rewrite surjective_pairing in Heq1 at 1.
       inversion Heq1. subst. unfold strun.
@@ -839,7 +839,7 @@ Hypothesis simulation:
   forall S1 S1' S2,
   step1 S1 S1' -> match_states S1 S2 ->
   exists S2',
-    (plus step2 S2 S2' \/ 
+    (plus step2 S2 S2' \/
      star step2 S2 S2' /\ measure S1' < measure S1) /\
     match_states S1' S2'.
 
@@ -856,8 +856,8 @@ Proof.
   - (* Case "one or more transitions". *)
   destruct (simulation _ _ _ H H1) as [S2' [P Q]].
   destruct (IHstar _ Q) as [S2'' [U V]].
-  exists S2''; split. 
-  eapply star_trans; eauto. destruct P. 
+  exists S2''; split.
+  eapply star_trans; eauto. destruct P.
   apply plus_star; auto. destruct H2; auto.
   auto.
 Qed.
@@ -872,9 +872,9 @@ Lemma simulation_infseq_productive:
    /\ infseq step1 S1'
    /\ match_states S1' S2'.
 Proof.
-  induction N; intros. 
+  induction N; intros.
   - (* Case "N = 0". *)
-  omega. 
+  omega.
   - (* Case "N > 0". *)
   inversion H0; clear H0; subst.
   destruct (simulation _ _ _ H2 H1) as [S2' [P Q]].
@@ -895,14 +895,14 @@ Lemma simulation_infseq:
   match_states S1 S2 ->
   infseq step2 S2.
 Proof.
-  intros. 
+  intros.
   apply infseq_coinduction_principle_2 with
     (X := fun S2 => exists S1, infseq step1 S1 /\ match_states S1 S2).
-  intros. destruct H1 as [S [A B]]. 
-  destruct (simulation_infseq_productive (measure S + 1) S a) 
+  intros. destruct H1 as [S [A B]].
+  destruct (simulation_infseq_productive (measure S + 1) S a)
   as [S1' [S2' [P [Q R]]]].
   omega. auto. auto.
-  exists S2'; split. auto. exists S1'; auto. 
+  exists S2'; split. auto. exists S1'; auto.
   exists S1; auto.
 Qed.
 
@@ -914,7 +914,7 @@ Definition vminus_terminates (g:ListCFG.t) (m m':mem) : Prop :=
     insns_at_pc g st'.(st_pc) [(x, cmd_tmn tmn_ret)] /\
     st'.(st_mem) = m' /\
     star (step g) (init_state g m) st'.
-  
+
 Definition vminus_diverges (g:ListCFG.t) (m:mem) : Prop :=
   infseq (step g) (init_state g m).
 
@@ -929,7 +929,7 @@ Lemma match_config_ret : forall g le lr c,
   exists x, insns_at_pc g (block_entry lr) [(x, cmd_tmn tmn_ret)].
 Proof.
   intros. unfold compile, comp_prog in H. simpl in H. compile.
-  
+
   eexists. eapply cfg_insns_at. apply comp_com_incr_strong in Heq1.
   inversion Heq1; subst. rewrite <- H6. rewrite ListCFG.update_eq; auto.
   left. reflexivity.
@@ -942,7 +942,7 @@ Proof.
   intros. unfold compile, comp_prog in H. simpl in H. compile.
   econstructor; simpl; eauto.
 
-  eapply match_init. eauto. eapply cstate_incr_weaken. 
+  eapply match_init. eauto. eapply cstate_incr_weaken.
   eapply cstate_incr_strong_refl.
 Qed.
 
@@ -953,15 +953,15 @@ Theorem compile_program_correct_terminating:
   vminus_terminates g m m'.
 Proof.
   intros. unfold imp_terminates in H.
-  assert (exists machconf2, 
+  assert (exists machconf2,
            star (step g) (init_state g m) machconf2
            /\ match_states g lr (SKIP, m') machconf2).
-  eapply simulation_star; eauto. eapply transl_sim_step_final. 
+  eapply simulation_star; eauto. eapply transl_sim_step_final.
   eapply match_config_initial; eauto.
-  destruct H1 as [machconf2 [STAR MS]]. 
+  destruct H1 as [machconf2 [STAR MS]].
   inversion MS; subst.
   eelim match_config_ret. intros.
-  red. exists x, machconf2. split. rewrite H4. eauto. eauto. 
+  red. exists x, machconf2. split. rewrite H4. eauto. eauto.
   inversion H3; subst. eauto.
 Qed.
 
@@ -971,7 +971,7 @@ Theorem compile_program_correct_diverging:
   imp_diverges c m ->
   vminus_diverges g m.
 Proof.
-  intros; red; intros. 
+  intros; red; intros.
   eapply simulation_infseq with (match_states := match_states g lr); eauto.
   eapply transl_sim_step_final. eapply match_config_initial; eauto.
 Qed.

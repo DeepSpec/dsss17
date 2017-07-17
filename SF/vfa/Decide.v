@@ -16,45 +16,45 @@ Check Nat.ltb.  (* : nat -> nat -> bool *)
 
 (** The [Perm] chapter defined a tactic called [bdestruct] that
     does case analysis on (x <? y) while giving you hypotheses (above
-    the line) of the form (x<y).   This tactic is built using the [reflect] 
+    the line) of the form (x<y).   This tactic is built using the [reflect]
     type and the [blt_reflect] theorem. *)
 
 Print reflect.
 (* Inductive reflect (P : Prop) : bool -> Set :=
-    | ReflectT : P -> reflect P true 
+    | ReflectT : P -> reflect P true
     | ReflectF : ~ P -> reflect P false  *)
 
 Check blt_reflect.  (* : forall x y, reflect (x<y) (x <? y) *)
 
 (** The name [reflect] for this type is a reference to _computational
-   reflection_,  a technique in logic.  One takes a logical formula, or 
-   proposition, or predicate,  and designs a syntactic embedding of 
+   reflection_,  a technique in logic.  One takes a logical formula, or
+   proposition, or predicate,  and designs a syntactic embedding of
    this formula as an "object value" in the logic.  That is, _reflect_ the
-   formula back into the logic. Then one can design computations 
-   expressible inside the logic that manipulate these syntactic object 
+   formula back into the logic. Then one can design computations
+   expressible inside the logic that manipulate these syntactic object
    values.  Finally, one proves that the computations make transformations
    that are equivalent to derivations (or equivalences) in the logic.
 
    The first use of computational reflection was by Goedel, in 1931:
-   his syntactic embedding encoded formulas as natural numbers, a 
+   his syntactic embedding encoded formulas as natural numbers, a
    "Goedel numbering."  The second and third uses of reflection were
-   by Church and Turing, in 1936: they encoded (respectively) 
+   by Church and Turing, in 1936: they encoded (respectively)
    lambda-expressions and Turing machines.
 
    In Coq it is easy to do reflection, because the Calculus of Inductive
-   Constructions (CiC) has Inductive data types that can easily encode 
-   syntax trees.  We could, for example, take some of our propositional 
-   operators such as [and], [or], and make an [Inductive] type that is an 
+   Constructions (CiC) has Inductive data types that can easily encode
+   syntax trees.  We could, for example, take some of our propositional
+   operators such as [and], [or], and make an [Inductive] type that is an
    encoding of these, and build a computational reasoning system for
    boolean satisfiability.
 
-   But in this chapter I will show something much simpler.  When 
+   But in this chapter I will show something much simpler.  When
    reasoning about less-than comparisons on natural numbers, we have
    the advantage that [nat] already an inductive type; it is "pre-reflected,"
    in some sense.  (The same for [Z], [list], [bool], etc.)  *)
 
 (** Now, let's examine how [reflect] expresses the coherence between
-  [lt] and [ltb]. Suppose we have a value [v] whose type is 
+  [lt] and [ltb]. Suppose we have a value [v] whose type is
   [reflect (3<7) (3<?7)].  What is [v]?  Either it is
   - ReflectT [P] (3<?7), where [P] is a proof of [3<7],  and [3<?7] is [true], or
   - ReflectF [Q] (3<?7), where [Q] is a proof of [~(3<7)], and [3<?7] is [false].
@@ -113,8 +113,8 @@ Module ScratchPad.
 
    Suppose [Q]  is a proposition, that is, [Q: Prop].  We say [Q] is
    _decidable_ if there is an algorithm for computing a proof of
-   [Q] or [~Q].  More generally, when [P] is a predicate (a function 
-   from some type [T] to [Prop]), we say [P] is decidable when 
+   [Q] or [~Q].  More generally, when [P] is a predicate (a function
+   from some type [T] to [Prop]), we say [P] is decidable when
    [forall x:T, decidable(P)].
 
    We represent this concept in Coq by an inductive datatype: *)
@@ -147,7 +147,7 @@ Definition v2a: t2 := left (3<7) (2>3) less37.
   But since there are no proofs of 2>3, only [left] values (such as [v2a])
   exist.  That's OK. *)
 
-(** [sumbool] is in the Coq standard library, where there is [Notation] 
+(** [sumbool] is in the Coq standard library, where there is [Notation]
    for it:  the expression [ {A}+{B} ] means [sumbool A B]. *)
 
 Notation "{ A } + { B }" := (sumbool A B) : type_scope.
@@ -157,7 +157,7 @@ Notation "{ A } + { B }" := (sumbool A B) : type_scope.
 
 Definition t4 := forall a b, {a<b}+{~(a<b)}.
 
-(** That expression, [forall a b, {a<b}+{~(a<b)}], says that for any 
+(** That expression, [forall a b, {a<b}+{~(a<b)}], says that for any
  natural numbers [a] and [b], either [a<b] or [a>=b].  But it is _more_
  than that!  Because [sumbool] is an Inductive type with two constructors
  [left] and [right], then given the [{3<7}+{~(3<7)}] you can pattern-match
@@ -175,7 +175,7 @@ Eval compute in is_3_less_7. (* = true : bool *)
 
 Print t4.  (* = forall a b : nat, {a < b} + {~ a < b} *)
 
-(** Suppose there existed a value [lt_dec] of type [t4].  That would be a 
+(** Suppose there existed a value [lt_dec] of type [t4].  That would be a
   _decision procedure_ for the less-than function on natural numbers.
   For any nats [a] and [b], you could calculate [lt_dec a b], which would
   be either [left ...] (if [a<b] was provable) or [right ...] (if [~(a<b)] was
@@ -196,7 +196,7 @@ match blt_reflect a b with
 | ReflectF _ Q => right (a < b) (~ a < b) Q
 end.
 
-(** Another, equivalent way to define [lt_dec] is to use 
+(** Another, equivalent way to define [lt_dec] is to use
      definition-by-tactic: *)
 
 Definition lt_dec' (a: nat) (b: nat) : {a<b}+{~(a<b)}.
@@ -226,7 +226,7 @@ Module ScratchPad2.
 Locate sumbool. (* Coq.Init.Specif.sumbool *)
 Print sumbool.
 
-(** The output of [Print sumbool] explains that the first two arguments 
+(** The output of [Print sumbool] explains that the first two arguments
    of [left] and [right] are implicit.  We use them as follows (notice that
    [left] has only one explicit argument [P]:  *)
 
@@ -245,7 +245,7 @@ end.
 (** Now, let's use [le_dec] directly in the implementation of insertion
    sort, without mentioning [ltb] at all. *)
 
-Fixpoint insert (x:nat) (l: list nat) := 
+Fixpoint insert (x:nat) (l: list nat) :=
   match l with
   | nil => x::nil
   | h::t => if le_dec x h then x::h::t else h :: insert x t
@@ -257,7 +257,7 @@ Fixpoint sort (l: list nat) : list nat :=
   | h::t => insert h (sort t)
 end.
 
-Inductive sorted: list nat -> Prop := 
+Inductive sorted: list nat -> Prop :=
 | sorted_nil:
     sorted nil
 | sorted_1: forall x,
@@ -277,7 +277,7 @@ Proof.
 
    (** Look at the proof state now.  In the first subgoal, we have
       above the line, [Hle: a <= x].  In the second subgoal, we have
-      [Hgt: ~ (a < x)].  These are put there automatically by the 
+      [Hgt: ~ (a < x)].  These are put there automatically by the
       [destruct (le_dec a x)].  Now, the rest of the proof can proceed
       as it did in [Sort.v], but using [destruct (le_dec _ _)] instead of
       [bdestruct (_ <=? _)]. *)
@@ -297,7 +297,7 @@ Proof.
    is the Halting Problem (Turing, 1936): [T] is the type of Turing-machine
    descriptions, and [P(x)] is, Turing machine [x] halts.  The first, and not
    as famous, example is due to Church, 1936 (six months earlier): test
-   whether a lambda-expression has a normal form.  In 1936-37, as a 
+   whether a lambda-expression has a normal form.  In 1936-37, as a
    first-year PhD student before beginning his PhD thesis work, Turing
    proved these two problems are equivalent.
 
@@ -308,9 +308,9 @@ Proof.
 
    But [P \/ ~P] is a weaker statement than [ {P}+{~P} ], that is,
    [sumbool P (~P)].  From [ {P}+{~P} ] you can actually _calculate_ or
-   [compute] either [left (x:P)] or [right(y: ~P)].     From [P \/ ~P] you cannot 
-   [compute] whether [P] is true.  Yes, you can [destruct] it in a proof, 
-   but not in a calculation.  
+   [compute] either [left (x:P)] or [right(y: ~P)].     From [P \/ ~P] you cannot
+   [compute] whether [P] is true.  Yes, you can [destruct] it in a proof,
+   but not in a calculation.
 
    For most purposes its unnecessary to add the axiom [P \/ ~P] to Coq,
    because for specific predicates there's a specific way to prove [P \/ ~P]
@@ -329,7 +329,7 @@ Axiom lt_dec_axiom_1:  forall i j: nat, i<j \/ ~(i<j).
 
 (** Now, can we use this axiom to compute with?  *)
 
-(* Uncomment and try this: 
+(* Uncomment and try this:
 Definition max (i j: nat) : nat :=
    if lt_dec_axiom_1 i j then j else i.
 *)
@@ -360,7 +360,7 @@ Lemma prove_with_max_axiom:   max_with_axiom 3 7 = 7.
 Proof.
 unfold max_with_axiom.
 try reflexivity.  (* does not do anything, reflexivity fails *)
-(* uncomment this line and try it: 
+(* uncomment this line and try it:
    unfold lt_dec_axiom_2.
 *)
 destruct (lt_dec_axiom_2 3 7).
@@ -370,7 +370,7 @@ Qed.
 
 (** It is dangerous to add Axioms to Coq: if you add one that's inconsistent,
    then it leads to the ability to prove [False].  While that's a convenient way
-   to get a lot of things proved, it's unsound; the proofs are useless.  
+   to get a lot of things proved, it's unsound; the proofs are useless.
 
    The Axioms above, [lt_dec_axiom_1] and [lt_dec_axiom_2], are safe enough:
    they are consistent.  But they don't help in computation.  Axioms are not
@@ -448,7 +448,7 @@ Z_ge_dec: forall x y : Z, {(x >= y)%Z} + {~ (x >= y)%Z}
     [list_eq_dec] calculates for you a decidable equality for type [list A].
     Try it out: *)
 
-Definition list_nat_eq_dec: 
+Definition list_nat_eq_dec:
     (forall al bl : list nat, {al=bl}+{al<>bl}) :=
   list_eq_dec eq_nat_dec.
 
@@ -489,7 +489,7 @@ simpl.
 
    - With [reflect], you define _three_ things:  the operator in [Prop],
       the operator in [bool] (such as [ltb: nat -> nat -> bool], and the
-      theorem that relates them (such as [ltb_reflect]).  
+      theorem that relates them (such as [ltb_reflect]).
 
    Defining three things seems like more work than defining two.
    But it may be easier and more efficient.  Programming in [bool],

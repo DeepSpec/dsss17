@@ -267,7 +267,7 @@ Proof.
   destruct (Y==Y).
   - auto.
   - destruct n. auto.
-Qed. 
+Qed.
 
 (** *** Exercise [subst_eq_var]
 
@@ -286,7 +286,7 @@ Proof.
     auto.
   - Case "right".
     destruct n. auto.
-Qed. 
+Qed.
 (** *** Exercise [subst_neq_var] *)
 
 Lemma subst_neq_var : forall (x y : var) u,
@@ -301,7 +301,7 @@ Proof.
     destruct Neq. auto.
   - Case "right".
     auto.
-Qed. 
+Qed.
 (** *** Exercise [subst_same] *)
 
 Lemma subst_same : forall y e, [y ~> var_f y] e = e.
@@ -311,7 +311,7 @@ Proof.
   destruct (x == y); subst; eauto.
   rewrite IHe. auto.
   rewrite IHe1. rewrite IHe2. auto.
-Qed. 
+Qed.
 
 (*************************************************************************)
 (** ** Free variables *)
@@ -377,7 +377,7 @@ Proof.
     f_equal.
     auto.
     auto.
-Qed. 
+Qed.
 (*************************************************************************)
 (** ** Additional Exercises                                              *)
 (*************************************************************************)
@@ -435,7 +435,7 @@ Proof.
   - destruct (x0 == x).
     ++ subst. fsetdec.
     ++ simpl. auto.
-Qed. 
+Qed.
 (** *** Exercise [fv_exp_subst_exp_fresh] *)
 
 Lemma fv_exp_subst_exp_fresh :
@@ -455,7 +455,7 @@ Proof.
     fsetdec.
     fsetdec.
     fsetdec.
-Qed. 
+Qed.
 (** *** Exercise [fv_exp_subst_exp_upper] *)
 
 Lemma fv_exp_subst_exp_upper :
@@ -469,7 +469,7 @@ Proof.
   - rewrite IHe1. fsetdec.
   - rewrite IHe1_1. rewrite IHe1_2.
     fsetdec.
-Qed. 
+Qed.
 
 (*************************************************************************)
 (*************************************************************************)
@@ -576,7 +576,7 @@ Proof.
   intros x y u e Neq H.
   rewrite subst_exp_open_exp_wrt_exp with (e2 := var_f y); auto.
   rewrite subst_neq_var; auto.
-Qed.   
+Qed.
 (** *** Exercise [subst_exp_intro] *)
 
 (** This next lemma states that opening can be replaced with variable
@@ -611,7 +611,7 @@ Proof.
     f_equal.
     apply IHe1. auto.
     apply IHe2. auto.
-Qed. 
+Qed.
 
 (** *** Exercise [fv_exp_open_exp_wrt_exp_upper] *)
 
@@ -641,7 +641,7 @@ Proof.
   - rewrite IHe1. fsetdec.
   - rewrite IHe1_1. rewrite IHe1_2.
     fsetdec.
-Qed. 
+Qed.
 (*************************************************************************)
 (** ** Forall quantification in [lc_exp].                                *)
 (*************************************************************************)
@@ -790,4 +790,4 @@ Proof.
   rewrite (subst_exp_intro x).
   apply subst_exp_lc_exp; auto.
   fsetdec.
-Qed. 
+Qed.

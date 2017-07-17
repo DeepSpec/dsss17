@@ -13,7 +13,7 @@ Lemma imp_step_star_seq_append:
              imp_step_star (c1 ;; c, st1) (c2 ;; c, st2).
 Proof.
   intros p1 p2 imp_step_p1.
-  induction imp_step_p1 as 
+  induction imp_step_p1 as
       [[c1' st1'] | [c1' st1'] [c_step st_step] [c_final st_final]];
     intros c1 c2 c st st2 p1_eq p2_eq; inversion p1_eq; inversion p2_eq; subst.
   - apply star_refl.
@@ -30,7 +30,7 @@ Lemma imp_step_star_trans: forall c1 c2 st1 st2 st,
 Proof.
   intros c1 c2 st1 st2 st imp1 imp2; unfold imp_step_star in *.
   inversion imp1; subst.
-  - eapply star_step. 
+  - eapply star_step.
     apply S_SeqSkip.
     trivial.
   - apply star_trans with (b := (SKIP ;; c2, st)).
@@ -51,7 +51,7 @@ Lemma imp_step_star_seq_inversion:
 Proof.
   intros p1 p2 imp_step_p1.
   induction imp_step_p1 as [| [cseq' sta'] p [skip' stc'] Hstep];
-    intros c1 c2 sta stc p1_eq p2_eq; 
+    intros c1 c2 sta stc p1_eq p2_eq;
     try solve [rewrite p1_eq in p2_eq; inversion p2_eq].
   inversion p1_eq; inversion p2_eq; subst.
   clear p1_eq; clear p2_eq.
@@ -82,12 +82,12 @@ Proof.
       intros IH.
     inversion IH as [stb [imp1 imp2]].
     exists stb.
-    split; 
-      [eapply star_step; 
-       [apply step_c1_1 | apply imp1] | 
+    split;
+      [eapply star_step;
+       [apply step_c1_1 | apply imp1] |
        apply imp2].
   - inversion Hstep.
-    rename st' into one_step_after_sta; 
+    rename st' into one_step_after_sta;
       rename c1' into c1';
       rename H3 into step_c1;
       rename H0 into p_eq.
@@ -97,12 +97,12 @@ Proof.
       intros IH.
     inversion IH as [stb [imp1 imp2]].
     exists stb.
-    split; 
-      [eapply star_step; 
-       [apply step_c1 | apply imp1] | 
+    split;
+      [eapply star_step;
+       [apply step_c1 | apply imp1] |
        apply imp2].
   - inversion Hstep.
-    rename st' into one_step_after_sta; 
+    rename st' into one_step_after_sta;
       rename c1' into c1';
       rename H3 into step_c1;
       rename H0 into p_eq.
@@ -112,9 +112,9 @@ Proof.
       intros IH.
     inversion IH as [stb [imp1 imp2]].
     exists stb.
-    split; 
-      [eapply star_step; 
-       [apply step_c1 | apply imp1] | 
+    split;
+      [eapply star_step;
+       [apply step_c1 | apply imp1] |
        apply imp2].
 Qed.
 
@@ -122,7 +122,7 @@ Ltac cases_on_imp_eval :=
   match goal with
   | H: match ?imp_eval with
           | Some _ => _
-          | None => _ 
+          | None => _
        end = _ |- _ =>
     destruct imp_eval as [middle_st | ] eqn:middle_st_eq;
     try solve [inversion H]
@@ -153,13 +153,13 @@ Proof.
                  [apply imp_single_step |
                   apply IHn;
                   trivial]].
-  } 
+  }
   { simpl in eval_ok.
     destruct (beval b st) eqn:eval_b;
       apply IHn in eval_ok.
     - eapply star_step; [apply S_IfTrue; trivial | trivial].
-    - eapply star_step; [apply S_IfFalse; trivial | trivial].      
-  }      
+    - eapply star_step; [apply S_IfFalse; trivial | trivial].
+  }
   { simpl in eval_ok.
     destruct (beval b st) eqn:eval_b;
       try solve [inversion eval_ok].
@@ -171,5 +171,5 @@ Proof.
     eapply star_step; [apply S_While | idtac].
     eapply star_step; [apply S_IfTrue; trivial | idtac].
     apply (imp_step_star_seq_append _ _ after_one_iter); reflexivity.
-  }     
+  }
 Qed.

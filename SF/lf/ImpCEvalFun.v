@@ -205,7 +205,7 @@ Definition test_ceval (st:state) (c:com) :=
 Definition pup_to_n : com
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-(* 
+(*
 Example pup_to_n_1 :
   test_ceval (t_update empty_state X 5) pup_to_n
   = Some (0, 15, 0).

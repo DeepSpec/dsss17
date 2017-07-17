@@ -17,7 +17,7 @@ Require Import Vminus.Vminus.
     graph).
 
     The program points are themselves organized into _basic blocks_.
-    A basic block consists of a non-empty sequence of program points 
+    A basic block consists of a non-empty sequence of program points
     ending in a terminator instruction.
  *)
 
@@ -80,8 +80,8 @@ Definition entry_of_pc (p:pc)  : pc := block_entry (fst p).
     representation.)
  *)
 
-(** 
-    In this interface, we establish the basic syntactic properties of 
+(**
+    In this interface, we establish the basic syntactic properties of
     control-flow-graphs:
 
     - A CFG [g] is a (partial) function from program points to instructions.
@@ -90,7 +90,7 @@ Definition entry_of_pc (p:pc)  : pc := block_entry (fst p).
     - Each basic block consists of a contiguous sequence of program points,
       ending in a terminator.
 
-    We will impose stronger well-formedness constraints (i.e. the SSA 
+    We will impose stronger well-formedness constraints (i.e. the SSA
     conditions) on CFGs later.
 *)
 
@@ -130,19 +130,19 @@ Module Type CFG.
 
   Axiom insn_at_pc_func : forall g, wf_cfg g ->
     functional (insn_at_pc g).
-  
+
   (** Executable specification: *)
-  
+
   Parameter fetch : cfg -> pc -> option insn.
 
   (** Correspondence of the two specs: *)
-  
+
   Axiom insn_at_pc_fetch :
     forall g pc i, wf_cfg g ->
               insn_at_pc g pc i <-> fetch g pc = Some i.
 
   (** Each [pc] defines a unique [uid] *)
-  
+
   Definition uid_at_pc (g:cfg) (p:pc) (uid:uid) : Prop :=
     exists c, insn_at_pc g p (uid, c).
 
@@ -151,7 +151,7 @@ Module Type CFG.
 
   Axiom uid_at_pc_func : forall g, wf_cfg g ->
     functional (uid_at_pc g).
-  
+
   Axiom pc_at_uid_inj : forall g, wf_cfg g ->
                              injective (fun x p => uid_at_pc g p x).
 
@@ -161,14 +161,14 @@ Module Type CFG.
     insn_at_pc g pc (id2, c2) ->
     id1 = id2.
 
-  
+
   (** If [g] is well-formed, each of its program points
-      maps to an instruction. *)  
-  
+      maps to an instruction. *)
+
   Axiom wf_pc_insn : forall g, wf_cfg g ->
     forall p, wf_pc g p -> exists i, insn_at_pc g p i.
 
-  
+
   (** *** Block properties *)
 
   (** There is an instruction in the entry block. *)

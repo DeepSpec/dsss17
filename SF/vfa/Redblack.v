@@ -3,8 +3,8 @@
 (* ################################################################# *)
 (** * Required reading: *)
 
-(** 
- (1) General background on red-black trees, 
+(**
+ (1) General background on red-black trees,
    - Section 3.3 of  _Algorithms, Fourth Edition_,
        by Sedgewick and Wayne, Addison Wesley 2011;  or
    - Chapter 13 of _Introduction to Algorithms, 3rd Edition_,
@@ -12,12 +12,12 @@
    - or Wikipedia.
 
  (2) an explanation of the particular implementation we use here.
- Red-Black Trees in a Functional Setting, by Chris Okasaki. 
-_Journal of Functional Programming_, 9(4):471-477, July 1999. 
+ Red-Black Trees in a Functional Setting, by Chris Okasaki.
+_Journal of Functional Programming_, 9(4):471-477, July 1999.
  http://www.westpoint.edu/eecs/SiteAssets/SitePages/Faculty%20Publication%20Documents/Okasaki/jfp99redblack.pdf
 
  (3) Optional reading:
-  Efficient Verified Red-Black Trees, by Andrew W. Appel, September 2011. 
+  Efficient Verified Red-Black Trees, by Andrew W. Appel, September 2011.
   http://www.cs.princeton.edu/~appel/papers/redblack.pdf
 *)
 
@@ -25,13 +25,13 @@ _Journal of Functional Programming_, 9(4):471-477, July 1999.
      _balance_.   Recall that the _depth_ of a node in a tree is the
     distance from the root to that node.  The _height_ of a tree is
     the depth of the deepest node.  The [insert] or [lookup] function
-    of the BST algorithm (Chapter [SearchTree]) takes time 
+    of the BST algorithm (Chapter [SearchTree]) takes time
     proportional to the depth of the node that is found (or inserted).
     To make these functions run fast, we want trees where the
     worst-case depth (or the average depth) is as small as possible.
 
     In a perfectly balanced tree of N nodes, every node has depth less
-    than or or equal to log N, using logarithms base 2.   In an 
+    than or or equal to log N, using logarithms base 2.   In an
     approximately balanced tree, every node has depth less than or
     equal to 2 log N.  That's good enough to make [insert] and [lookup]
     run in time proportional to log N.
@@ -47,7 +47,7 @@ _Journal of Functional Programming_, 9(4):471-477, July 1999.
 
 Require Import Perm.
 Require Import Extract.
-Require Import Coq.Lists.List. 
+Require Import Coq.Lists.List.
 Export ListNotations.
 
 Definition key := int.
@@ -59,7 +59,7 @@ Variable V : Type.
 Variable default: V.
 
  Inductive tree  : Type :=
- | E : tree 
+ | E : tree
  | T: color -> tree -> key -> V -> tree -> tree.
 
  Definition empty_tree := E.
@@ -71,7 +71,7 @@ Variable default: V.
 Fixpoint lookup (x: key) (t : tree) : V :=
   match t with
   | E => default
-  | T _ tl k v tr => if ltb x k then lookup x tl 
+  | T _ tl k v tr => if ltb x k then lookup x tl
                          else if ltb k x then lookup x tr
                          else v
   end.
@@ -92,13 +92,13 @@ Fixpoint lookup (x: key) (t : tree) : V :=
 
 Definition balance rb t1 k vk t2 :=
  match rb with Red => T Red t1 k vk t2
- | _ => 
- match t1 with 
+ | _ =>
+ match t1 with
  | T Red (T Red a x vx b) y vy c =>
       T Red (T Black a x vx b) y vy (T Black c k vk t2)
  | T Red a x vx (T Red b y vy c) =>
       T Red (T Black a x vx b) y vy (T Black c k vk t2)
- | a => match t2 with 
+ | a => match t2 with
             | T Red (T Red b y vy c) z vz d =>
 	        T Red (T Black t1 k vk b) y vy (T Black c z vz d)
             | T Red b y vy (T Red c z vz d)  =>
@@ -108,14 +108,14 @@ Definition balance rb t1 k vk t2 :=
   end
  end.
 
-Definition makeBlack t := 
-  match t with 
+Definition makeBlack t :=
+  match t with
   | E => E
   | T _ a x vx b => T Black a x vx b
   end.
 
 Fixpoint ins x vx s :=
- match s with 
+ match s with
  | E => T Red E x vx E
  | T c a y vy b => if ltb x y then balance c (ins x vx a) y vy b
                         else if ltb y x then balance c a y vy (ins x vx b)
@@ -179,7 +179,7 @@ intro Hx; inversion Hx.
       [match ?c with Red => _ | Black => _  end <> _ ],
      and what it does in that case is, [destruct c] *)
 
-match goal with 
+match goal with
 | |- match ?c with Red => _ | Black => _  end <> _=> destruct c
 end.
 
@@ -189,17 +189,17 @@ end.
 
      and what it does in that case is, [destruct s] *)
 
-match goal with 
+match goal with
     | |- match ?s with E => _ | T _ _ _ _ _ => _ end  <> _=>destruct s
 end.
 
 (** Let's apply that tactic again, and then try it on the subgoals, recursively.
     Recall that the [repeat] tactical keeps trying the same tactic on subgoals. *)
 
-repeat match goal with 
+repeat match goal with
     | |- match ?s with E => _ | T _ _ _ _ _ => _ end  <> _=>destruct s
 end.
-match goal with 
+match goal with
   | |- T _ _ _ _ _ <> E => apply T_neq_E
 end.
 
@@ -217,7 +217,7 @@ unfold balance.
 (** This is the beginning of the big case analysis.  This time,
   let's combine several tactics together: *)
 
-repeat match goal with 
+repeat match goal with
   | |- (if ?x then _ else _) <> _ => destruct x
   | |- match ?c with Red => _ | Black => _  end <> _=> destruct c
   | |- match ?s with E => _ | T _ _ _ _ _ => _ end  <> _=>destruct s
@@ -250,7 +250,7 @@ unfold balance.
 (** This is the beginning of the big case analysis.  This time,
   we add one more clause to the [match goal] command: *)
 
-repeat match goal with 
+repeat match goal with
   | |- (if ?x then _ else _) <> _ => destruct x
   | |- match ?c with Red => _ | Black => _  end <> _=> destruct c
   | |- match ?s with E => _ | T _ _ _ _ _ => _ end  <> _=>destruct s
@@ -275,10 +275,10 @@ Inductive SearchTree' : Z -> tree -> Z -> Prop :=
 Inductive SearchTree: tree -> Prop :=
 | ST_intro: forall t lo hi, SearchTree' lo t hi -> SearchTree t.
 
-(** Now we prove that if [t] is a SearchTree, then the rebalanced 
-     version of [t] is also a SearchTree. *) 
+(** Now we prove that if [t] is a SearchTree, then the rebalanced
+     version of [t] is also a SearchTree. *)
 Lemma balance_SearchTree:
- forall c  s1 k kv s2 lo hi, 
+ forall c  s1 k kv s2 lo hi,
    SearchTree' lo s1 (int2Z k) ->
    SearchTree' (int2Z k + 1) s2 hi ->
    SearchTree' lo (balance c s1 k kv s2) hi.
@@ -309,7 +309,7 @@ repeat  match goal with
 
 (** There's a pattern here.  Whenever we have a hypothesis above the line
     that looks like,
-    -  H: SearchTree' _ E _    
+    -  H: SearchTree' _ E _
     -  H: SearchTree' _ (T _ _ _ _ _) _
 
    we should invert it.   Let's build that idea into our proof automation.
@@ -318,7 +318,7 @@ repeat  match goal with
 Abort.
 
 Lemma balance_SearchTree:
- forall c  s1 k kv s2 lo hi, 
+ forall c  s1 k kv s2 lo hi,
    SearchTree' lo s1 (int2Z k) ->
    SearchTree' (int2Z k + 1) s2 hi ->
    SearchTree' lo (balance c s1 k kv s2) hi.
@@ -349,7 +349,7 @@ repeat  match goal with
 Abort.
 
 Lemma balance_SearchTree:
- forall c  s1 k kv s2 lo hi, 
+ forall c  s1 k kv s2 lo hi,
    SearchTree' lo s1 (int2Z k) ->
    SearchTree' (int2Z k + 1) s2 hi ->
    SearchTree' lo (balance c s1 k kv s2) hi.
@@ -375,8 +375,8 @@ Qed.
   Copy-paste your proof of insert_SearchTree from Extract.v.
   You will need to apply [balance_SearchTree] in two places.
  *)
-Lemma ins_SearchTree: 
-   forall x vx s lo hi, 
+Lemma ins_SearchTree:
+   forall x vx s lo hi,
                     lo <= int2Z x ->
                     int2Z x < hi ->
                     SearchTree' lo s hi ->
@@ -485,7 +485,7 @@ end.
           [destruct c].
    -6. When [Abs match s with E => _ | T ... => _ end _] is below the line,
           [destruct s].
-   -7. Whenever [Abs (T _ _ _ _ _) _] is below the line, 
+   -7. Whenever [Abs (T _ _ _ _ _) _] is below the line,
                   prove it by [apply Abs_T].   This won't always work;
          Sometimes the "cts" in the proof goal does not exactly match the form
          of the "cts" required by the [Abs_T] constructor.  But it's all right if
@@ -502,7 +502,7 @@ end.
        In the first proof goal, do this: [eapply Abs_helper].
        Notice that you have two subgoals.
        The first subgoal you can prove by:
-           apply Abs_T. apply Abs_T. apply Abs_E. apply Abs_E. 
+           apply Abs_T. apply Abs_T. apply Abs_E. apply Abs_E.
            apply Abs_T. eassumption. eassumption.
        Step through that, one at a time, to see what it's doing.
        Now, undo those 7 commands, and do this instead:
@@ -511,9 +511,9 @@ end.
        Now, wrap this all up, by adding this clause to your [match goal]:
        | |- _ =>  eapply Abs_helper; [repeat econstructor; eassumption | ]
    -11.  You should still have exactly 21 subgoals, each one of the form,
-             [ t_update... = t_update... ].  Notice above the line you have some 
-           assumptions of the form,  [ H: SearchTree' lo _ hi ].  For this equality 
-         proof, we'll need to know that [lo <= hi].  So, add a clause at the end 
+             [ t_update... = t_update... ].  Notice above the line you have some
+           assumptions of the form,  [ H: SearchTree' lo _ hi ].  For this equality
+         proof, we'll need to know that [lo <= hi].  So, add a clause at the end
         of your [match goal] to apply SearchTree'_le in any such assumption,
         when below the line the proof goal is an equality [ _ = _ ].
    -12.  Still exactly 21 subgoals.  In the first subgoal, try:
@@ -527,12 +527,12 @@ end.
 
 (** Extend this list, so that the nth entry shows how many subgoals
     were remaining after you followed the nth instruction in the list above.
-    Your list should be exactly 13 elements long; there was one subgoal 
+    Your list should be exactly 13 elements long; there was one subgoal
     *before* step 1, after all. *)
 
 Definition how_many_subgoals_remaining :=
     [1; 1; 1; 1; 1; 2
- 
+
   ].
 (** [] *)
 
@@ -542,7 +542,7 @@ Theorem ins_relate:
     SearchTree t ->
     Abs t cts ->
     Abs (ins k v t) (t_update cts (int2Z k) v).
-Proof.  (* Copy your proof from SearchTree.v, and adapt it. 
+Proof.  (* Copy your proof from SearchTree.v, and adapt it.
      No need for fancy proof automation. *)
 (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -597,13 +597,13 @@ Definition elements (s: tree) : list (key * V) := elements' s nil.
 
 Definition elements_property (t: tree) (cts: total_map V) : Prop :=
    forall k v,
-    (In (k,v) (elements t) -> cts (int2Z k) = v) /\ 
+    (In (k,v) (elements t) -> cts (int2Z k) = v) /\
     (cts (int2Z k) <> default -> In (k, cts (int2Z k)) (elements t)).
 
 Theorem elements_relate:
-  forall t cts,  
+  forall t cts,
   SearchTree t ->
-  Abs t cts -> 
+  Abs t cts ->
   elements_property t cts.
 Proof.
 (* FILL IN HERE *) Admitted.
@@ -626,7 +626,7 @@ Proof.
    their efficiency. *)
 
 (** **** Exercise: 4 stars (is_redblack)   *)
-(** The relation [is_redblack] ensures that there are exactly [n] black 
+(** The relation [is_redblack] ensures that there are exactly [n] black
    nodes in every path from the root to a leaf, and that there are never
    two red nodes in a row. *)
 
@@ -647,7 +647,7 @@ Proof.
 (* FILL IN HERE *) Admitted.
 
 (** [nearly_redblack] expresses, "the tree is a red-black tree, except that
-  it's nonempty and it is permitted to have two red nodes in a row at 
+  it's nonempty and it is permitted to have two red nodes in a row at
   the very root (only)."   *)
 
 Inductive nearly_redblack : tree -> nat -> Prop :=
@@ -662,7 +662,7 @@ Inductive nearly_redblack : tree -> nat -> Prop :=
 
 
 Lemma ins_is_redblack:
-  forall x vx s n, 
+  forall x vx s n,
     (is_redblack s Black n -> nearly_redblack (ins x vx s) n) /\
     (is_redblack s Red n -> is_redblack (ins x vx s) Black n).
 Proof.

@@ -7,11 +7,11 @@
     and Java.  Here is a familiar mathematical function written in
     Imp.
 
-     Z ::= X;; 
-     Y ::= 1;; 
-     WHILE not (Z = 0) DO 
-       Y ::= Y * Z;; 
-       Z ::= Z - 1 
+     Z ::= X;;
+     Y ::= 1;;
+     WHILE not (Z = 0) DO
+       Y ::= Y * Z;;
+       Z ::= Z - 1
      END
 *)
 

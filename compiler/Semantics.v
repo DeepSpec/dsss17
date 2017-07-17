@@ -142,7 +142,7 @@ Admitted.
 Lemma terminates_unique:
   forall c st st1 st2, terminates c st st1 -> terminates c st st2 -> st1 = st2.
 Proof.
-  unfold terminates; intros. 
+  unfold terminates; intros.
   (* FILL IN HERE *)
 Admitted.
 
@@ -192,10 +192,10 @@ Proof.
   intros. dependent induction H.
 - apply star_refl.
 - destruct b as [c1 st1].
-  apply star_step with (c1;;c2, st1). apply CS_SeqStep. auto. auto.  
+  apply star_step with (c1;;c2, st1). apply CS_SeqStep. auto. auto.
 Qed.
 
-(** We now recall the equivalence result between 
+(** We now recall the equivalence result between
 - termination according to the big-step semantics
 - existence of a finite sequence of reductions to [SKIP]
   according to the small-step semantics.
@@ -220,12 +220,12 @@ Proof.
 - (* if false *)
   eapply star_step. apply CS_IfFalse. auto. auto.
 - (* while stop *)
-  eapply star_step. apply CS_While. 
+  eapply star_step. apply CS_While.
   apply star_one. apply CS_IfFalse. auto.
 - (* while loop *)
-  eapply star_step. apply CS_While. 
+  eapply star_step. apply CS_While.
   eapply star_step. apply CS_IfTrue. auto.
-  eapply star_trans. apply star_CS_SeqStep. apply IHceval1. 
+  eapply star_trans. apply star_CS_SeqStep. apply IHceval1.
   eapply star_step. apply CS_SeqFinish. auto.
 Qed.
 
@@ -253,12 +253,12 @@ Proof.
 - (* CS_IfFalse *)
   apply E_IfFalse; auto.
 - (* CS_While *)
-  inversion H; subst. 
+  inversion H; subst.
   + (* while loop *)
-    inversion H6; subst. 
+    inversion H6; subst.
     apply E_WhileTrue with st'; auto.
   + (* while stop *)
-    inversion H6; subst. 
+    inversion H6; subst.
     apply E_WhileFalse; auto.
 Qed.
 
@@ -374,7 +374,7 @@ Inductive kstep : (com * cont * state) -> (com * cont * state) -> Prop :=
 *)
 
 (** As in section 2, we can define the behavior of a command in terms of
-  sequences of [kstep] reductions.  
+  sequences of [kstep] reductions.
   Initial configurations are of the form (whole-command, [Kstop], initial-state).
   Final configurations are ([SKIP], [Kstop], final-state).  *)
 
@@ -407,7 +407,7 @@ Definition kdiverges (c: com) (st: state) : Prop :=
 **)
 
 (** If you're curious about adding "break" to the big-step semantics of
-  section 1, see exercise [BreakImp] in the [Imp] module of 
+  section 1, see exercise [BreakImp] in the [Imp] module of
   Software Foundations. *)
 
 (** *** Exercise (2 stars, recommended) *)
@@ -443,9 +443,9 @@ Proof.
 - (* x := a1 *)
   apply star_one. apply KS_Ass. auto.
 - (* sequence *)
-  eapply star_step. apply KS_Seq. 
-  eapply star_trans. apply IHceval1. 
-  eapply star_step. apply KS_SkipSeq. 
+  eapply star_step. apply KS_Seq.
+  eapply star_trans. apply IHceval1.
+  eapply star_step. apply KS_SkipSeq.
   apply IHceval2.
 - (* if true *)
   eapply star_step. apply KS_IfTrue. auto. auto.
@@ -454,14 +454,14 @@ Proof.
 - (* while stop *)
   apply star_one. apply KS_WhileFalse. auto.
 - (* while loop *)
-  eapply star_step. apply KS_WhileTrue. auto. 
-  eapply star_trans. apply IHceval1. 
-  eapply star_step. apply KS_SkipWhile. 
+  eapply star_step. apply KS_WhileTrue. auto.
+  eapply star_trans. apply IHceval1.
+  eapply star_step. apply KS_SkipWhile.
   apply IHceval2.
 Qed.
 
 (** For the reverse implication, we adapt lemma [cstep_append_ceval] to show
-  that one step of reduction [kstep (c1, k1, st1) (c2, k2, st2)] 
+  that one step of reduction [kstep (c1, k1, st1) (c2, k2, st2)]
   followed by big-step evaluation of [(c2, k2, st2)] is equivalent to
   big-step evaluation of [(c1, k1, st1)].  However, we now need to define
   big-step evaluation of a pair [(c, k)] of a subcommand and a continuation.
@@ -503,14 +503,14 @@ Proof.
 - (* KS_WhileTrue *)
   inversion H0; subst. inversion H2; subst. econstructor. eapply E_WhileTrue; eauto. auto.
 - (* KS_WhileFalse *)
-  inversion H0; subst. inversion H1; subst. econstructor. apply E_WhileFalse; auto. auto. 
+  inversion H0; subst. inversion H1; subst. econstructor. apply E_WhileFalse; auto. auto.
 - (* KS_SkipSeq *)
   inversion H; subst. econstructor. apply E_Skip. eapply KE_seq; eauto.
 - (* KS_SkipWhile *)
   inversion H; subst. econstructor. apply E_Skip. eapply KE_while; eauto.
 Qed.
 
-(** We can, then, extend this result to sequences of [kstep] transitions, 
+(** We can, then, extend this result to sequences of [kstep] transitions,
   and conclude. *)
 
 Lemma ksteps_append_ckeval:
@@ -520,15 +520,15 @@ Lemma ksteps_append_ckeval:
   ckeval c1 k1 st1 st3.
 Proof.
   intros. dependent induction H.
-- auto. 
-- destruct b as [[c' k'] st']. eapply kstep_append_ckeval; eauto. 
+- auto.
+- destruct b as [[c' k'] st']. eapply kstep_append_ckeval; eauto.
 Qed.
 
 Theorem kterminates_to_ceval:
   forall c st st',
   kterminates c st st' -> c / st \\ st'.
 Proof.
-  unfold kterminates; intros. 
+  unfold kterminates; intros.
   assert (CKEV: ckeval c Kstop st st').
   { eapply ksteps_append_ckeval; eauto.
     econstructor. apply E_Skip. apply KE_stop. }
@@ -584,20 +584,20 @@ Proof.
   do 3 econstructor; split. apply plus_one. apply cstep_apply_cont. apply CS_Ass. reflexivity. auto.
 - (* seq *)
   inversion H0; clear H0; subst.
-  change (apply_cont k (c1;;c2)) with (apply_cont (Kseq c2 k) c1). 
-  eapply IHc1; eauto. 
+  change (apply_cont k (c1;;c2)) with (apply_cont (Kseq c2 k) c1).
+  eapply IHc1; eauto.
 - (* if *)
   inversion H0; clear H0; subst.
-+ (* if true *) 
++ (* if true *)
   do 3 econstructor; split. apply plus_one. apply cstep_apply_cont. apply CS_IfTrue; auto. auto.
-+ (* if false *) 
++ (* if false *)
   do 3 econstructor; split. apply plus_one. apply cstep_apply_cont. apply CS_IfFalse; auto. auto.
 - (* while *)
   inversion H0; clear H0; subst.
 + (* while true *)
   exists c; exists (Kwhile b c k); exists st; split.
-  simpl. eapply plus_left. apply cstep_apply_cont. apply CS_While. 
-  apply star_one. apply cstep_apply_cont. apply CS_IfTrue; auto. 
+  simpl. eapply plus_left. apply cstep_apply_cont. apply CS_While.
+  apply star_one. apply cstep_apply_cont. apply CS_IfTrue; auto.
   auto.
 + (* while false *)
   do 3 econstructor; split.
@@ -624,7 +624,7 @@ Lemma invert_cstep_apply_cont:
   cstep (apply_cont k c, st) (c', st') ->
   cstep_apply_cont_cases k c st c' st'.
 Proof.
-  induction k; simpl; intros. 
+  induction k; simpl; intros.
 - (* Kstop *)
   change c' with (apply_cont Kstop c'). apply cacc_base; auto.
 - (* Kseq *)
@@ -632,7 +632,7 @@ Proof.
   + (* base *)
     inversion H0; clear H0; subst.
     * (* seq step *)
-      change (apply_cont k (c1';;c)) with (apply_cont (Kseq c k) c1'). 
+      change (apply_cont k (c1';;c)) with (apply_cont (Kseq c k) c1').
       apply cacc_base; auto.
     * (* seq finish *)
       apply cacc_skip_seq.
@@ -641,7 +641,7 @@ Proof.
   + (* base *)
     inversion H0; clear H0; subst.
     * (* seq step *)
-      change (apply_cont k (c1';;WHILE b DO c END)) with (apply_cont (Kwhile b c k) c1'). 
+      change (apply_cont k (c1';;WHILE b DO c END)) with (apply_cont (Kwhile b c k) c1').
       apply cacc_base; auto.
     * (* seq finish *)
       apply cacc_skip_while.
@@ -664,17 +664,17 @@ Proof.
     destruct (IHcstep _ _ _ _ eq_refl eq_refl (Kseq c0 k) H1)
     as [c'' [k'' [st'' [A B]]]].
     exists c''; exists k''; exists st''; split; auto.
-    eapply plus_left. apply KS_Seq. apply plus_star. auto. 
+    eapply plus_left. apply KS_Seq. apply plus_star. auto.
   + (* seq finish *)
     do 3 econstructor; split.
-    eapply plus_left. apply KS_Seq. apply star_one. apply KS_SkipSeq. 
+    eapply plus_left. apply KS_Seq. apply star_one. apply KS_SkipSeq.
     auto.
   + (* if true *)
     do 3 econstructor; split. apply plus_one. apply KS_IfTrue. auto. auto.
   + (* if false *)
     do 3 econstructor; split. apply plus_one. apply KS_IfFalse. auto. auto.
   + (* while *)
-    inversion H1; clear H1; subst. destruct b0 as [c'' st'']. 
+    inversion H1; clear H1; subst. destruct b0 as [c'' st''].
     specialize (invert_cstep_apply_cont _ _ _ _ _ H). intros CASES; inversion CASES; clear CASES; subst.
     inversion H1; clear H1; subst.
     * (* while true *)
@@ -695,22 +695,22 @@ Theorem kdiverges_iff_diverges:
 Proof.
   intros; split; intros.
 - (* kdiverges -> diverges *)
-  unfold diverges. 
+  unfold diverges.
   apply infseq_coinduction_principle_2 with
     (X := fun c_st => exists c, exists k, exists st,
                       c_st = (apply_cont k c, st) /\ infseq kstep (c, k, st)).
   intros. destruct H0 as [c1 [k1 [st1 [EQ ISEQ]]]].
-  destruct (kinfseq_cinfseq _ _ _ ISEQ) as [c2 [k2 [st2 [CSTEPS ISEQ']]]]. 
+  destruct (kinfseq_cinfseq _ _ _ ISEQ) as [c2 [k2 [st2 [CSTEPS ISEQ']]]].
   exists (apply_cont k2 c2, st2); split.
   subst a; auto.
   exists c2; exists k2; exists st2; auto.
   exists c; exists Kstop; exists st; auto.
 - (* diverges -> kdiverges *)
-  unfold kdiverges. 
+  unfold kdiverges.
   apply infseq_coinduction_principle_2 with
     (X := fun c_k_st =>
             match c_k_st with (c, k, st) => infseq cstep (apply_cont k c, st) end).
-  intros [[c1 k1] st1] ISEQ. 
+  intros [[c1 k1] st1] ISEQ.
   destruct (cinfseq_kinfseq _ _ _ ISEQ) as [c2 [k2 [st2 [KSTEPS ISEQ']]]].
   exists (c2, k2, st2); auto.
   auto.
