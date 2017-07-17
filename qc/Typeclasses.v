@@ -1,9 +1,9 @@
 (** * Typeclasses: A Tutorial on Typeclasses in Coq *)
 
+Require Import Coq.Bool.Bool.
 Require Import Coq.Strings.String.
 Require Import Coq.Arith.Arith.
 Require Import Omega.
-Require Bool.
 Require Import List. Import ListNotations.
 Local Open Scope string.
 
