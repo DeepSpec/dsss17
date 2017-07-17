@@ -38,7 +38,7 @@ Hypothesis bot_smallest: forall x, le bot x.
 Variable F: A -> A.
 Hypothesis F_mon: forall x y, le x y -> le (F x) (F y).
 
-(** We iterate [F] starting from a pre-fixpoint [x]. 
+(** We iterate [F] starting from a pre-fixpoint [x].
 
 The [iterate] function takes as argument not just [x], but also two proofs:
 - that [x] is a pre-fixpoint, i.e. [le x (F x)]
@@ -49,9 +49,9 @@ Likewise, it returns as result not just the fixpoint [y], but also two proofs:
 - that [y] is below any post-fixpoint [z].
 *)
 
-Program Fixpoint iterate 
+Program Fixpoint iterate
     (x: A) (PRE: le x (F x)) (SMALL: forall z, le (F z) z -> le x z)
-    {wf gt x} 
+    {wf gt x}
     : {y : A | eq y (F y) /\ forall z, le (F z) z -> le y z } :=
   let x' := F x in
   match beq x x' with
@@ -60,14 +60,14 @@ Program Fixpoint iterate
   end.
 Next Obligation.
   split.
-  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto. 
+  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto.
   auto.
 Qed.
 Next Obligation.
-  apply le_trans with (F z); auto. 
+  apply le_trans with (F z); auto.
 Qed.
 Next Obligation.
-  red. split. auto. 
+  red. split. auto.
   generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto.
 Qed.
 
@@ -80,7 +80,7 @@ Program Definition fixpoint : A := iterate bot _ _.
 Theorem fixpoint_correct:
   eq fixpoint (F fixpoint) /\ forall z, le (F z) z -> le fixpoint z.
 Proof.
-  unfold fixpoint. apply proj2_sig. 
+  unfold fixpoint. apply proj2_sig.
 Qed.
 
 End FIXPOINT.
@@ -165,7 +165,7 @@ Qed.
 
 Lemma vset_empty_le: forall x, vset_le vset_empty x.
 Proof.
-  unfold vset_le, vset_empty. simpl. intros. apply VSP.subset_empty. 
+  unfold vset_le, vset_empty. simpl. intros. apply VSP.subset_empty.
 Qed.
 
 (** To show that the strict order induced by [vset_eq] and [vset_le] is well-founded,
@@ -177,8 +177,8 @@ Program Definition vset_measure (x: vset) : nat := VS.cardinal (VS.diff U x).
 Lemma vset_measure_decreases:
   forall x y, vset_le x y -> ~vset_eq x y -> vset_measure y < vset_measure x.
 Proof.
-  intros. unfold vset_measure. red in H. 
-  set (X := proj1_sig x) in *. set (Y := proj1_sig y) in *. 
+  intros. unfold vset_measure. red in H.
+  set (X := proj1_sig x) in *. set (Y := proj1_sig y) in *.
   (** Find an element that is in [y] but not in [x]. *)
   destruct (VS.choose (VS.diff Y X)) as [a | ] eqn:CHOICE.
 - assert (VS.In a (VS.diff Y X)) by (apply VS.choose_spec1; auto).
@@ -189,7 +189,7 @@ Proof.
   apply VS.diff_spec. split; auto. eapply contained; eauto.
   fsetdec.
 - (** Show contradiction if no such element exists *)
-  assert (VS.Empty (VS.diff Y X)) by (apply VS.choose_spec2; auto). 
+  assert (VS.Empty (VS.diff Y X)) by (apply VS.choose_spec2; auto).
   elim H0. red. rewrite VSP.double_inclusion. split; auto.
   fold X Y. fsetdec.
 Qed.
@@ -222,15 +222,15 @@ Definition monotone (F: vset -> vset) : Prop :=
 
 Definition vset_fixpoint (F: vset -> vset) (M: monotone F) : vset :=
   fixpoint vset vset_eq vset_beq vset_beq_correct
-           vset_le vset_le_trans 
+           vset_le vset_le_trans
            vset_gt_wf vset_empty vset_empty_le F M.
 
 Lemma vset_fixpoint_correct:
-  forall F (M: monotone F), 
+  forall F (M: monotone F),
   vset_eq (vset_fixpoint F M) (F (vset_fixpoint F M))
   /\ forall z, vset_le (F z) z -> vset_le (vset_fixpoint F M) z.
 Proof.
-  intros. unfold vset_fixpoint; apply fixpoint_correct. 
+  intros. unfold vset_fixpoint; apply fixpoint_correct.
 Qed.
 
 (** Moreover, if an operator [F1] is pointwise below another operator [F2],
@@ -241,11 +241,11 @@ Lemma vset_fixpoint_le:
   (forall x, vset_le (F1 x) (F2 x)) ->
   vset_le (vset_fixpoint F1 M1) (vset_fixpoint F2 M2).
 Proof.
-  intros. 
+  intros.
   destruct (vset_fixpoint_correct F1 M1) as [EQ1 LEAST1].
   destruct (vset_fixpoint_correct F2 M2) as [EQ2 LEAST2].
   unfold vset_le, vset_eq in *.
-  apply LEAST1. 
+  apply LEAST1.
   eapply VSP.subset_trans. apply H. apply VSP.subset_equal. apply VSP.equal_sym. apply EQ2.
 Qed.
 
@@ -254,14 +254,14 @@ Qed.
 (** We redefine the abstract syntax of IMP to ensure that all
   variables mentioned in the program are taken from [U]. *)
 
-Inductive aexp : Type := 
+Inductive aexp : Type :=
   | ANum : nat -> aexp
   | AId : forall (x: id), VS.In x U -> aexp        (**r <--- NEW *)
   | APlus : aexp -> aexp -> aexp
   | AMinus : aexp -> aexp -> aexp
   | AMult : aexp -> aexp -> aexp.
 
-Inductive bexp : Type := 
+Inductive bexp : Type :=
   | BTrue : bexp
   | BFalse : bexp
   | BEq : aexp -> aexp -> bexp
@@ -287,7 +287,7 @@ Program Fixpoint fv_aexp (a: aexp) : vset :=
   | AMult a1 a2 => vset_union (fv_aexp a1) (fv_aexp a2)
   end.
 Next Obligation.
-  red; intros. apply VS.singleton_spec in H. congruence. 
+  red; intros. apply VS.singleton_spec in H. congruence.
 Qed.
 
 Fixpoint fv_bexp (b: bexp) : vset :=
@@ -336,7 +336,7 @@ Next Obligation.
   red; intros. unfold vset_le in *. set (X := proj1_sig x0) in *. set (Y := proj1_sig y) in *.
   destruct (VS.mem x X) eqn:xlive1.
 - replace (VS.mem x Y) with true.
-+ simpl. fsetdec. 
++ simpl. fsetdec.
 + symmetry; apply VS.mem_spec. apply VS.mem_spec in xlive1. fsetdec.
 - destruct (VS.mem x Y) eqn:xlive2; simpl.
 + fold X. eapply VSP.subset_trans. 2: apply VSP.union_subset_1.
@@ -348,17 +348,17 @@ Next Obligation.
 Defined.
 Next Obligation.
   red; intros. unfold vset_le, vset_union; simpl.
-  apply VSP.union_subset_5. 
-  eapply VSP.subset_trans. apply VSP.union_subset_4. apply m. eauto. 
+  apply VSP.union_subset_5.
+  eapply VSP.subset_trans. apply VSP.union_subset_4. apply m. eauto.
   apply VSP.union_subset_5. apply m0. auto.
 Defined.
 Next Obligation.
-  red; intros. unfold vset_le, vset_union; simpl. 
+  red; intros. unfold vset_le, vset_union; simpl.
   apply VSP.union_subset_5. apply m; auto.
 Defined.
 Next Obligation.
-  red; intros. apply vset_fixpoint_le. 
-  intros. unfold vset_le, vset_union; simpl. apply VSP.union_subset_4. 
+  red; intros. apply vset_fixpoint_le.
+  intros. unfold vset_le, vset_union; simpl. apply VSP.union_subset_4.
   apply VSP.union_subset_5. auto.
 Defined.
 

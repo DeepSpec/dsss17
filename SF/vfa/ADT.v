@@ -25,7 +25,7 @@ End TABLE.
    there's a type [table] of lookup-tables, a type [V] of values,
    and operators [empty], [get], [set] that satisfy the axioms
    [gempty], [gss], and [gso].
-  
+
   It's easy to make an implementation of [TABLE], using [Maps].
   Just for example, let's choose [V] to be [Type]. *)
 
@@ -43,7 +43,7 @@ Module MapsTable <: TABLE.
  Theorem gempty: forall k, get k empty = default.
    Proof. intros. reflexivity. Qed.
  Theorem gss: forall k v t,  get k (set k v t) = v.
-   Proof. intros. unfold get, set. apply t_update_eq. Qed.  
+   Proof. intros. unfold get, set. apply t_update_eq. Qed.
  Theorem gso: forall j k v t, j<>k -> get j (set k v t) = get j t.
    Proof. intros. unfold get, set. apply t_update_neq.
        congruence.
@@ -67,7 +67,7 @@ Eval compute in MapsTable.get 1 (MapsTable.set 3 unit (MapsTable.set 1 bool Maps
 
 (** So, [MapsTable] is an implementation of the [TABLE] abstract type.
 
-   The problem with [MapsTable] is that the [Maps] implementation is 
+   The problem with [MapsTable] is that the [Maps] implementation is
    very inefficient: linear time per [get] operation. If you do a sequence
    of [N] [get] and [set] operations, it can take time quadratic in [N].
    For a more efficient implementation, let's use our search trees. *)
@@ -99,12 +99,12 @@ Module TreeTable <: TABLE.
 (** Prove this using techniques similar to the proof of [gss] just above. *)
 
  Theorem gso: forall j k v t,  j<>k -> get j (set k v t) = get j t.
-   Proof. 
+   Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 End TreeTable.
 
-(** But suppose we don't have an unrealistically strong can-relate theorem? 
+(** But suppose we don't have an unrealistically strong can-relate theorem?
    Remember the type of the "ordinary" can_relate: *)
 
 Check can_relate.
@@ -117,8 +117,8 @@ Check can_relate.
    the representation invariant.  We must ensure that  the client of an ADT
    cannot "forge" values, that is, cannot coerce the representation type into
    the abstract type; especially ill-formed values of the representation type.
-   This "unforgeability" is enforced in some real programming languages:  
-   ML (Standard ML or Ocaml) with its module system; Java, whose Classes 
+   This "unforgeability" is enforced in some real programming languages:
+   ML (Standard ML or Ocaml) with its module system; Java, whose Classes
    have "private variables" that the client cannot see.
 *)
 
@@ -149,12 +149,12 @@ Module TreeTable2 <: TABLE.
  Definition default : V := Prop.
  Definition table := {x | SearchTree V x}.
  Definition key := nat.
- Definition empty : table := 
+ Definition empty : table :=
    exist (SearchTree V) (empty_tree V) (empty_tree_SearchTree V).
- Definition get (k: key) (m: table) : V := 
+ Definition get (k: key) (m: table) : V :=
           (lookup V default k (proj1_sig m)).
  Definition set (k: key) (v: V) (m: table) : table :=
-   exist (SearchTree V) (insert V k v (proj1_sig m)) 
+   exist (SearchTree V) (insert V k v (proj1_sig m))
           (insert_SearchTree _ _ _ _ (proj2_sig m)).
 
  Theorem gempty: forall k, get k empty = default.
@@ -164,15 +164,15 @@ Module TreeTable2 <: TABLE.
   Proof. intros. unfold get, set.
     unfold table in t.
 
-(** Now: [t] is a package with two components: 
-     The first component is a tree, and the second component is 
+(** Now: [t] is a package with two components:
+     The first component is a tree, and the second component is
      a proof that the first component has the SearchTree property.
     We can destruct [t] to see that more clearly. *)
 
     destruct t as [a Ha].
     (* Watch what this [simpl] does: *)
     simpl.
-    (* Now we can use [can_relate] instead of [unrealistically_strong_can_relate]: *) 
+    (* Now we can use [can_relate] instead of [unrealistically_strong_can_relate]: *)
     destruct (can_relate V default a Ha) as [cts H].
     pose proof (insert_relate V default k v a cts H).
     pose proof (lookup_relate V default k _ _ H0).
@@ -184,7 +184,7 @@ Module TreeTable2 <: TABLE.
      don't use [unrealistically_strong_can_relate]. *)
 
  Theorem gso: forall j k v t,  j<>k -> get j (set k v t) = get j t.
-   Proof. 
+   Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 End TreeTable2.
@@ -202,7 +202,7 @@ Variable default: V.
 (** Step 1.  Define a _representation invariant_.
   (In the case of search trees,
   the representation invariant is the [SearchTree] predicate.)
-  Prove that each operation on the data type _preserves_ the 
+  Prove that each operation on the data type _preserves_ the
   representation invariant.  For example: *)
 
 Check (empty_tree_SearchTree V).
@@ -268,9 +268,9 @@ Import ListNotations.
 
 (** Here's the Fibonacci function. *)
 
-Fixpoint fibonacci (n: nat) := 
+Fixpoint fibonacci (n: nat) :=
  match n with
- | 0 => 1 
+ | 0 => 1
  | S i => match i with 0 => 1 | S j => fibonacci i + fibonacci j end
  end.
 
@@ -303,7 +303,7 @@ Module L <: LISTISH.
  Definition list := (nat*nat*nat)%type.
  Definition create (a b c: nat) : list := (a,b,c).
  Definition cons (i: nat) (il : list) := match il with (a,b,c) => (i,a,b) end.
- Definition nth (n: nat) (al: list) := 
+ Definition nth (n: nat) (al: list) :=
    match al with (a,b,c) =>
       match n with 0 => a | 1 => b | 2 => c | _ => 0 end
    end.
@@ -355,8 +355,8 @@ Lemma cons_relate : True.  (* change this line appropriately *)
 Lemma nth_relate : True.  (* change this line appropriately *)
 (* FILL IN HERE *) Admitted.
 
-(** Now, we will make these operators opaque.  Therefore, in the rest of 
-   the proofs in this exercise, you will not unfold their definitions.  Instead, 
+(** Now, we will make these operators opaque.  Therefore, in the rest of
+   the proofs in this exercise, you will not unfold their definitions.  Instead,
    you will just use the theorems [create_relate], [cons_relate], [nth_relate]. *)
 
 Opaque L.list.
@@ -367,13 +367,13 @@ Opaque O_Abs.
 
 Lemma step_relate:
   forall al al',
-   O_Abs al al' -> 
+   O_Abs al al' ->
    O_Abs (stepish al) (step al').
 Proof.
 (* FILL IN HERE *) Admitted.
 
 Lemma repeat_step_relate:
- forall n al al', 
+ forall n al al',
  O_Abs al al' ->
  O_Abs (repeat stepish al n) (repeat step al' n).
 Proof.
@@ -386,7 +386,7 @@ Proof.  (* No induction needed in this proof! *)
 
 (** **** Exercise: 2 stars, optional (fib_time_complexity)  *)
 (** Suppose you run these three programs call-by-value, that is,
-     as if they were ML programs.  
+     as if they were ML programs.
     [fibonacci N]
     [fib N]
     [fibish N]

@@ -12,7 +12,7 @@
 (* ################################################################# *)
 (** * Imp to Vminus Compiler *)
 
-(** Imports, instantiated with the list implementation of 
+(** Imports, instantiated with the list implementation of
     control-flow graphs. *)
 
 Require Import List.
@@ -51,7 +51,7 @@ Definition strun {A:Set} (m:ectmon A) (l:list uid) : A :=
 Definition comp_bop (b:bop) (e1 e2: ectmon (val * list insn)) : ectmon (val * list insn) :=
   '(v1, c1) <- e1;
   '(v2, c2) <- e2;
-  'r <- fresh; 
+  'r <- fresh;
   mret (val_uid r, (c1 ++ c2 ++ [(r, cmd_bop b v1 v2)])).
 
 (** Compile an arithmetic expression. *)
@@ -92,8 +92,8 @@ Fixpoint comp_bexp (b:bexp) : ectmon (val * list insn) :=
 Definition comp_store (a:aexp) (v:addr) (lr:lbl) : ectmon (list insn) :=
   'x <- fresh;
   'y <- fresh;
-  '(i, is) <- comp_aexp a; 
-  mret (is ++ [ (x, cmd_store v i); 
+  '(i, is) <- comp_aexp a;
+  mret (is ++ [ (x, cmd_store v i);
                (y, cmd_tmn (tmn_jmp lr)) ]).
 
 Definition comp_cond (b:bexp) (l1 l2:lbl) : ectmon (list insn) :=
@@ -115,7 +115,7 @@ Notation ctmon := (ST cstate).
 Definition fresh_lbl : ctmon lbl :=
   fun cs =>
   let '(ls, is, bs) := cs in
-  let l := Lbl.fresh ls in 
+  let l := Lbl.fresh ls in
   (l::ls, is, update bs l [], l).
 
 Definition raise_ectmon {T} (ec:ectmon T) : ctmon T :=
@@ -130,14 +130,14 @@ Definition add_insns (l:lbl) (b:list insn) : ctmon unit :=
   (ls, is, update cfg l b, tt).
 
 (** The input [lr] is the label of the block to which
-    control should return after the command is done. 
+    control should return after the command is done.
     The output is the label of the entry block for the
     command. *)
 
 Fixpoint comp_com (c:Imp.com) (lr:lbl) : ctmon lbl :=
   match c with
     | CSkip => mret lr
-    | CAss i a => 
+    | CAss i a =>
         'l <- fresh_lbl;
         'b <- raise_ectmon (comp_store a i lr);
         '_ <- add_insns l b;
@@ -151,7 +151,7 @@ Fixpoint comp_com (c:Imp.com) (lr:lbl) : ctmon lbl :=
         'b  <- raise_ectmon (comp_cond b l1 l2);
         '_  <- add_insns lh b;
         mret lh
-    | CWhile b c => 
+    | CWhile b c =>
         'lh <- fresh_lbl;
         'lb <- comp_com c lh;
         'b  <- raise_ectmon (comp_cond b lb lr);

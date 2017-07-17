@@ -16,11 +16,11 @@ Local Open Scope string.
        - [showBool : bool -> string]
        - [showNat : nat -> string]
        - etc.
-    
+
     plus combinators for structured types like [list] and pairs
- 
+
        - [showList : {A : Type} (A -> string) -> (list A) -> string]
-       - [showPair : {A B : Type} (A -> string) -> (B -> string) -> 
+       - [showPair : {A B : Type} (A -> string) -> (B -> string) ->
          A * B -> string]
 
     that take string converters for their element types as arguments.
@@ -85,7 +85,7 @@ Class Show A : Type :=
 (** The [Show] typeclass can be thought of as "classifying" types
     whose values can be converted to strings -- that is, types [A]
     such that we can define a function [show] of type [A -> string].
-    
+
     We can declare that [bool] is such a type by giving an [Instance]
     declaration that witnesses this function: *)
 
@@ -209,7 +209,7 @@ Class Eq A :=
 
 Instance eqBool : Eq bool :=
   {
-    eqb := fun (b c : bool) => 
+    eqb := fun (b c : bool) =>
        match b, c with
          | true, true => true
          | true, false => false
@@ -252,7 +252,7 @@ Instance eqNat : Eq nat :=
 Instance showPair {A B : Type} `{Show A} `{Show B} : Show (A * B) :=
   {|
     show p :=
-      let (a,b) := (p : A * B) in 
+      let (a,b) := (p : A * B) in
         "(" ++ show a ++ "," ++  show b ++ ")"
   |}.
 
@@ -333,7 +333,7 @@ Check Ord.
 (** (The old class [Eq] is sometimes called a "superclass" of [Ord],
     but, again, this terminology is potentially confusing: Try to
     avoid thinking about analogies with object-oriented
-    programming!) *) 
+    programming!) *)
 
 (** When we define instances of [Ord], we just have to implement the
     [le] operation. *)
@@ -394,7 +394,7 @@ Definition max {A: Type} `{Eq A} `{Ord A} (x y : A) : A :=
 (** To enable this behavior for a particular variable, say [A], we
     first declare [A] to be implicitly generalizable: *)
 
-Generalizable Variables A.  
+Generalizable Variables A.
 
 (** By default, Coq only implicitly generalizes variables declared in
     this way, to avoid puzzling behavior in case of typos.  There is
@@ -413,7 +413,7 @@ Definition showOne1 `{Show A} (a : A) : string :=
 
 Print showOne1.
 (* ==>
-    showOne1 = 
+    showOne1 =
       fun (A : Type) (H : Show A) (a : A) => "The value is " ++ show a
            : forall A : Type, Show A -> A -> string
 
@@ -468,9 +468,9 @@ Print showOne1.
 Print showOne2.
 Print showOne3.
 Print showOne4.
-(* ==> 
-    showOne = 
-        fun (A : Type) (H : Show A) (a : A) => 
+(* ==>
+    showOne =
+        fun (A : Type) (H : Show A) (a : A) =>
           "The value is " ++ @show A H a
       : forall A : Type, Show A -> A -> string
 *)
@@ -497,12 +497,12 @@ Definition max1 `{Ord A} (x y : A) :=
 Set Printing Implicit.
 Print max1.
 (* ==>
-     max1 = 
+     max1 =
        fun (A : Type) (H : Eq A) (H0 : @Ord A H) (x y : A) =>
          if @le A H H0 x y then y else x
 
-   : forall (A : Type) (H : Eq A), 
-       @Ord A H -> A -> A -> A    
+   : forall (A : Type) (H : Eq A),
+       @Ord A H -> A -> A -> A
 *)
 
 Check Ord.
@@ -539,8 +539,8 @@ Print implicit_fun.
 (** ... we will need to use @ to actually apply the function: *)
 
 (* Compute (implicit_fun 2 3). *)
-(* ==> 
-    Error: Illegal application (Non-functional construction): 
+(* ==>
+    Error: Illegal application (Non-functional construction):
     The expression "implicit_fun" of type "nat"
     cannot be applied to the term
      "2" : "nat"
@@ -573,9 +573,9 @@ Record Point :=
     }.
 
 (** Internally, this declaration is desugared into a single-field
-    inductive type, roughly like this: 
+    inductive type, roughly like this:
 
-    Inductive Point : Set := 
+    Inductive Point : Set :=
       | Build_Point : nat -> nat -> Point.
 *)
 
@@ -591,7 +591,7 @@ Check (Build_Point 2 4).
 Check {| px := 2; py := 4 |}.
 Check {| py := 4; px := 2 |}.
 
-(** We can also access fields of a record using conventional "dot notation" 
+(** We can also access fields of a record using conventional "dot notation"
     (with slightly clunky concrete syntax): *)
 
 Definition r : Point := {| px := 2; py := 4 |}.
@@ -613,7 +613,7 @@ Record LabeledPoint (A : Type) :=
     type inference!) *)
 
 Check {| lx:=2; ly:=4; label:="hello" |}.
-(* ==> 
+(* ==>
      {| lx := 2; ly := 4; label := "hello" |}
         : LabeledPoint string
 *)
@@ -636,10 +636,10 @@ Check {| lx:=2; ly:=4; label:="hello" |}.
 
 Set Printing All.
 Print Show.
-(* ==> 
-    Record Show (A : Type) : Type := 
+(* ==>
+    Record Show (A : Type) : Type :=
       Build_Show
-        { show : A -> string } 
+        { show : A -> string }
 *)
 Unset Printing All.
 (** (If you run the [Print] command yourself, you'll see that [Show]
@@ -669,12 +669,12 @@ Print showNat.
 Set Printing All.
 Print show.
 (* ==>
-    show = 
+    show =
       fun (A : Type) (Show0 : Show A) =>
         match Show0 with
           | Build_Show _ show => show
         end
-   : forall (A : Type), Show A -> A -> string 
+   : forall (A : Type), Show A -> A -> string
 
    Arguments A, Show are implicit and maximally inserted  *)
 Unset Printing All.
@@ -687,7 +687,7 @@ Unset Printing All.
     typeclasses is the way appropriate instances are automatically
     inferred (and constructed!) during typechecking. *)
 
-(** For example, if we write [show 42], what we actually get is 
+(** For example, if we write [show 42], what we actually get is
     [@show nat showNat 42]: *)
 
 Definition eg42 := show 42.
@@ -785,15 +785,15 @@ Unset Typeclasses Debug.
     sense.
 *)
 
-Class EqDec (A : Type) {H : Eq A} := 
-  { 
-    eqb_eq : forall x y, eqb x y = true <-> x = y 
+Class EqDec (A : Type) {H : Eq A} :=
+  {
+    eqb_eq : forall x y, eqb x y = true <-> x = y
   }.
 
 (** To build an instance of [EqDec], we must now supply an appropriate
     proof. *)
 
-Instance eqdecNat : EqDec nat := 
+Instance eqdecNat : EqDec nat :=
   {
     eqb_eq := Nat.eqb_eq
   }.
@@ -804,7 +804,7 @@ Instance eqdecNat : EqDec nat :=
     will enter proof mode and ask the user to use tactics to construct
     inhabitants for the remaining fields. *)
 
-Instance eqdecBool' : EqDec bool := 
+Instance eqdecBool' : EqDec bool :=
   {
   }.
 Proof.
@@ -830,7 +830,7 @@ Defined.
 Lemma eqb_fact `{EqDec A} : forall (x y z : A),
   eqb x y = true -> eqb y z = true -> x = z.
 Proof.
-  intros x y z Exy Eyz. 
+  intros x y z Exy Eyz.
   rewrite eqb_eq in Exy.
   rewrite eqb_eq in Eyz.
   subst. reflexivity. Qed.
@@ -849,7 +849,7 @@ Proof.
 Require Import Coq.Relations.Relation_Definitions.
 
 Class Reflexive (A : Type) (R : relation A) :=
-  { 
+  {
     reflexivity : forall x, R x x
   }.
 
@@ -860,7 +860,7 @@ Class Transitive (A : Type) (R : relation A) :=
 
 Generalizable Variables z w R.
 
-Lemma trans3 : forall `{Transitive A R}, 
+Lemma trans3 : forall `{Transitive A R},
     `{R x y -> R y z -> R z w -> R x w}.
 Proof.
   intros.
@@ -875,7 +875,7 @@ Class PreOrder (A : Type) (R : relation A) :=
     [Reflexive] and [Transitive] relation, so that, any time a
     reflexive relation is needed, a preorder can be used instead. *)
 
-Lemma trans3_pre : forall `{PreOrder A R}, 
+Lemma trans3_pre : forall `{PreOrder A R},
     `{R x y -> R y z -> R z w -> R x w}.
 Proof. intros. eapply trans3; eassumption. Defined.
 
@@ -964,7 +964,7 @@ Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
     decidable proposition [P] into a boolean expression. *)
 
 Notation "P '?'" :=
-  (match (@dec P _) with 
+  (match (@dec P _) with
    | left _ => true
    | right _ => false
    end)
@@ -1029,7 +1029,7 @@ Open Scope monad_scope.
 (** The main definition provided by this library is the following typeclass:
 
     Class Monad (M : Type -> Type) : Type :=
-       { 
+       {
          ret : forall {T : Type}, T -> M T ;
          bind : forall {T U : Type}, M T -> (T -> M U) -> M U
        }.
@@ -1098,14 +1098,14 @@ Definition liftM
 Definition liftM2
             {m : Type -> Type}
             {M : Monad m}
-            {T U V : Type} (f : T -> U -> V) 
+            {T U V : Type} (f : T -> U -> V)
           : m T -> m U -> m V :=
     fun x y => bind x (fun x => liftM (f x) y).
 
 Definition liftM3
             {m : Type -> Type}
             {M : Monad m}
-            {T U V W : Type} (f : T -> U -> V -> W) 
+            {T U V W : Type} (f : T -> U -> V -> W)
           : m T -> m U -> m V -> m W :=
     fun x y z => bind x (fun x => liftM2 (f x) y z).
 
@@ -1169,7 +1169,7 @@ Definition foo x := if eqb x x then "Of course" else "Impossible".
 Fail Check (foo bool).
 (* ==>
      The command has indeed failed with message:
-     The term "bool" has type "Set" while it is expected 
+     The term "bool" has type "Set" while it is expected
      to have type "bool -> bool".    *)
 
 (** Huh?! *)
@@ -1222,7 +1222,7 @@ Instance baz2 : Show baz :=
   }.
 
 Compute (show (Baz 42)).
-(* ==> 
+(* ==>
      = "[42 is a Baz]"
      : string   *)
 
@@ -1239,7 +1239,7 @@ Compute (show (Baz 42)).
     two given instances overlap.) *)
 
 (** One way to deal with overlapping instances is to "curate" the hint
-    database by explicitly adding and removing specific instances.  
+    database by explicitly adding and removing specific instances.
 
     To remove things, use [Remove Hints]: *)
 
@@ -1252,7 +1252,7 @@ Remove Hints baz1 baz2 : typeclass_instances.
 
 Existing Instance baz1.
 Compute (show (Baz 42)).
-(* ==> 
+(* ==>
      = "Baz: 42"
      : string    *)
 
@@ -1278,7 +1278,7 @@ Instance baz4 : Show baz | 3 :=
   }.
 
 Compute (show (Baz 42)).
-(* ==> 
+(* ==>
      = "{{{ Use me first!  42}}}"
      : string  *)
 
@@ -1290,7 +1290,7 @@ Compute (show (Baz 42)).
 
 Existing Instance baz1 | 0.
 Compute (show (Baz 42)).
-(* ==> 
+(* ==>
      = "Baz: 42"
      : string    *)
 
@@ -1311,7 +1311,7 @@ Inductive bar :=
 Fail Definition eqBar :=
   eqb (Bar 42) (Bar 43).
 
-(* ===> 
+(* ===>
     The command has indeed failed with message:
     Unable to satisfy the following constraints:
 
@@ -1412,7 +1412,7 @@ Compute e3.
     a state of great peril: If we happen to ask for an instance that
     doesn't exist, the search procedure will diverge. *)
 
-(* 
+(*
 Definition e4 : list nat := mymap false.
 *)
 
@@ -1504,9 +1504,9 @@ Definition e4 : list nat := mymap false.
 (* ================================================================= *)
 (** ** John Wiegley *)
 
-(** One thing that always gets me is that overlapping instances are 
+(** One thing that always gets me is that overlapping instances are
     easy to write with no warning from Coq (unlike Haskell, which
-    ensures that resolution always pick a single instance). This 
+    ensures that resolution always pick a single instance). This
     requires me to often use:
 
    Typeclasses eauto := debug.
@@ -1514,7 +1514,7 @@ Definition e4 : list nat := mymap false.
    and switch to my *coq* buffer to see which lookup did not resolve to the
    instance I was expecting. This is usually fixed by one of two things:
 
-      - Change the "priority" of the overlapping instance (something we 
+      - Change the "priority" of the overlapping instance (something we
         cannot do in Haskell).
       - Change the Instance to a Definition -- which I can still use it as an
         explicitly passed dictionary, but this removes it from resolution.
@@ -1525,10 +1525,10 @@ Definition e4 : list nat := mymap false.
     this would be an error, but in Coq it just resolves to whatever
     the last globally defined instance was.
 
-    For example, say I write a function that uses a functor, but forget 
+    For example, say I write a function that uses a functor, but forget
     to mention the functor:
 
-   Definition foo (C D : Category) (x y : C) (f : x ~> y) 
+   Definition foo (C D : Category) (x y : C) (f : x ~> y)
               : fobj x ~> fobj y :=
      fmap f.
 
@@ -1568,7 +1568,7 @@ Definition e4 : list nat := mymap false.
      oops_is_baz :> Baz
    }.
 
-    [Oops] refers to two [Foos], and I need explicit evidence to know when 
+    [Oops] refers to two [Foos], and I need explicit evidence to know when
     they are the same [Foo]. I work around this using indices:
 
    Class Foo := {
@@ -1603,7 +1603,7 @@ Definition e4 : list nat := mymap false.
    --------------------
    @method F A = @method F B
 
-    You can't apply here without simplying in H. However, what you see at 
+    You can't apply here without simplying in H. However, what you see at
     first is:
 
    A, B : Type
@@ -1695,7 +1695,7 @@ Definition e4 : list nat := mymap false.
     The original paper on typeclasses In Coq:
       - Matthieu Sozeau and Nicolas Oury. First-Class Type
         Classes. TPHOLs 2008.
-        https://link.springer.com/chapter/10.1007%%2F978-3-540-71067-7_23 
+        https://link.springer.com/chapter/10.1007%%2F978-3-540-71067-7_23
 
     Sources for this tutorial:
      - Coq Reference Manual:

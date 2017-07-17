@@ -27,7 +27,7 @@ Qed.
 Lemma star_trans:
   forall (a b: A), star a b -> forall c, star b c -> star a c.
 Proof.
-  induction 1; eauto using star. 
+  induction 1; eauto using star.
 Qed.
 
 (** One or several transitions: transitive closure of [R]. *)
@@ -39,14 +39,14 @@ Inductive plus: A -> A -> Prop :=
 Lemma plus_one:
   forall a b, R a b -> plus a b.
 Proof.
-  eauto using star, plus. 
+  eauto using star, plus.
 Qed.
 
 Lemma plus_star:
   forall a b,
   plus a b -> star a b.
 Proof.
-  intros. inversion H. eauto using star.  
+  intros. inversion H. eauto using star.
 Qed.
 
 Lemma plus_star_trans:
@@ -80,12 +80,12 @@ Definition all_seq_inf (a: A) : Prop :=
   from [a], there exists one infinite sequence of transitions
   [a --> a1 --> a2 --> ... -> aN -> ...].
 
-  Indeed, consider [A = nat] and [R] such that [R 0 0] and [R 0 1].  
+  Indeed, consider [A = nat] and [R] such that [R 0 0] and [R 0 1].
   [all_seq_inf 0] does not hold, because a sequence [0 -->* 1] cannot be extended.
-  Yet, [R] admits an infinite sequence, namely [0 --> 0 --> ...].  
+  Yet, [R] admits an infinite sequence, namely [0 --> 0 --> ...].
 
-  Another attempt would be to represent the sequence of states 
-  [a0 --> a1 --> a2 --> ... -> aN -> ...] explicitly, as a function 
+  Another attempt would be to represent the sequence of states
+  [a0 --> a1 --> a2 --> ... -> aN -> ...] explicitly, as a function
   [f: nat -> A] such that [f i] is the [i]-th state [ai] of the sequence. *)
 
 Definition infseq_with_function (a: A) : Prop :=
@@ -117,7 +117,7 @@ CoInductive infseq: A -> Prop :=
 
   The [infseq] predicate above must be defined coinductively.  Indeed, if
   we define it inductively, the predicate would be empty (always false),
-  since there are no base cases!  
+  since there are no base cases!
 
   Coq provides some primitive support for constructing infinite derivations
   of facts such as [infseq a].  Such constructions are proofs by coinduction.
@@ -130,7 +130,7 @@ Proof.
 Qed.
 
 (** This style of proof by coinduction, using the [cofix] tactic, is effective
-  but can run into limitations of Coq's proof engine (the so-called 
+  but can run into limitations of Coq's proof engine (the so-called
   "guard condition").  However, we can derive more conventional
   coinduction principles that are often easier to use. *)
 
@@ -147,7 +147,7 @@ Lemma infseq_coinduction_principle:
   forall a, X a -> infseq a.
 Proof.
   intros X P. cofix COINDHYP; intros.
-  destruct (P a H) as [b [U V]]. apply infseq_step with b; auto. 
+  destruct (P a H) as [b [U V]]. apply infseq_step with b; auto.
 Qed.
 
 (** An even more useful variant of this coinduction principle considers a
@@ -162,10 +162,10 @@ Proof.
   intros.
   apply infseq_coinduction_principle with
     (X := fun a => exists b, star a b /\ X b).
-- intros. 
+- intros.
   destruct H1 as [b [STAR Xb]]. inversion STAR; subst.
 + destruct (H b Xb) as [c [PLUS Xc]]. inversion PLUS; subst.
-  exists b0; split. auto. exists c; auto. 
+  exists b0; split. auto. exists c; auto.
 + exists b0; split. auto. exists b; auto.
 - exists a; split. apply star_refl. auto.
 Qed.
@@ -178,8 +178,8 @@ Lemma infseq_if_all_seq_inf:
   forall a, all_seq_inf a -> infseq a.
 Proof.
   apply infseq_coinduction_principle.
-  intros. destruct (H a) as [b Rb]. constructor. 
-  exists b; split; auto. 
+  intros. destruct (H a) as [b Rb]. constructor.
+  exists b; split; auto.
   unfold all_seq_inf; intros. apply H. apply star_step with b; auto.
 Qed.
 
@@ -192,14 +192,14 @@ Proof.
   apply infseq_coinduction_principle.
   intros. destruct H as [f [P Q]].
   exists (f 1); split.
-  subst a. apply Q. 
+  subst a. apply Q.
   exists (fun n => f (1 + n)); split. auto. intros. apply Q.
 Qed.
- 
+
 (** Consider the transition sequences starting at state [a].
   They can be infinite, or they can be finite: after a number of transitions,
   we reach a state from with no transition is possible.  It is intuitively
-  obvious that at least one of the two cases must hold. 
+  obvious that at least one of the two cases must hold.
 
   It is however impossible to prove this fact in Coq's constructive logic.
   Indeed, a constructive proof would be isomorphic (by the Curry-Howard isomorphism)
@@ -243,8 +243,8 @@ Proof.
   induction 1; intros.
 - auto.
 - inversion H1; subst.
-+ right. eauto using star. 
-+ assert (b = b0) by (eapply R_functional; eauto). subst b0. 
++ right. eauto using star.
++ assert (b = b0) by (eapply R_functional; eauto). subst b0.
   apply IHstar; auto.
 Qed.
 
@@ -265,7 +265,7 @@ Lemma infseq_star_inv:
   forall a b, star a b -> infseq a -> infseq b.
 Proof.
   induction 1; intros.
-- auto. 
+- auto.
 - inversion H1; subst.
   assert (b = b0) by (eapply R_functional; eauto). subst b0.
   apply IHstar; auto.
@@ -275,9 +275,9 @@ Lemma infseq_finseq_excl:
   forall a b,
   star a b -> irred b -> infseq a -> False.
 Proof.
-  intros. 
-  assert (infseq b) by (eapply infseq_star_inv; eauto). 
-  inversion H2. elim (H0 b0); auto. 
+  intros.
+  assert (infseq b) by (eapply infseq_star_inv; eauto).
+  inversion H2. elim (H0 b0); auto.
 Qed.
 
 (** If there exists an infinite sequence of transitions from [a],
@@ -286,14 +286,14 @@ Qed.
 Lemma infseq_all_seq_inf:
   forall a, infseq a -> all_seq_inf a.
 Proof.
-  intros. unfold all_seq_inf. intros. 
-  assert (infseq b) by (eapply infseq_star_inv; eauto). 
+  intros. unfold all_seq_inf. intros.
+  assert (infseq b) by (eapply infseq_star_inv; eauto).
   inversion H1. subst. exists b0; auto.
 Qed.
 
 End SEQUENCES.
 
 
-  
+
 
 

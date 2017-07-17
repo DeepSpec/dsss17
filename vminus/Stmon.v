@@ -26,10 +26,10 @@ Section STMON.
   Definition bind2 (A B C:Type) (f:stmon (A * B)) (g:A -> B -> stmon C) : stmon C :=
     fun s => let '(s', (a, b)) := f s in g a b s'.
 
-  Definition stget : stmon S := 
+  Definition stget : stmon S :=
     fun s => (s, s).
 
-  Definition stput (s:S) : stmon unit := 
+  Definition stput (s:S) : stmon unit :=
     fun _ => (s, tt).
 
   Definition stmod (f:S -> S) : stmon unit :=
@@ -54,19 +54,19 @@ Section STMON.
 
   Lemma stmon_left_id : forall A B (a:A) (f: A -> stmon B),
     bind (ret a) f = f a.
-  Proof. 
-    intros. unfold bind, ret. 
+  Proof.
+    intros. unfold bind, ret.
     change (f a) with (fun s => f a s) at 2; auto.
   Qed.
 
   Lemma stmon_right_id : forall A (a:A) (ma:stmon A),
     bind ma ret = ma.
-  Proof. 
+  Proof.
     intros. extensionality s. unfold bind, ret.
     destruct (ma s); reflexivity.
   Qed.
 
-  Lemma stmon_assoc : 
+  Lemma stmon_assoc :
     forall A B C (m:stmon A) (f:A -> stmon B) (g:B -> stmon C),
     bind m (fun a => bind (f a) g) = bind (bind m f) g.
   Proof.
@@ -86,7 +86,7 @@ Notation "'do' X <- A ; B" := (bind A (fun X => B))
   (at level 200, X ident, A at level 100, B at level 200) : stmon_scope.
 
 Notation "'do' ( X , Y ) <- A ; B" := (bind2 A (fun X Y => B))
-  (at level 200, X ident, Y ident, A at level 100, B at level 200, 
+  (at level 200, X ident, Y ident, A at level 100, B at level 200,
   format "'do'  ( X ,  Y )  <-  A  ;  B") : stmon_scope.
 
 Delimit Scope stmon_scope with stmon.

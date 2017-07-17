@@ -22,7 +22,7 @@ Import Cfg.
     constraints ensure that each instruction only mentions local
     identifiers that are in scope according to the domination
     structure of the control-flow graph and that all mentioned labels
-    are associated with blocks defined in the CFG.  
+    are associated with blocks defined in the CFG.
 
     These properties are partly enforced by the "syntactic"
     well-formedness constraints imposed by the CFG interface (see
@@ -37,22 +37,22 @@ Import Cfg.
 
 *)
 
-Module Typing.  
-(**  ------------------------------------------------------------------------- *)  
+Module Typing.
+(**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)
 (** * GRAPH instance for dominance calculation *)
 
 (** We need to define an graph instance that captures all the edges
     of our CFGs.
-    
+
     - vertices in the graph are just program points
 
     - program points _within_ a single block have "fallthrough" edges determined by incrementing the program counter
-    
-    - a block [b1] terminated by a branch to [b2] induces an edge from [b1] to [b2] in the CFG.  
+
+    - a block [b1] terminated by a branch to [b2] induces an edge from [b1] to [b2] in the CFG.
   *)
 
-  
+
   (** Graph edge relation *)
 
   Inductive succ_pc (g:Cfg.t) : pc -> pc -> Prop :=
@@ -63,7 +63,7 @@ Module Typing.
       In l (insn_lbls i) ->
       succ_pc g p (block_entry l).
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)
 (** * GRAPH instance for dominance calculation *)
 
@@ -78,44 +78,44 @@ Module Typing.
   End PcGraph.
 
 (** Instantiate the dominance spec for this graph *)
-  
+
   Module Export Dom := Dom.Spec PcGraph.
 
-  
-(**  ------------------------------------------------------------------------- *)  
+
+(**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)
 (** * Defining SSA scoping *)
-  
+
 (** We can now use the dominance properties of the CFG to define scoping
     for well-formed SSA programs. We first need some auxliary predicates: *)
 
 (** The command at the given [pc] defines uid. *)
 
   Definition def_at_pc (g:Cfg.t) (p:pc) (uid:uid) : Prop :=
-    exists c, insn_at_pc g p (uid, c) /\ defs_uid (uid, c). 
+    exists c, insn_at_pc g p (uid, c) /\ defs_uid (uid, c).
 
   (** The [uid] has a definition that strictly dominates the pc [p]. *)
- 
+
   Definition uid_sdom_pc (g:Cfg.t) (uid:uid) (p:pc) : Prop :=
     exists p', def_at_pc g p' uid /\ SDom g p' p.
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
 (* ----------------------------------------------------------------- *)
 (** *** Uses are dominated by their definitions *)
-  
+
   (** All uses of a [uid] must be strictly dominated by
       their definitions. However, we have to treat [phi] instructions
-      specially, since the "uses" of identifiers on the right-hand side of 
-      are conditioned on control flow.  
+      specially, since the "uses" of identifiers on the right-hand side of
+      are conditioned on control flow.
 
       The right-hand-side of a phi node can safely refer to the identifier defined
       by the phi node itself.  For example, consider this snippet of code:
  [[
       entry:
-        br blk      
+        br blk
 
-      blk: 
-        %x = phi [%entry: 0] [%blk: %x]    
+      blk:
+        %x = phi [%entry: 0] [%blk: %x]
         br blk
  ]]
 
@@ -126,11 +126,11 @@ Module Typing.
     ~is_phi i -> forall uid, In (val_uid uid) (insn_uses i) -> uid_sdom_pc g uid p.
 
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
   (** *** Well-formed phi nodes *)
 
   (**  Consider [ %x = phi [lbl1:v1, ...,lbln:vn] ].  This is well formed
-       when every predecessor block with terminator program point p' 
+       when every predecessor block with terminator program point p'
        has a label associated with value v.  Moreover, if v is a uid then
        the definition of the uid strictly dominates p' (i.e. the terminator
        of the predecessor).
@@ -139,12 +139,12 @@ Module Typing.
   Definition wf_phi_args (g:Cfg.t) (i:insn) (p:pc) : Prop :=
     forall pred, succ_pc g pred (entry_of_pc p) ->
       (exists v, In (lbl_of pred, v) (insn_phis i)) /\
-      (forall uid, In (lbl_of pred, val_uid uid) (insn_phis i) -> 
+      (forall uid, In (lbl_of pred, val_uid uid) (insn_phis i) ->
           uid_sdom_pc g uid pred).
 
   (** Moreover, we require that fore every labeled value appearing in the
       right-hand side, there is a predecessor block with that label. *)
-  
+
   Definition wf_phi_pred (g:Cfg.t) (i:insn) (p:pc) : Prop :=
     forall l v, In (l, v) (insn_phis i) ->
       (exists pred, succ_pc g pred (entry_of_pc p) /\ lbl_of pred = l).
@@ -154,10 +154,10 @@ Module Typing.
              /\ wf_phi_pred g i p
              /\ insn_phis i <> [].
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
   (** *** Well-formed terminators *)
 
-  (** All jump targets must be legal block labels. *)  
+  (** All jump targets must be legal block labels. *)
 
   Definition wf_lbl (g:Cfg.t) (i:insn) : Prop :=
     forall l, In l (insn_lbls i) -> wf_pc g (block_entry l).
@@ -165,8 +165,8 @@ Module Typing.
 
   Definition reachable (g:Cfg.t) (p:pc) : Prop :=
     exists path, Path g (block_entry (entry_block g)) p path.
-  
-(**  ------------------------------------------------------------------------- *)  
+
+(**  ------------------------------------------------------------------------- *)
 (* ----------------------------------------------------------------- *)
 (** *** Well-formed instructions *)
 
@@ -188,7 +188,7 @@ Module Typing.
 
 End Typing.
 
-(**  ------------------------------------------------------------------------- *)  
+(**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)
 (** * Type Safety *)
 
@@ -196,10 +196,10 @@ End Typing.
     and _progress_ theorems.  *)
 
 Module OpsemCorrect.
-  Module Import V := Make (Cfg).  
+  Module Import V := Make (Cfg).
   Import Typing Opsem.
 
-  
+
 
 
   (** *** Dominance relation *)
@@ -215,18 +215,18 @@ Module OpsemCorrect.
     uid_sdom_pc g uid' pc2 ->
     uid_sdom_pc g uid' pc1.
   Proof.
-    unfold uid_sdom_pc. 
-    intros g uid' uid pc1 pc2 c Hwff Hneq Hpc Hsucc Hi [pc' [Hdef Hdom]]. 
-    exists pc'. split. assumption. 
+    unfold uid_sdom_pc.
+    intros g uid' uid pc1 pc2 c Hwff Hneq Hpc Hsucc Hi [pc' [Hdef Hdom]].
+    exists pc'. split. assumption.
     split. contradict Hneq. subst pc'.
     inversion Hwff.
-    destruct Hdef as [? [? ?]]; eapply eq_pc_uid; eauto. 
-    inversion Hwff; eapply dom_step; eauto. 
+    destruct Hdef as [? [? ?]]; eapply eq_pc_uid; eauto.
+    inversion Hwff; eapply dom_step; eauto.
   Qed.
 
   (** ** Progress & Preservation *)
 
-  (** Extend well-formedness definitions to include all components of 
+  (** Extend well-formedness definitions to include all components of
   the state. *)
 
   Definition wf_loc (g:Cfg.t) (p:pc) (loc:loc) : Prop :=
@@ -239,19 +239,19 @@ Module OpsemCorrect.
   | wf_state_intro : forall st
       (Hwfpc: wf_pc g st.(st_pc))
       (Hwfloc: wf_loc g st.(st_pc) st.(st_loc))
-      (Hwfppc: at_entry g st.(st_pc) \/ 
+      (Hwfppc: at_entry g st.(st_pc) \/
                  succ_pc g st.(st_ppc) (entry_of_pc st.(st_pc)))
-      (Hwfploc: at_entry g st.(st_pc) \/ 
+      (Hwfploc: at_entry g st.(st_pc) \/
                   wf_loc g st.(st_ppc) st.(st_ploc)),
       wf_state g st.
 
   (** Initial state is well formed *)
 
-  Lemma wf_init_state : 
+  Lemma wf_init_state :
     forall g m, wf_prog g ->
     wf_state g (init_state g m).
   Proof.
-    intros g m Hprog. inversion Hprog. 
+    intros g m Hprog. inversion Hprog.
     apply wf_entry in Hwfcfg.
     econstructor. auto.
     red. simpl. intros. red in H. destruct H as [? [? [? ?]]].
@@ -273,7 +273,7 @@ Module OpsemCorrect.
     insn_at_pc g st.(st_pc) i ->
     ~ is_phi i.
    Proof.
-     intros g st i Hprog Hentry Hinsn. 
+     intros g st i Hprog Hentry Hinsn.
      destruct Hprog as [_ ? _ ?].
 
      specialize (Hwfis _ _ Hinsn). inversion Hwfis; subst.
@@ -281,7 +281,7 @@ Module OpsemCorrect.
      destruct (insn_phis i) eqn:His. contradiction H2; auto.
      assert (In p (insn_phis i)) as Hin. rewrite His. left; auto.
      destruct p. apply H1 in Hin. destruct Hin as [pred [Hpred Ht0]].
-     specialize (Hwfentry pred). contradict Hwfentry. 
+     specialize (Hwfentry pred). contradict Hwfentry.
      rewrite <- Hentry; auto.
    Qed.
 
@@ -296,13 +296,13 @@ Module OpsemCorrect.
     In v (insn_uses i) ->
     exists n, eval_val loc v = Some n.
   Proof.
-    intros ? ? ? ? v Hwff Hwfloc Hnotphi Hi ?. 
+    intros ? ? ? ? v Hwff Hwfloc Hnotphi Hi ?.
     destruct v as [uid | n].
-    simpl. inversion Hwff as [_ ? _]. apply Hwfis in Hi. 
+    simpl. inversion Hwff as [_ ? _]. apply Hwfis in Hi.
     destruct Hi as [? ? Huse].
     destruct (is_phi_decidable i).
     - contradiction.
-    specialize (Huse Hnotphi uid). 
+    specialize (Huse Hnotphi uid).
     lapply Huse; auto.
     simpl; eauto.
   Qed.
@@ -311,7 +311,7 @@ Module OpsemCorrect.
 
   Definition FinalState (g:Cfg.t) (s:state) : Prop :=
     exists uid, insn_at_pc g s.(st_pc) (uid, cmd_tmn tmn_ret).
-  
+
   Lemma progress : forall g s,
     wf_prog g -> wf_state g s ->
     FinalState g s \/ exists s', step g s s'.
@@ -319,22 +319,22 @@ Module OpsemCorrect.
     intros g s Hwff Hwfs.
     inversion Hwfs as [? Hwfpc]; subst. inversion Hwff.
     pose proof (wf_pc_insn g Hwfcfg _ Hwfpc) as [[i c] Hi].
-    rename s into j. set (s:=j) in *. destruct j. 
+    rename s into j. set (s:=j) in *. destruct j.
     destruct c.
-  
+
     - (* Case "cmd_bop". *)
     eelim (eval_val__wf_loc) with (v:=v) (loc:=st_loc0); eauto; simpl; auto.
     eelim (eval_val__wf_loc) with (v:=v0) (loc:=st_loc0); eauto; simpl; auto.
     intros n1 Heqn1 n2 Heqn2.
     right. eexists. eapply step_bop; eauto. unfold eval_bop.
-    rewrite Heqn1, Heqn2. reflexivity. 
+    rewrite Heqn1, Heqn2. reflexivity.
 
     - (* Case "cmd_phi". *)
     right. specialize (Hwfis _ _ Hi). inversion Hwfis; subst.
-    
-    destruct Hwfppc as [|Hwfppc]. 
+
+    destruct Hwfppc as [|Hwfppc].
     exfalso; eapply at_entry_not_phi; eauto. simpl; trivial.
-    destruct Hwfploc as [|Hwfploc]. 
+    destruct Hwfploc as [|Hwfploc].
     exfalso; eapply at_entry_not_phi; eauto. simpl; trivial.
 
     destruct (Hphi I) as [Hphi2 _]. clear Hphi.
@@ -344,11 +344,11 @@ Module OpsemCorrect.
     cut (exists n, eval_val st_ploc0 v' = Some n). intros [n Hn].
     eexists. eapply step_phi. eauto. unfold eval_phi.
     rewrite Hv. rewrite Hn. reflexivity.
-  
-    destruct v' as [i' | n']. simpl in *. apply Hwfploc. apply Hdom. 
+
+    destruct v' as [i' | n']. simpl in *. apply Hwfploc. apply Hdom.
     eapply assoc_in. apply Hv. simpl; eauto.
     eapply in_assoc_some. apply Hin.
-  
+
     - (* Case "cmd_tmn". *)
     destruct t0.
     * (*  SCase "tmn_jmp". *)
@@ -357,7 +357,7 @@ Module OpsemCorrect.
     * (* SCase "tmn_cbr". *)
       cut (exists n, eval_val st_loc0 v = Some n). intros [n Heqn].
       right. eexists. eapply step_tmn. eauto. simpl. rewrite Heqn. reflexivity.
-      eapply eval_val__wf_loc; eauto; simpl; auto. 
+      eapply eval_val__wf_loc; eauto; simpl; auto.
 
     * (* SCase "tmn_ret". *)
       left. unfold FinalState. eexists. eauto.
@@ -366,7 +366,7 @@ Module OpsemCorrect.
     right. eexists. apply step_load. eauto.
 
     - (* Case "cmd_store". *)
-    right. cut (exists n1, eval_val st_loc0 v = Some n1). 
+    right. cut (exists n1, eval_val st_loc0 v = Some n1).
     intros [n1 Heqn1]. eexists. eapply step_store. eauto. eauto.
     eapply eval_val__wf_loc; eauto; simpl; auto.
   Qed.
@@ -380,11 +380,11 @@ Module OpsemCorrect.
     ~ is_tmn i ->
     wf_pc g (incr_pc p).
   Proof.
-    intros. inversion H. 
+    intros. inversion H.
     apply (wf_pc_tmn g Hwfcfg) in H0 as [pt [Ht Hle]].
     eapply wf_pc_le_tmn; eauto.
     inversion Hle; subst. destruct H0.
-    contradict H2. eapply Hwftmn; eauto. 
+    contradict H2. eapply Hwftmn; eauto.
     constructor; auto with arith.
   Qed.
 
@@ -394,7 +394,7 @@ Module OpsemCorrect.
     intros.
     destruct t0; simpl in *.
     inversion H; auto.
-    destruct (eval_val loc v). injection H. 
+    destruct (eval_val loc v). injection H.
       destruct n; eauto.
       discriminate H. discriminate H.
   Qed.
@@ -409,12 +409,12 @@ Module OpsemCorrect.
     succ_pc g p1 p2 ->
     uid_sdom_pc g uid p2 ->
     uid_sdom_pc g uid p1.
-  Proof. 
+  Proof.
     destruct i; intros. inversion H4 as [? [[? [? Ht]] ?]].
-    eapply uid_sdom_step; eauto. 
-    contradict Ht. subst t0. assert (x = p1). 
+    eapply uid_sdom_step; eauto.
+    contradict Ht. subst t0. assert (x = p1).
     inversion H; eapply uid_at_pc_inj; try red; eauto. subst x.
-    replace (uid, x0) with (uid, c); trivial. 
+    replace (uid, x0) with (uid, c); trivial.
     inversion H; eapply insn_at_pc_func; eauto.
   Qed.
 
@@ -429,7 +429,7 @@ Module OpsemCorrect.
     intros. red; intros. destruct (Uid.eq_dec uid0 uid). subst.
     rewrite Locals.update_eq; eauto. reflexivity.
     rewrite Locals.update_neq; eauto. apply H3.
-    eapply uid_sdom_step; eauto. 
+    eapply uid_sdom_step; eauto.
   Qed.
 
   (** ** Preservation *)
@@ -441,7 +441,7 @@ Module OpsemCorrect.
     intros g _ s' Hwff [s Hwfpc Hwfloc] Hstep.
     inversion Hstep; subst; simpl in *;
       rename pc into pc0.
-    
+
     - (* Case "step_bop". *)
     assert (wf_pc g (incr_pc pc0)) as Hwfpc' by (eapply wf_pc_incr; eauto).
     constructor; simpl; try solve [destruct pc0; auto].
@@ -451,11 +451,11 @@ Module OpsemCorrect.
     assert (wf_pc g (incr_pc pc0)) as Hwfpc' by (eapply wf_pc_incr; eauto).
     constructor; simpl; try solve [destruct pc0; auto].
     eapply wf_loc_succ; eauto. constructor.
-  
+
     - (* Case "step_tmn". *)
     assert (wf_pc g (l', 0)) as Hwfpc'.
       inversion Hwff as [_ Hwfi _]. specialize (Hwfi _ _ H).
-      inversion Hwfi. red in Hlbl. apply Hlbl. 
+      inversion Hwfi. red in Hlbl. apply Hlbl.
       eauto. eapply eval_tmn_in_lbls. eauto.
 
     assert (succ_pc g pc0 (l', 0)) as Hsucc.

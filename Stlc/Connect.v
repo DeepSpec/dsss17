@@ -90,7 +90,7 @@ Proof. (* WORKED IN CLASS *)
   default_simp.
   unfold close_exp_wrt_exp.
   default_simp.
-Qed. 
+Qed.
 (***********************************************************************)
 (** ** Connecting free variable functions.                             *)
 (***********************************************************************)
@@ -476,7 +476,7 @@ Proof.
   (* WORKED IN CLASS *)
   induction s; intros; try destruct a; default_simp.
   rewrite IHs; auto.
-Qed. 
+Qed.
 
 (***********************************************************************)
 (** * Simulation                                                       *)

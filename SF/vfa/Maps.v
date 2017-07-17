@@ -34,9 +34,9 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Logic.FunctionalExtensionality.
 
 (** Documentation for the standard library can be found at
-    http://coq.inria.fr/library/.  
+    http://coq.inria.fr/library/.
 
-    The [SearchAbout] command is a good way to look for theorems 
+    The [SearchAbout] command is a good way to look for theorems
     involving objects of specific types. *)
 
 (* ################################################################# *)

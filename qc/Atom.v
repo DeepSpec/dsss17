@@ -6,8 +6,8 @@
 
 
 
-(** This file defines a type of atoms with: 
-      - a _decidable equality_ 
+(** This file defines a type of atoms with:
+      - a _decidable equality_
       - a way of generating _fresh_ atoms
 *)
 
@@ -39,7 +39,7 @@ Module Atom : ATOM.
 
   Definition t := nat.
   Definition eq_dec := eq_nat_dec.
-  
+
   Fixpoint max_elt (al:list t) : t :=
     match al with
       | nil => 0
@@ -56,8 +56,8 @@ Module Atom : ATOM.
       inversion H; subst; simpl. apply Nat.le_max_l.
       eapply le_trans; auto with arith. (* apply Nat.le_max_r. *)
   Qed.
-    
-  Lemma fresh_not_in : forall l, 
+
+  Lemma fresh_not_in : forall l,
     ~ In (fresh l) l.
   Proof.
     unfold fresh, not. intros l Hin.
@@ -68,7 +68,7 @@ Module Atom : ATOM.
   Include HasUsualEq <+ UsualIsEq.
 
   Definition nat_of (a : nat) := a.
-  
+
 End Atom.
 
 (* Automatically unfold Atom.eq *)

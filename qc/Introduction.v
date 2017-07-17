@@ -1,7 +1,7 @@
 (** * Introduction *)
 
 (**  Can we trim the import list (perhaps adding some thing to
-   QuickChick.v)? 
+   QuickChick.v)?
  *)
 Set Warnings "-extraction-opaque-accessed,-extraction".
 Set Warnings "-notation-overridden,-parsing".
@@ -48,10 +48,10 @@ Conjecture removeP : forall x l,  ~ (In x (remove x l)).
 
 QuickChick removeP.
 
-(** The [QuickChick] command takes a property (which must be 
-    "executable" -- we'll see later exactly what this means) and 
-    attempts to falsify it by running it on many randomly 
-    generated inputs, resulting in output like this: 
+(** The [QuickChick] command takes a property (which must be
+    "executable" -- we'll see later exactly what this means) and
+    attempts to falsify it by running it on many randomly
+    generated inputs, resulting in output like this:
 
     0
     [0, 0]
@@ -112,7 +112,7 @@ Fixpoint insert x l :=
     _typeclasses_, which QuickChick uses extensively both internally
     and in its programmatic interface to users.  This is
     [Typeclasses].
-    
+
     Next ([QC]) we'll cover the core concepts and features of
     QuickChick itself.
 
@@ -123,4 +123,3 @@ Fixpoint insert x l :=
     compiler appears as the [CompilerTest] chapter of the [vminus]
     volume. *)
 
-       

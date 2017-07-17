@@ -4,7 +4,7 @@
 (* ################################################################# *)
 (** * Imp: Simple Imperative Programs *)
 
-(** This file presents a variant of the Imp programming language 
+(** This file presents a variant of the Imp programming language
     adapted from the Software Foundations book.  It is the source
     language that will be compiled to the Vminus intermediate language
     in this development.
@@ -17,17 +17,17 @@ Require Import Vminus.Sequences.
 (* ----------------------------------------------------------------- *)
 (** *** Identifiers *)
 
-(** To simplify the compilation process, this variant of Imp uses 
+(** To simplify the compilation process, this variant of Imp uses
     [Atom.t] values as variable identifiers.  [Atom.t] is also used by
     the [Vminus] language, so making them the same avoids the need to
     use some kind of mapping from source to target identifiers.
 
     This is a slight deviation from the earlier presentation that took
-    [id] to be constructed via [Id : nat -> id].  
+    [id] to be constructed via [Id : nat -> id].
 
     The reason to use [Atom.t] is that this type supports the
     generation of "fresh" identifiers, a feature needed in
-    implementing a compiler.  
+    implementing a compiler.
 *)
 
 Definition id := Atom.t.
@@ -36,7 +36,7 @@ Definition id := Atom.t.
 (** *** Arithmetic expressions *)
 (** Arithmetic expressions are just the same as in Imp. *)
 
-Inductive aexp : Type := 
+Inductive aexp : Type :=
   | ANum   : nat -> aexp
   | AId    : id -> aexp
   | APlus  : aexp -> aexp -> aexp
@@ -49,7 +49,7 @@ Inductive aexp : Type :=
     we'll see) Vminus doesn't support boolean values natively, we'll
     have to compile these to natural numbers. *)
 
-Inductive bexp : Type := 
+Inductive bexp : Type :=
   | BTrue  : bexp
   | BFalse : bexp
   | BEq    : aexp -> aexp -> bexp
@@ -71,15 +71,15 @@ Inductive com : Type :=
 
 (* ----------------------------------------------------------------- *)
 (** *** Notation *)
-Notation "'SKIP'" := 
+Notation "'SKIP'" :=
   CSkip : imp_scope.
-Notation "X '::=' a" := 
+Notation "X '::=' a" :=
   (CAss X a) (at level 60) : imp_scope.
-Notation "c1 ;; c2" := 
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity) : imp_scope.
-Notation "'WHILE' b 'DO' c 'END'" := 
+Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity) : imp_scope.
-Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" := 
+Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
   (CIf e1 e2 e3) (at level 80, right associativity) : imp_scope.
 
 (** *** An Example:
@@ -106,7 +106,7 @@ Definition update := @State.update nat.
 
 (* ----------------------------------------------------------------- *)
 (** *** Arithmetic evaluation *)
-(** Arithmetic and boolean expressions are evaluated in a given 
+(** Arithmetic and boolean expressions are evaluated in a given
     state. *)
 
 Fixpoint aeval (e : aexp) (st : state) : nat :=
@@ -122,7 +122,7 @@ Fixpoint aeval (e : aexp) (st : state) : nat :=
 (* ----------------------------------------------------------------- *)
 (** *** Boolean evaluation *)
 Fixpoint beval (e : bexp) (st : state) : bool :=
-  match e with 
+  match e with
   | BTrue       => true
   | BFalse      => false
   | BEq a1 a2   => beq_nat (aeval a1 st) (aeval a2 st)
@@ -148,7 +148,7 @@ Inductive step : (com * state) -> (com * state) -> Prop :=
     step (SKIP ;; c2, st) (c2, st)
 
 | S_IfTrue : forall st c1 c2 e,
-    beval e st = true -> 
+    beval e st = true ->
     step (IFB e THEN c1 ELSE c2 FI, st) (c1, st)
 
 | S_IfFalse : forall st c1 c2 e,
@@ -156,7 +156,7 @@ Inductive step : (com * state) -> (com * state) -> Prop :=
     step (IFB e THEN c1 ELSE c2 FI, st) (c2, st)
 
 | S_While : forall st c e,
-    step (WHILE e DO c END, st) 
+    step (WHILE e DO c END, st)
          (IFB e THEN (c ;; WHILE e DO c END) ELSE SKIP FI, st).
 
 
@@ -173,7 +173,7 @@ Fixpoint imp_eval (c: com) (st: state) (fuel: nat) : option state :=
     | c1 ;; c2 =>
       match c1 with
       | SKIP => imp_eval c2 st n'
-      | _ => 
+      | _ =>
         match imp_eval c1 st n' with
         | Some st' => imp_eval c2 st' n'
         | None => None

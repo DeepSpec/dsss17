@@ -39,7 +39,7 @@ Section LIST.
     Nth a l n ->
     n < length l.
   Proof.
-    induction l. destruct n; simpl; intuition.  
+    induction l. destruct n; simpl; intuition.
     destruct n; simpl; intuition.
     apply Lt.lt_n_S. eapply IHl; eauto.
   Qed.
@@ -47,7 +47,7 @@ Section LIST.
   Lemma length_Nth : forall l n,
     n < length l ->
     exists a, Nth a l n.
-  Proof. 
+  Proof.
     induction l. inversion 1.
     intros. destruct n. simpl; eauto.
     simpl. apply IHl. auto with arith.
@@ -92,12 +92,12 @@ Section LIST.
   Lemma Nth_map : forall a l n f,
       Nth a l n -> Nth (f a) (map f l) n.
   Proof.
-    intros a. 
+    intros a.
     induction l.
     - intros. simpl in *. apply H.
     - simpl. destruct n; intros. rewrite H. reflexivity. apply IHl. apply H.
   Qed.
-      
+
 End LIST.
 
 Section NODUP.
@@ -113,7 +113,7 @@ Section NODUP.
     intros.
     induction l. inversion H0.
     destruct H0, H1. subst a. injection H1; auto.
-    inversion H; subst. apply in_map with (f:=@fst _ _) in H1. contradiction. 
+    inversion H; subst. apply in_map with (f:=@fst _ _) in H1. contradiction.
     inversion H; subst. apply in_map with (f:=@fst _ _) in H0. contradiction.
     apply IHl; auto. simpl in H. inversion H; auto.
   Qed.
@@ -137,10 +137,10 @@ Section NODUP.
   Lemma NoDup_app : forall (l l':list A),
     NoDup (l ++ l') -> NoDup l /\ NoDup l'.
   Proof.
-    induction l; simpl; intros. auto using NoDup_nil. 
-    inversion H; subst. 
+    induction l; simpl; intros. auto using NoDup_nil.
+    inversion H; subst.
     apply IHl in H3. destruct H3. split.
-      eapply NoDup_cons. contradict H2. apply in_or_app. 
+      eapply NoDup_cons. contradict H2. apply in_or_app.
       auto. auto. auto.
   Qed.
 
@@ -148,9 +148,9 @@ Section NODUP.
     NoDup (l1 ++ l2) ->
     In a l1 -> ~ In a l2.
   Proof.
-    intros. 
+    intros.
     apply in_split in H0 as [l11 [l12 Heql]].
-    rewrite Heql in H. rewrite <- app_assoc, <- app_comm_cons in H. 
+    rewrite Heql in H. rewrite <- app_assoc, <- app_comm_cons in H.
     apply NoDup_remove_2 in H. contradict H.
     rewrite app_assoc. apply in_or_app. auto.
   Qed.
@@ -176,7 +176,7 @@ Section FOLDS.
     exfalso. eapply NoDup_split; eauto.
     apply (in_flat_map f l b). eexists; eauto.
     eapply NoDup_app in H as [? ?].
-    apply IHl; auto. 
+    apply IHl; auto.
   Qed.
 
   Lemma NoDup_flat_map__NoDup : forall (A B:Type) (a:A) (f:A -> list B) l,
@@ -191,11 +191,11 @@ Section FOLDS.
 
   Lemma fold_left_1 : forall  (P:A -> Prop) (f:A -> B -> A) (bs : list B)
     (Hpres : forall a b, In b bs -> P a -> P (f a b)),
-    forall a a', 
+    forall a a',
       a' = fold_left f bs a -> P a -> P a'.
   Proof.
     intros. subst a'. generalize dependent a.
-    induction bs; simpl; intros. assumption. 
+    induction bs; simpl; intros. assumption.
     apply IHbs. intros. apply Hpres. right; auto. assumption.
     apply Hpres. left; auto. assumption.
   Qed.
@@ -204,7 +204,7 @@ Section FOLDS.
     (f:A -> B -> A)
     (Hpres : forall a b b', P a b -> P (f a b') b)
     (Hintr : forall a b, P (f a b) b),
-    forall a a' bs b, 
+    forall a a' bs b,
     a' = fold_left f bs a ->
     In b bs -> P a' b.
   Proof.
@@ -212,7 +212,7 @@ Section FOLDS.
     induction bs as [|b']. contradiction.
     simpl; intros. destruct H0. subst b'.
     set (a' := fold_left _ _ _). pattern a'.
-    eapply fold_left_1; eauto. reflexivity. 
+    eapply fold_left_1; eauto. reflexivity.
     apply IHbs. assumption.
   Qed.
 
@@ -245,7 +245,7 @@ Section ASSOC.
   Proof.
     induction l. inversion 1.
     intros. destruct a as [a b']. simpl.
-    destruct (eq_dec a0 a). eauto. 
+    destruct (eq_dec a0 a). eauto.
     destruct H. contradict n; inversion H; auto.
     eapply IHl; eauto.
   Qed.
@@ -268,7 +268,7 @@ Section ASSOC.
         * inversion H.
         * apply IHl. exact H.
   Qed.
-  
+
 End ASSOC.
 
 Require Import FSets FMaps.
@@ -278,7 +278,7 @@ Module FMapProps (E:UsualDecidableType) (M:FMapInterface.WSfun E).
   Local Notation K := M.key.
 
   Section FMapProps.
-  
+
   Variable V : Type.
 
   Definition find_default (m:M.t V) (k:K) (d:V) : V :=
@@ -294,7 +294,7 @@ Module FMapProps (E:UsualDecidableType) (M:FMapInterface.WSfun E).
     intros. unfold find_default.
     destruct (M.find n2 (M.add _ _ _)) eqn:Heq1, (M.find n2 m) eqn:Heq2.
     apply M.find_2 in Heq1. apply M.add_3 in Heq1; auto. apply M.find_1 in Heq1.
-      rewrite Heq2 in Heq1. injection Heq1. auto. 
+      rewrite Heq2 in Heq1. injection Heq1. auto.
     apply M.find_2 in Heq1. apply M.add_3 in Heq1; auto. apply M.find_1 in Heq1.
       rewrite Heq2 in Heq1. discriminate Heq1.
     apply M.find_2 in Heq2. eapply M.add_2 in Heq2; eauto. apply M.find_1 in Heq2.
@@ -320,7 +320,7 @@ Module Type LATTICE.
   Declare Instance eq_equiv : Equivalence eq.
   Declare Instance le_preorder : PreOrder le.
   Declare Instance le_poset : PartialOrder eq le.
-  
+
   Parameter eq_dec : forall x y, {x == y} + {x ~= y}.
 
   Parameter bot : t.
@@ -368,7 +368,7 @@ Module BoundedSet(Import S:FSetInterface.WS) <: LATTICE.
   Instance le_preorder : PreOrder le.
   Proof.
     constructor.
-    red. destruct x; simpl; intuition. 
+    red. destruct x; simpl; intuition.
     red. destruct x, y, z; simpl; intros; intuition.
     transitivity t1; auto.
   Qed.
@@ -377,13 +377,13 @@ Module BoundedSet(Import S:FSetInterface.WS) <: LATTICE.
   Proof.
     constructor.
     intro. repeat red. split.
-    destruct x, x0; simpl in *; intuition. 
+    destruct x, x0; simpl in *; intuition.
     unfold Subset. intros. rewrite H; auto.
     red. destruct x, x0; simpl in *; intuition.
     unfold Subset. intros. rewrite <- H. auto.
 
-    destruct x, x0; simpl; 
-      intros H; repeat red in H; simpl in H; 
+    destruct x, x0; simpl;
+      intros H; repeat red in H; simpl in H;
       intuition.
     repeat red in H1. repeat red in H0.
     red; intuition.
@@ -406,14 +406,14 @@ Module BoundedSet(Import S:FSetInterface.WS) <: LATTICE.
 
   Definition top : t := Some S.empty.
   Lemma le_top : forall x, x <= top.
-  Proof. 
+  Proof.
     simpl. destruct x; trivial. red. intros.
-    exfalso. eapply empty_iff; eauto. 
+    exfalso. eapply empty_iff; eauto.
   Qed.
 
   Definition join (t1 t2: t) : t :=
     match t1, t2 with
-      | Some s1, Some s2 => Some (S.inter s1 s2) 
+      | Some s1, Some s2 => Some (S.inter s1 s2)
       | None, Some s | Some s, None => Some s
       | None, None => None
     end.
@@ -432,11 +432,11 @@ Module BoundedSet(Import S:FSetInterface.WS) <: LATTICE.
 
   Definition union (t1 t2: t) : t :=
     match t1, t2 with
-      | Some s1, Some s2 => Some (S.union s1 s2) 
+      | Some s1, Some s2 => Some (S.union s1 s2)
       | None, Some s | Some s, None => None
       | None, None => None
     end.
-    
+
   Definition singleton (e:S.elt) : t := Some (S.singleton e).
 
   Definition In (e:S.elt) (t:t) : Prop :=

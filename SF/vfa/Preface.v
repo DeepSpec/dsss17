@@ -8,7 +8,7 @@
       (the Gallina language embedded in Coq's logic).
  - Prove it correct in Coq.
  - Compile it with an optimizing ML compiler.
- 
+
  Since you want your programs to be _efficient_, you'll want to
  implement sophisticated data structures and algorithms.  Since
  Gallina is a _purely functional_ language, it helps to have
@@ -101,7 +101,7 @@
     readers.  Advanced exercises are for readers who want an extra
     challenge (and, in return, a deeper contact with the material).
 
-    _Please do not post solutions to the exercises in any public place_: 
+    _Please do not post solutions to the exercises in any public place_:
     Software Foundations is widely used both for self-study and for
     university courses.  Having solutions easily available makes it
     much less useful for courses, which typically have graded homework

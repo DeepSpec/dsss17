@@ -17,7 +17,7 @@ Require Import Dom Kildall Util.
 Require Import FSets FMaps.
 
 
-Module AlgdomKildall (PC:UsualDecidableType) 
+Module AlgdomKildall (PC:UsualDecidableType)
                      (Import G:GRAPH with Definition V := PC.t)
        : Algdom G.
 
@@ -27,7 +27,7 @@ Module AlgdomKildall (PC:UsualDecidableType)
 
 
   Module L := BoundedSet NS.
-  Module Import K := ! ForwardSolver N L.    Module NM := K.NM.                       
+  Module Import K := ! ForwardSolver N L.    Module NM := K.NM.
   (* Module Import FMP := FMapProps N NM. *)
   Module FMF := FMapFacts.WFacts_fun N NM.
   Module FSF := FSetFacts.WFacts_fun N NS.
@@ -61,7 +61,7 @@ Module AlgdomKildall (PC:UsualDecidableType)
     calc_sdom g = Some sdom ->
     sdom (entry g) == L.top.
   Proof.
-    unfold calc_sdom. intros. 
+    unfold calc_sdom. intros.
     destruct (K.fixpoint _ _ _) eqn:Heqk; try discriminate H.
     injection H. intro. clear H. subst sdom.
     set (r := t0!!(entry g)). cut (L.le L.top r).
@@ -76,7 +76,7 @@ Module AlgdomKildall (PC:UsualDecidableType)
 
   Lemma successors_sound : forall g sdom n1 n2,
     calc_sdom g = Some sdom ->
-    Mem g n1 -> Mem g n2 -> Succ g n1 n2 -> 
+    Mem g n1 -> Mem g n2 -> Succ g n1 n2 ->
     L.union (L.singleton n1) (sdom n1) <= sdom n2.
   Proof.
     unfold calc_sdom. intros.
@@ -86,15 +86,15 @@ Module AlgdomKildall (PC:UsualDecidableType)
     set (trans n o := L.union (L.singleton n) o).
     change (L.union (L.singleton n1) t0!!n1)
            with (trans n1 t0!!n1).
-    eapply K.fixpoint_solution. 
-    eauto. 
+    eapply K.fixpoint_solution.
+    eauto.
 
     unfold inits. destruct (N.eq_dec n1 (entry g)).
     apply FMF.add_in_iff; auto. apply FMF.add_neq_in_iff; auto.
 
     (* separate lemma? *)
     apply enum_vs_compat in H0. set (f g n := NM.add n L.bot g).
-    assert (In n1 (enum_vs g) \/ NM.In n1 (NM.empty L.t)) 
+    assert (In n1 (enum_vs g) \/ NM.In n1 (NM.empty L.t))
            as Hin by exact (or_introl H0).
     generalize (enum_vs g) (NM.empty L.t) Hin.
     induction l; simpl. intuition.
@@ -124,8 +124,8 @@ Module AlgdomKildall (PC:UsualDecidableType)
     eapply K.fixpoint_invariant; eauto.
 
     intros. destruct (N.eq_dec (entry g) n).
-    subst n. contradict H0. 
-    apply entry_not_sdom. unfold inits. 
+    subst n. contradict H0.
+    apply entry_not_sdom. unfold inits.
     rewrite FMP.find_default_neq; auto. unfold FMP.find_default.
     destruct (NM.find _ _) as [l'|] eqn:Heq; simpl; auto.
 
@@ -142,19 +142,19 @@ Module AlgdomKildall (PC:UsualDecidableType)
 
     pose proof (succs_compat2 _ _ _ H) as Hmem.
     apply succs_compat in H.
-    
+
     destruct ls eqn:Heqls, ln eqn:Heqln; simpl; auto.
     apply FSF.inter_iff. split. apply H1; auto.
     apply FSF.union_iff.
     destruct (N.eq_dec n1 n). left. apply FSF.singleton_iff; auto.
     right. apply H0. red; split; auto.
-    eapply dom_step with (v2:=s); auto. 
-    
+    eapply dom_step with (v2:=s); auto.
+
     apply H1; auto.
 
     apply FSF.union_iff.
     destruct (N.eq_dec n1 n). left. apply FSF.singleton_iff; auto.
-    right. apply H0. red; split; auto. 
+    right. apply H0. red; split; auto.
     eapply dom_step with (v2:=s); auto.
 
   Qed.

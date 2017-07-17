@@ -25,12 +25,12 @@ Import V.Opsem.
 
 (**! Section test_compile_bexp extends compiler *)
 
-(* Fatal error with stack overflow 
+(* Fatal error with stack overflow
 Definition comp_bop_correct_checker: Checker :=
   forAll arbitrary (fun (a1: aexp) =>
   forAll arbitrary (fun (a2: aexp) =>
-  forAll arbitrary (fun (binop: bop) => 
-    collect (binop, a1, a2) (comp_correct_checker 
+  forAll arbitrary (fun (binop: bop) =>
+    collect (binop, a1, a2) (comp_correct_checker
       (comp_bop binop (comp_aexp a1) (comp_aexp a2))
       (fun m => V.Opsem.bop_denote binop (aeval a1 m) (aeval a2 m)))))).
  *)
@@ -38,22 +38,22 @@ Definition comp_bop_correct_checker: Checker :=
 Definition comp_bop_correct_checker: Checker :=
   forAll arbitrary (fun (a1: aexp) =>
   forAll arbitrary (fun (a2: aexp) =>
-  forAll arbitrary (fun (binop: bop) => 
-    collect binop (comp_correct_checker 
+  forAll arbitrary (fun (binop: bop) =>
+    collect binop (comp_correct_checker
       (comp_bop binop (comp_aexp a1) (comp_aexp a2))
       (fun m => V.Opsem.bop_denote binop (aeval a1 m) (aeval a2 m)))))).
 
 (* ! QuickChick comp_bop_correct_checker. *)
 
 Definition comp_bexp_correct_checker : Checker :=
-  forAll arbitrary (fun b: bexp => 
+  forAll arbitrary (fun b: bexp =>
     comp_correct_checker (comp_bexp b) (fun m => if (beval b m) then 1 else 0)).
 
 (* ! QuickChick comp_bexp_correct_checker. *)
 
 (** Exercise: Now write a checker for the following.
 
-Lemma comp_store_correct : 
+Lemma comp_store_correct :
   forall g a v le lr cs st,
   insns_at_pc g (block_entry le) (steval (comp_store a v lr) cs) ->
   st_pc st = (block_entry le) ->
@@ -86,7 +86,7 @@ Definition comp_store_correct_checker_inner'
       let new_dom := (v :: vst_mem_dom vst) in
       whenFail ("::: cfg is: " ++ show g ++
                 " ::: initial state pc: " ++ show (vst_pc vst) ++
-                " ::: le: " ++ show le ++ 
+                " ::: le: " ++ show le ++
                 " ::: lr: " ++ show lr ++
                 " ::: store to " ++ show v ++
                 " ::: curr pc: " ++ show (block_entry lr) ++
@@ -117,7 +117,7 @@ Definition comp_store_correct_checker_inner
   | inr st' =>
     if (eq_dec_pc (V.Opsem.st_pc st') (block_entry lr)) then
       let new_dom := (v :: vst_mem_dom vst) in
-      whenFail 
+      whenFail
         "comp_store_correct: memories mismatch"
         (memory_on_domain_checker new_dom
           (V.Opsem.st_mem st')
@@ -147,17 +147,17 @@ Definition comp_cond_correct_checker_inner
   let '(g, end_pc) :=
       wrap_code_in_cfg (block_entry le)
                        (Stmon.steval (comp_cond b l1 l2) cs) [] in
-  let l := (if beval b (V.Opsem.st_mem st) then l1 else l2) in  
+  let l := (if beval b (V.Opsem.st_mem st) then l1 else l2) in
   match (V.Opsem.eval_until_pc g st (block_entry l) 1000) with
   | inl err =>
-    whenFail 
+    whenFail
       ("::: cfg is: " ++ show g ++
        "::: comp_cond_correct: " ++ err ++
        "::: looking for pc: " ++ show end_pc
       )
       false
   | inr st' =>
-    if (eq_dec_pc (V.Opsem.st_pc st') (block_entry l)) then 
+    if (eq_dec_pc (V.Opsem.st_pc st') (block_entry l)) then
       whenFail "comp_store_correct: memories mismatch"
                (memory_on_domain_checker (vst_mem_dom vst)
                                          (V.Opsem.st_mem st)
@@ -178,14 +178,14 @@ Definition comp_cond_correct_checker : Checker :=
 
 *)
 
-(** *** NOT DONE 
+(** *** NOT DONE
 Definition match_config_checker
            (c: Imp.com) ((g, l1 l2): cfg * lbl * lbl)
   : Checker :=
   match c with
   | SKIP => whenFail "match_config: labels not equal for skip"
                     (eq_dec_lbl l1 l2)
-  | 
+  |
 
 
 Inductive match_config : Imp.com -> (cfg * lbl * lbl) -> Prop :=
@@ -247,7 +247,7 @@ Lemma simulation_step' :
 Lemma simulation_step' :
   forall c mem mem' st r,
   let '(c', mem') := Imp.step (c, mem) in
-  
+
 
   match_states g r (c, mem) st ->
   exists st',

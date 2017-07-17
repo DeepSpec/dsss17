@@ -105,15 +105,15 @@ Lemma aeval_agree:
 Proof.
   induction a; simpl; intros.
 - auto.
-- apply H. fsetdec. 
-- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec. 
+- apply H. fsetdec.
 - f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
-- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec. 
+- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
+- f_equal. apply IHa1. fsetdec. apply IHa2. fsetdec.
 Qed.
 
 Lemma beval_agree:
   forall L s1 s2, agree L s1 s2 ->
-  forall b, VS.Subset (fv_bexp b) L -> 
+  forall b, VS.Subset (fv_bexp b) L ->
   beval s1 b = beval s2 (rename_bexp b).
 Proof.
   induction b; simpl; intros.
@@ -132,7 +132,7 @@ Lemma agree_update_dead:
   agree L s1 s2 -> ~VS.In x L ->
   agree L (t_update s1 x v) s2.
 Proof.
-  intros; red; intros. unfold t_update. rewrite false_beq_id. auto. congruence. 
+  intros; red; intros. unfold t_update. rewrite false_beq_id. auto. congruence.
 Qed.
 
 (** Agreement is preserved by simultaneous assignment to a live variable
@@ -145,13 +145,13 @@ Lemma agree_update_live:
   (forall z, VS.In z L -> z <> x -> f z <> f x) ->
   agree L (t_update s1 x v) (t_update s2 (f x) v).
 Proof.
-  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:E. 
+  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:E.
 - (* x = x0 *)
   apply beq_id_true_iff in E. subst x0. rewrite <- beq_id_refl. auto.
 - (* x <> x0 *)
-  apply beq_id_false_iff in E. 
+  apply beq_id_false_iff in E.
   assert (f x0 <> f x) by (apply H0; auto).
-  rewrite false_beq_id. 
+  rewrite false_beq_id.
   apply H. apply VS.remove_spec; auto.
   auto.
 Qed.
@@ -167,23 +167,23 @@ Lemma agree_update_move:
   (forall z, VS.In z L -> z <> x -> z <> y -> f z <> f x) ->
   agree L (t_update s1 x (s1 y)) (t_update s2 (f x) (s2 (f y))).
 Proof.
-  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:E. 
+  intros; red; intros. unfold t_update. destruct (beq_id x x0) eqn:E.
 - (* x = x0 *)
   apply beq_id_true_iff in E. subst x0. rewrite <- beq_id_refl.
-  apply H. fsetdec. 
+  apply H. fsetdec.
 - (* x <> x0 *)
-  apply beq_id_false_iff in E. 
+  apply beq_id_false_iff in E.
   destruct (beq_id x0 y) eqn:E'.
   + (* x0 = y *)
-    apply beq_id_true_iff in E'. subst x0. 
+    apply beq_id_true_iff in E'. subst x0.
     transitivity (s2 (f y)).
     apply H. fsetdec.
     destruct (beq_id (f x) (f y)); auto.
   + (* x0 <> y *)
-    apply beq_id_false_iff in E'. 
+    apply beq_id_false_iff in E'.
     assert (f x0 <> f x) by (apply H0; auto).
-    rewrite false_beq_id.  
-    apply H. fsetdec. 
+    rewrite false_beq_id.
+    apply H. fsetdec.
     auto.
 Qed.
 
@@ -200,7 +200,7 @@ Lemma agree_update_coalesced_move:
 Proof.
   intros. apply agree_extensional with (t_update s2 (f x) (s2 (f y))).
 - apply agree_update_move; auto.
-- intros. rewrite H1. unfold t_update. destruct (beq_id (f y) x0) eqn:E. 
+- intros. rewrite H1. unfold t_update. destruct (beq_id (f y) x0) eqn:E.
   + apply beq_id_true_iff in E. congruence.
   + auto.
 Qed.
@@ -220,11 +220,11 @@ Fixpoint correct_allocation (c: com) (L: VS.t) : bool :=
         match expr_is_var a with
         | Some y =>
             VS.for_all (fun z => beq_id z x || beq_id z y || negb (beq_id (f z) (f x))) L
-        | None => 
+        | None =>
             VS.for_all (fun z => beq_id z x || negb (beq_id (f z) (f x))) L
         end
       else true
-  | (c1 ;; c2) => 
+  | (c1 ;; c2) =>
       correct_allocation c1 (live c2 L) && correct_allocation c2 L
   | IFB b THEN c1 ELSE c2 FI =>
       correct_allocation c1 L && correct_allocation c2 L
@@ -237,18 +237,18 @@ Remark correct_allocation_assign_1:
   VS.for_all (fun z => beq_id z x || beq_id z y || negb (beq_id (f z) (f x))) L = true ->
   forall z, VS.In z L -> z <> x -> z <> y -> f z <> f x.
 Proof.
-  intros. 
+  intros.
   set (g := fun z => beq_id z x || beq_id z y || negb (beq_id (f z) (f x))) in *.
   assert (VS.For_all (fun x => g x = true) L).
-  { apply VS.for_all_spec. 
+  { apply VS.for_all_spec.
     red; intros. congruence.
     auto. }
-  red in H3. generalize (H3 z H0). unfold g. 
-  rewrite false_beq_id by auto. 
-  rewrite false_beq_id by auto. 
+  red in H3. generalize (H3 z H0). unfold g.
+  rewrite false_beq_id by auto.
+  rewrite false_beq_id by auto.
   simpl. destruct (beq_id (f z) (f x)) eqn:E; simpl; intros.
   congruence.
-  apply beq_id_false_iff; auto.  
+  apply beq_id_false_iff; auto.
 Qed.
 
 Remark correct_allocation_assign_2:
@@ -256,17 +256,17 @@ Remark correct_allocation_assign_2:
   VS.for_all (fun z => beq_id z x || negb (beq_id (f z) (f x))) L = true ->
   forall z, VS.In z L -> z <> x -> f z <> f x.
 Proof.
-  intros. 
+  intros.
   set (g := fun z => beq_id z x || negb (beq_id (f z) (f x))) in *.
   assert (VS.For_all (fun x => g x = true) L).
-  { apply VS.for_all_spec. 
+  { apply VS.for_all_spec.
     red; intros. congruence.
-    auto. } 
-  red in H2. generalize (H2 z H0). unfold g. 
+    auto. }
+  red in H2. generalize (H2 z H0). unfold g.
   rewrite false_beq_id by auto.
   simpl. destruct (beq_id (f z) (f x)) eqn:E; simpl; intros.
   congruence.
-  apply beq_id_false_iff; auto. 
+  apply beq_id_false_iff; auto.
 Qed.
 
 (** The proof of semantic preservation is a straightforward adaptation
@@ -287,7 +287,7 @@ Proof.
   exists st1; split. constructor. auto.
 
 - (* := *)
-  simpl in AG. destruct (VS.mem x L) eqn:is_live. 
+  simpl in AG. destruct (VS.mem x L) eqn:is_live.
   + (* x is live after *)
     assert (aeval st1 (rename_aexp a1) = n).
     { rewrite <- H. symmetry. eapply aeval_agree. eauto. fsetdec. }
@@ -296,10 +296,10 @@ Proof.
       apply expr_is_var_correct in is_var. subst a1. simpl in *.
       destruct (beq_id (f x) (f y)) eqn:coalesced.
       ** (* coalesced move *)
-         apply beq_id_true_iff in coalesced. 
+         apply beq_id_true_iff in coalesced.
          exists st1; split.
          apply E_Skip.
-         rewrite <- H. apply agree_update_coalesced_move; auto. 
+         rewrite <- H. apply agree_update_coalesced_move; auto.
          apply correct_allocation_assign_1; auto.
       ** (* preserved move *)
          exists (t_update st1 (f x) n); split.
@@ -315,12 +315,12 @@ Proof.
       apply correct_allocation_assign_2; auto.
   + (* x is dead after *)
     exists st1; split.
-    apply E_Skip. 
+    apply E_Skip.
     apply agree_update_dead. auto.
     rewrite <- VS.mem_spec. congruence.
 
 - (* seq *)
-  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2].  
+  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2].
   destruct (IHceval1 _ _ AG CORR1) as [st1' [E1 A1]].
   destruct (IHceval2 _ _ A1 CORR2) as [st2' [E2 A2]].
   exists st2'; split.
@@ -328,9 +328,9 @@ Proof.
   auto.
 
 - (* if true *)
-  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2]. 
+  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2].
   assert (beval st1 (rename_bexp b) = true).
-  { rewrite <- H. symmetry. eapply beval_agree; eauto. fsetdec. } 
+  { rewrite <- H. symmetry. eapply beval_agree; eauto. fsetdec. }
   destruct (IHceval L st1) as [st1' [E A]].
     eapply agree_mon; eauto. fsetdec.
     auto.
@@ -339,9 +339,9 @@ Proof.
   auto.
 
 - (* if false *)
-  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2]. 
+  simpl in AG. apply andb_true_iff in CORR; destruct CORR as [CORR1 CORR2].
   assert (beval st1 (rename_bexp b) = false).
-  { rewrite <- H. symmetry. eapply beval_agree; eauto. fsetdec. } 
+  { rewrite <- H. symmetry. eapply beval_agree; eauto. fsetdec. }
   destruct (IHceval L st1) as [st1' [E A]].
     eapply agree_mon; eauto. fsetdec.
     auto.
@@ -354,8 +354,8 @@ Proof.
   assert (beval st1 (rename_bexp b) = false).
   { rewrite <- H. symmetry. eapply beval_agree; eauto. }
   exists st1; split.
-  apply E_WhileFalse. auto. 
-  eapply agree_mon; eauto. 
+  apply E_WhileFalse. auto.
+  eapply agree_mon; eauto.
 
 - (* while loop *)
   destruct (live_while_charact b c L) as [P [Q R]].
@@ -365,9 +365,9 @@ Proof.
     eapply agree_mon; eauto.
     auto.
   destruct (IHceval2 L st2) as [st3 [E2 A2]].
-    auto. auto.  
+    auto. auto.
   exists st3; split.
-  apply E_WhileTrue with st2; auto. 
+  apply E_WhileTrue with st2; auto.
   auto.
 Qed.
 

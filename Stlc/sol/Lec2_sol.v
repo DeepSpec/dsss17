@@ -356,7 +356,7 @@ Proof.
     eapply typing_app.
       eapply IHtyping1. reflexivity. apply Uniq.
       eapply IHtyping2. reflexivity. apply Uniq.
-Qed. 
+Qed.
 
 (** *** Demo [typing_weakening]
 
@@ -445,7 +445,7 @@ Proof.
     apply typing_var.
       eapply uniq_remove_mid. apply J.
       eapply binds_remove_mid. apply H. apply n.
-Qed. 
+Qed.
 
 
 
@@ -504,7 +504,7 @@ Proof.
     intros F Eq. subst. simpl. eapply typing_app.
       apply IHHe1. reflexivity.
       apply IHHe2. reflexivity.
-Qed. 
+Qed.
 (** *** Exercise [typing_subst_simpl]
 
     Complete the proof of the substitution lemma stated in the form we
@@ -525,7 +525,7 @@ Proof.
   eapply typing_subst.
     simpl_env. apply H.
     apply J.
-Qed. 
+Qed.
 (*************************************************************************)
 (** * Type soundness *)
 (*************************************************************************)
@@ -594,7 +594,7 @@ Proof.
       pick fresh y for (L \u fv_exp e0).
       rewrite (subst_exp_intro y); auto.
       eapply typing_subst_simple; auto.
-Qed. 
+Qed.
 (*************************************************************************)
 (** ** Progress *)
 (*************************************************************************)
@@ -675,7 +675,7 @@ Proof.
         apply step_app.
           eapply typing_to_lc_exp; eauto.
           assumption.
-Qed. 
+Qed.
 
 (*************************************************************************)
 (** * Tactic support *)
@@ -808,7 +808,7 @@ Proof.
   intros.
   induction H; eauto.
   eapply typing_abs_exists with (x:=x); eauto.
-Qed. 
+Qed.
 (** *** Exercise [cofinite_exists] *)
 
 Lemma cofinite_exists : forall G e T,
@@ -817,7 +817,7 @@ Proof. (* SOLUTION: *)
   intros. induction H; eauto.
   pick fresh x.
   eapply typing_e_abs with (x:=x); eauto.
-Qed. 
+Qed.
 (***********************************************************************)
 (** ** Additional Exercises                                            *)
 (***********************************************************************)
@@ -847,4 +847,4 @@ Proof.
     fsetdec.
   - Case "typing_app".
     fsetdec.
-Qed. 
+Qed.

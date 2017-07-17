@@ -89,7 +89,7 @@ Theorem le_not_a_partial_function :
   ~ (partial_function le).
 Proof.
   unfold not. unfold partial_function. intros Hc.
-  assert (0 = 1) as Nonsense. { 
+  assert (0 = 1) as Nonsense. {
     apply Hc with (x := 0).
     - apply le_n.
     - apply le_S. apply le_n. }

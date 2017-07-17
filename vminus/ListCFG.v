@@ -16,27 +16,27 @@ Set Bullet Behavior "Strict Subproofs".
 Module ListCFG <: CFG.
 
   (** Blocks are labels paired with lists of instructions. *)
-  
+
   Definition block := (lbl * list insn)%type.
 
   (** A control-flow graph is an entry label with a list of blocks. *)
-  
+
   Definition t := (lbl * list block)%type.
   Local Notation cfg := t.
 
   Definition entry_block : cfg -> lbl := @fst _ _.
 
-  (**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)
   (** * Syntactically Well-formed ListCFGs *)
 
-  (** 
+  (**
       - no duplicate block names
       - no duplicate instruction ids  (i.e. _single assignment_ )
       - there is an entry label to the CFG
       - there are no empty blocks
 
    *)
-  
+
   Inductive wf_cfg' : cfg -> Prop :=
     wf_cfg_intro :
       forall l bs
@@ -49,10 +49,10 @@ Module ListCFG <: CFG.
   (* hack around some Coq limitation re inductive types & parameters *)
   Definition wf_cfg := wf_cfg'.
 
-    
-  (**  ------------------------------------------------------------------------- *)  
+
+  (**  ------------------------------------------------------------------------- *)
   (** ** Implementing the interface requirements: *)
-  
+
   Definition wf_pc (g:cfg) (p:pc) : Prop :=
     let (l, n) := p in
     exists is i, In (l, is) (snd g) /\ Nth i is n.
@@ -64,14 +64,14 @@ Module ListCFG <: CFG.
   Definition insn_at_pc (g:cfg) (p:pc) (i:insn) : Prop :=
     let (l, n) := p in
     exists is, In (l, is) (snd g) /\ Nth i is n.
-    
+
   Definition uid_at_pc (g:cfg) (p:pc) (uid:uid) : Prop :=
     exists c, insn_at_pc g p (uid, c).
 
   Lemma wf_pc_insn : forall g, wf_cfg g ->
     forall p, wf_pc g p -> exists i, insn_at_pc g p i.
   Proof.
-    unfold wf_pc, insn_at_pc. destruct p; intros. 
+    unfold wf_pc, insn_at_pc. destruct p; intros.
     decompose [ex and] H0. eauto.
   Qed.
 
@@ -80,21 +80,21 @@ Module ListCFG <: CFG.
   Proof.
 
     unfold wf_pc, tmn_pc. destruct p. intros.
-    decompose [ex and] H0. 
+    decompose [ex and] H0.
     exists (t0, pred (length x)). split. eauto.
-    constructor. 
+    constructor.
     apply PeanoNat.Nat.lt_le_pred.
     eapply Nth_length; eauto.
   Qed.
 
 
   (* Helper lemma: blocks have non-zero length. *)
-  
+
   Lemma wf_cfg_block_len : forall g, wf_cfg g ->
     forall l is, In (l, is) (snd g) -> length is <> 0.
   Proof.
-    inversion 1. intros l0 is H1.  destruct is; simpl; auto. 
-    contradict Hnonnil. 
+    inversion 1. intros l0 is H1.  destruct is; simpl; auto.
+    contradict Hnonnil.
     eapply in_map with (f:=@snd _ _) in H1. auto.
   Qed.
 
@@ -105,25 +105,25 @@ Module ListCFG <: CFG.
     decompose [ex and] H0. exists x.
 
     destruct x. apply wf_cfg_block_len in H3; auto. contradict H3; auto.
-    inversion H1; subst. apply le_lt_n_Sm in H5. 
-    erewrite <- S_pred in H5. 
-    apply length_Nth in H5 as [? ?]. 
+    inversion H1; subst. apply le_lt_n_Sm in H5.
+    erewrite <- S_pred in H5.
+    apply length_Nth in H5 as [? ?].
     eexists. split; eauto. eauto.
   Qed.
-  
+
   Lemma wf_entry : forall g, wf_cfg g ->
     wf_pc g (block_entry (entry_block g)).
   Proof.
     unfold wf_pc. inversion 1. simpl.
     apply in_map_iff in Hentry as [[? ?] [? ?]].
     destruct l0.
-    exfalso. pose proof (wf_cfg_block_len g H t0 []) as contra. 
+    exfalso. pose proof (wf_cfg_block_len g H t0 []) as contra.
     subst g; simpl in *. apply contra; auto.
-    eexists. eexists. 
+    eexists. eexists.
     simpl in *. subst l. split; eauto.
     simpl; eauto.
   Qed.
-  
+
   Lemma insn_at_pc_func : forall g, wf_cfg g ->
     functional (insn_at_pc g).
   Proof.
@@ -132,7 +132,7 @@ Module ListCFG <: CFG.
     cut (is1 = is2). intro; subst is2. eapply Nth_eq; eauto.
     eapply NoDup_assoc_func; eauto.
   Qed.
-  
+
   Lemma uid_at_pc_inj : forall g, wf_cfg g ->
     injective (uid_at_pc g).
   Proof.
@@ -143,11 +143,11 @@ Module ListCFG <: CFG.
     eapply NoDup_flat_map__NoDup in Huids; eauto.
     change is1 with (snd (l1, is1)) in Hnth1.
     change is2 with (snd (l2, is2)) in Hnth2.
-    subst; eapply NoDup_nth_inj; eauto. 
+    subst; eapply NoDup_nth_inj; eauto.
 
     set (f1 b := map (@fst _ _) (snd b)) in *.
     apply (NoDup_flat_map (l1, is1) (l2, is2) uid f1 bs); auto.
-    unfold f1; simpl. 
+    unfold f1; simpl.
     apply in_map_iff. exists (uid, c1); eauto using Nth_In.
     apply in_map_iff. exists (uid, c2); eauto using Nth_In.
   Qed.
@@ -172,7 +172,7 @@ Module ListCFG <: CFG.
     unfold functional in H2. eapply H2; red; eauto.
   Qed.
 
-  
+
   Lemma blocks_inj : forall g, wf_cfg g -> forall l is1 is2, In (l, is1) (snd g) -> In (l, is2) (snd g) -> is1 = is2.
   Proof.
     intros g H l is1 is2 H0 H1.
@@ -180,7 +180,7 @@ Module ListCFG <: CFG.
     subst; simpl in *.
     eapply NoDup_assoc_func; eauto.
   Qed.
-  
+
   Lemma pc_at_uid_inj : forall g, wf_cfg g ->
                              injective (fun x p => uid_at_pc g p x).
   Proof.
@@ -193,7 +193,7 @@ Module ListCFG <: CFG.
     inversion H. reflexivity.
   Qed.
 
-  (**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)
   (** ** Working with ListCFG *)
 
   Fixpoint remove (bs:list block) (l:lbl) : list block :=
@@ -203,9 +203,9 @@ Module ListCFG <: CFG.
       if l == l' then
         remove bs l
       else (l',is)::remove bs l
-    end.                                                      
-  
-  (** [update] Adds the given instruction list as a block labeled [l]. 
+    end.
+
+  (** [update] Adds the given instruction list as a block labeled [l].
 
       Note: this function does not enforce the unique-block label property.
   *)
@@ -236,9 +236,9 @@ Module ListCFG <: CFG.
     destruct (Lbl.eq_dec l2 l1); subst; tauto.
   Qed.
 
-  (**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)
   (** ** Implementing fetch *)
-  
+
   Definition fetch (g : cfg) (p: pc): option insn :=
     let '(entry_label, blocks) := g in
     let '(trgt_block, offset) := p in
@@ -248,9 +248,9 @@ Module ListCFG <: CFG.
     end.
 
   (** Helper lemma for proving that fetch corresponds to insn_at_pc *)
-  
+
   Lemma fetch_iff_in_cfg: forall entry_label blks trgt_label trgt_offset i,
-      NoDup (map fst blks) -> 
+      NoDup (map fst blks) ->
       fetch (entry_label, blks) (trgt_label, trgt_offset) = Some i <->
       exists instrs, In (trgt_label, instrs) blks /\ Nth i instrs trgt_offset.
   Proof.
@@ -271,9 +271,9 @@ Module ListCFG <: CFG.
         apply in_assoc_none with (b:=l) in found.
         contradiction.
   Qed.
-  
+
   (** [fetch] is the executable version of [insn_at_pc] *)
-  
+
   Lemma insn_at_pc_fetch :
     forall g pc i, wf_cfg g ->
               insn_at_pc g pc i <-> fetch g pc = Some i.
@@ -286,6 +286,6 @@ Module ListCFG <: CFG.
     rewrite fetch_iff_in_cfg; auto.
     simpl.
     split; auto.
-  Qed.      
-  
+  Qed.
+
 End ListCFG.

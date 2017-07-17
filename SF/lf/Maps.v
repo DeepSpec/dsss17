@@ -34,9 +34,9 @@ Require Import Coq.Strings.String.
 Require Import Coq.Logic.FunctionalExtensionality.
 
 (** Documentation for the standard library can be found at
-    http://coq.inria.fr/library/.  
+    http://coq.inria.fr/library/.
 
-    The [Search] command is a good way to look for theorems involving 
+    The [Search] command is a good way to look for theorems involving
     objects of specific types.  Take a minute now to experiment with it. *)
 
 (* ################################################################# *)
@@ -145,7 +145,7 @@ Definition t_update {A:Type} (m : total_map A)
   fun x' => if beq_id x x' then v else m x'.
 
 (** This definition is a nice example of higher-order programming:
-    [t_update] takes a _function_ [m] and yields a new function 
+    [t_update] takes a _function_ [m] and yields a new function
     [fun x' => ...] that behaves like the desired map.
 
     For example, we can build a map taking [id]s to [bool]s, where [Id

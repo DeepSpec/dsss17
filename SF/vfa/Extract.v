@@ -13,7 +13,7 @@
 Require Import Perm.
 
 Module Sort1.
-Fixpoint insert (i:nat) (l: list nat) := 
+Fixpoint insert (i:nat) (l: list nat) :=
   match l with
   | nil => i::nil
   | h::t => if i <=? h then i::h::t else h :: insert i t
@@ -52,7 +52,7 @@ Recursive Extraction  sort.
 End Sort1.
 
 (** This is better.  But the program still uses a unary representation of
-  natural numbers:  the number 7 is really (S (S (S (S (S (S (S O))))))). which in 
+  natural numbers:  the number 7 is really (S (S (S (S (S (S (S O))))))). which in
   Ocaml will be a data structure that's seven pointers deep.  The [leb] function
   takes time proportional to the difference in value between [n] and [m],
   which is terrible.  We'd like natural numbers to be represented as Ocaml [int].
@@ -87,10 +87,10 @@ Open Scope Z_scope.
  a mathematical theory without actually constructing it.  The reason
  that's dangerous is that if your axioms are inconsistent, then you
  can prove [False], or in fact, you can prove _anything_, so all your
- proofs are worthless.  So we must take care!  
+ proofs are worthless.  So we must take care!
 
- Here, we will axiomatize a _very weak_ mathematical theory:  
- We claim that there exists some type [int] with a function [ltb], 
+ Here, we will axiomatize a _very weak_ mathematical theory:
+ We claim that there exists some type [int] with a function [ltb],
  so that [int] injects into [Z], and [ltb] corresponds to the < relation
  on Z.  That seems true enough (for example, take [int=Z]), but
  we're not _proving_ it here. *)
@@ -101,7 +101,7 @@ Extract Inlined Constant int => "int".  (* so, extract it that way! *)
 Parameter ltb: int -> int -> bool.  (* This is the Ocaml (<) operator. *)
 Extract Inlined Constant ltb => "(<)".  (* so, extract it that way! *)
 
-(** Now, we need to axiomatize [ltb] so that we can reason about 
+(** Now, we need to axiomatize [ltb] so that we can reason about
   programs that use it.  We need to take great care here: the
   axioms had better be consistent with Ocaml's behavior, otherwise
   our proofs will be meaningless.
@@ -112,7 +112,7 @@ Extract Inlined Constant ltb => "(<)".  (* so, extract it that way! *)
   Coq's [Z] type.  The reason to do this is then we get to use the [omega]
   tactic, and other Coq libraries about integer comparisons. *)
 
-Parameter int2Z: int -> Z.  
+Parameter int2Z: int -> Z.
 Axiom ltb_lt : forall n m : int, ltb n m = true <-> int2Z n < int2Z m.
 
 (** Both of these axioms are sound.  There does (abstractly) exist a
@@ -135,7 +135,7 @@ Axiom ltb_lt : forall n m : int, ltb n m = true <-> int2Z n < int2Z m.
        ocaml_plus a b = c <-> int2Z a + int2Z b = int2Z c.]
 
   The first two lines are OK:  there really is a "+" function in Ocaml,
-  and its type really is  [int -> int -> int].  
+  and its type really is  [int -> int -> int].
 
   But [ocaml_plus_plus] is unsound!   From it, you could prove,
 
@@ -195,7 +195,7 @@ Lemma t_update_eq : forall A (m: total_map A) x v, (t_update m x v) x = v.
 Proof.
   intros. unfold t_update.
   bdestruct (x=?x); auto.
-  omega. 
+  omega.
 Qed.
 
 Theorem t_update_neq : forall (X:Type) v x1 x2 (m : total_map X),
@@ -237,13 +237,13 @@ Definition empty_tree : tree := E.
 Fixpoint lookup (x: key) (t : tree) : V :=
   match t with
   | E => default
-  | T tl k v tr => if ltb x k then lookup x tl 
+  | T tl k v tr => if ltb x k then lookup x tl
                          else if ltb k x then lookup x tr
                          else v
   end.
 
 Fixpoint insert (x: key) (v: V) (s: tree) : tree :=
- match s with 
+ match s with
  | E => T E x v E
  | T a y v' b => if  ltb x y then T (insert x v a) y v' b
                         else if ltb y x then T a y v' (insert x v b)
@@ -302,7 +302,7 @@ End TREES.
 
 Recursive Extraction empty_tree insert lookup elements.
 
-(** Next, we will extract it into an Ocaml source file, and measure its 
+(** Next, we will extract it into an Ocaml source file, and measure its
   performance. *)
 
 Extraction "searchtree.ml" empty_tree insert lookup elements.
@@ -335,12 +335,12 @@ let print_test name (f: int -> int) n =
   in (print_string "Insert and lookup "; print_int n;
       print_string " "; print_string name; print_string " integers in ";
       print_float time; print_endline " seconds.")
-  
+
 let test_random n = print_test "random" (fun _ -> Random.int n) n
 let test_consec n = print_test "consecutive" (fun i -> n-i) n
 
 let run_tests() = (test_random 1000000; test_random 20000; test_consec 20000)
-		    
+		
 let _ = run_tests ()
 >> *)
 
@@ -381,7 +381,7 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
    function [ltb]  that is abstract and uninstantiated (only during
    Extraction to Ocaml does [ltb] get instantiated).
 
-   So instead, we'll use the SearchTree module, 
+   So instead, we'll use the SearchTree module,
    where everything runs inside Coq. *)
 
 Require SearchTree.

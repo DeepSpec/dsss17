@@ -1,6 +1,6 @@
 (** * SearchTree: Binary search trees *)
 
-(** Binary search trees are an efficient data structure for 
+(** Binary search trees are an efficient data structure for
    lookup tables, that is, mappings from keys to values.
    The [total_map] type from Maps.v is an _inefficient_
    implementation: if you add N items to your total_map,
@@ -77,7 +77,7 @@ Proof. reflexivity.
 Qed.
 
 Goal SectionExample1.lookup = SectionExample2.lookup.
-Proof. 
+Proof.
   unfold SectionExample1.lookup, SectionExample2.lookup.
   try reflexivity. (* doesn't do anything. *)
 
@@ -112,13 +112,13 @@ Definition empty_tree : tree := E.
 Fixpoint lookup (x: key) (t : tree) : V :=
   match t with
   | E => default
-  | T tl k v tr => if x <? k then lookup x tl 
+  | T tl k v tr => if x <? k then lookup x tl
                          else if k <? x then lookup x tr
                          else v
   end.
 
 Fixpoint insert (x: key) (v: V) (s: tree) : tree :=
- match s with 
+ match s with
  | E => T E x v E
  | T a y v' b => if  x <? y then T (insert x v a) y v' b
                         else if y <? x then T a y v' (insert x v b)
@@ -206,7 +206,7 @@ Check t_apply_empty. (* : forall (A : Type) (x : id) (v : A),
            insertion or lookup will take as much as linear time.
 
 	   - SOLUTION: use an algorithm, such as "red-black trees",
-	   that ensures the trees stay balanced.  We'll do that in 
+	   that ensures the trees stay balanced.  We'll do that in
            Chapter [RedBlack].
 
      2.  Our keys are natural numbers, and Coq's [nat] type takes
@@ -262,7 +262,7 @@ Definition example_tree (v2 v4 v5 : V) :=
    T (T E 2 v2 E) 4 v4 (T E 5 v5 E).
 
 (** **** Exercise: 2 stars (example_map)  *)
-(* Fill in the definition of example_map with a total_map that 
+(* Fill in the definition of example_map with a total_map that
   you think example_tree should correspond to.  Use
   [t_update] and [(t_empty default)]. *)
 
@@ -291,7 +291,7 @@ Inductive Abs:  tree -> total_map V -> Prop :=
      If it isn't, go back and fix your definition of [example_map].
      You will probably need the [bdestruct] tactic, and [omega]. *)
 
-Lemma check_example_map: 
+Lemma check_example_map:
   forall v2 v4 v5, Abs (example_tree v2 v4 v5) (example_map v2 v4 v5).
 Proof.
 intros.
@@ -300,7 +300,7 @@ evar (m: total_map V).
 replace (example_map v2 v4 v5) with m; subst m.
 repeat constructor.
 extensionality x. destruct x as [x].
-(* HINT: 
+(* HINT:
   First,    [unfold example_map, t_update, combine, t_empty, beq_id.]
   Then, repeat the following procedure:  If you see something like
   [if 4 =? x then ... else ...],    use the tactic [bdestruct (4 =? x)].
@@ -321,9 +321,9 @@ repeat constructor.
 (change m with (example_map v2 v4 v5) in H || auto);
 (* auto; *)
 fail "Did you use copy-and-paste, from your check_example_map proof,
-       into your example_map definition?  If so, very clever. 
-       Please try it again with an example_map definition that 
-       you make up from first principles.  Or, to skip that, 
+       into your example_map definition?  If so, very clever.
+       Please try it again with an example_map definition that
+       you make up from first principles.  Or, to skip that,
        uncomment the (* auto; *) above.".
 Qed.
 
@@ -445,7 +445,7 @@ Fixpoint forall_nodes (t: tree) (P: tree->key->V->tree->Prop) : Prop :=
 
 Definition SearchTreeX (t: tree) :=
  forall_nodes t
-   (fun l k v r => 
+   (fun l k v r =>
       forall_nodes l (fun _ j _ _ => j<k) /\
       forall_nodes r (fun _ j _ _ => j>k)).
 
@@ -468,9 +468,9 @@ omega.
 Qed.
 
 Theorem elements_relate_second_attempt:
-  forall t cts,  
+  forall t cts,
   SearchTreeX t ->
-  Abs t cts -> 
+  Abs t cts ->
   list2map (elements t) = cts.
 Proof.
 
@@ -561,7 +561,7 @@ destruct H1. inv H1. omega.
 apply H; eauto.
 Qed.
 
-Lemma list2map_app_left: 
+Lemma list2map_app_left:
   forall (al bl: list (key*V)) (i: key) v,
      In (i,v) al -> list2map (al++bl) (Id i) = list2map al (Id i).
 Proof.
@@ -613,9 +613,9 @@ Qed.
 
 (* EX 3? (elements_relate) *)
 Theorem elements_relate:
-  forall t cts,  
+  forall t cts,
   SearchTree t ->
-  Abs t cts -> 
+  Abs t cts ->
   list2map (elements t) = cts.
 Proof.
 rewrite elements_slow_elements.
@@ -640,7 +640,7 @@ bdestruct (k=?i); [ omega | ].
 bdestruct (i<?k); [ | omega].
 auto.
 (* FILL IN HERE *) Admitted.
-(** [] *)   
+(** [] *)
 
 (* ################################################################# *)
 (** * Preservation of representation invariant *)
@@ -678,7 +678,7 @@ Qed.
 
 (** **** Exercise: 3 stars (insert_SearchTree)  *)
 Theorem insert_SearchTree:
-  forall k v t, 
+  forall k v t,
    SearchTree t -> SearchTree (insert k v t).
 Proof.
 clear default. (* This is here to avoid a nasty interaction between Admitted and Section/Variable *)
@@ -739,7 +739,7 @@ Print Abs.
 (** Because the [combine] function is chosen very carefully, it turns out
   that this abstraction relation even works on bogus trees! *)
 
-Remark abstraction_of_bogus_tree: 
+Remark abstraction_of_bogus_tree:
  forall v2 v3,
    Abs (T (T E 3 v3 E) 2 v2 E) (t_update (t_empty default) (Id 2) v2).
 Proof.
@@ -772,8 +772,8 @@ Qed.
   not have to care about the behavior of [lookup] (and [insert]) on
   bogus trees.  We should not need to prove anything about it, either.
 
-  Sure, it's convenient in this case that the abstraction relation is able to 
-  cope with ill-formed trees.  But in general, when proving correctness of 
+  Sure, it's convenient in this case that the abstraction relation is able to
+  cope with ill-formed trees.  But in general, when proving correctness of
   abstract-data-type (ADT) implementations, it may be a lot of extra
   effort to make the abstraction relation as heavy-duty as that.
   It's often much easier for the abstraction relation to assume that the
@@ -821,9 +821,9 @@ Definition AbsX (t: tree) (m: total_map V) : Prop :=
 (** It's easy to prove that [elements] respects this abstraction relation: *)
 
 Theorem elements_relateX:
-  forall t cts,  
+  forall t cts,
   SearchTree t ->
-  AbsX t cts -> 
+  AbsX t cts ->
   list2map (elements t) = cts.
 Proof.
 intros.
@@ -861,7 +861,7 @@ assert (~ lookup 3 bogus = m (Id 3)). {
     the bogus tree that does not satisfy the [SearchTree] property.
     [m] is the [total_map] that corresponds to the elements of [bogus].
     The [lookup] function returns [default] at key [3],
-    but the map [m] returns [v] at key [3].  And yet, assumption [H0] 
+    but the map [m] returns [v] at key [3].  And yet, assumption [H0]
     claims that they should return the same thing. *)
 apply H2.
 apply H0.
@@ -890,7 +890,7 @@ rewrite elements_slow_elements.
 (** ** Coherence with [elements] instead of [lookup] *)
 (** The first definition of the abstraction relation, [Abs], is "coherent"
      with the [lookup] operation, but not very coherent with the [elements]
-     operation.  That is, [Abs] treats all trees, including ill-formed ones, 
+     operation.  That is, [Abs] treats all trees, including ill-formed ones,
      much the way [lookup] does, so it was easy to prove [lookup_relate].
      But it was harder to prove [elements_relate].
 

@@ -27,7 +27,7 @@ Instance shrink_lbl : Shrink lbl := {| shrink x := [] |}.
 Instance show_lbl : Show lbl :=
   {| show x :=
        ("lbl "%string ++ show x ++ "")%string |}.
-  
+
 Instance gen_uid : Gen uid :=
   {| arbitrary := gen_fresh fresh_store |}.
 
@@ -101,7 +101,7 @@ Proof. unfold pc. auto with typeclass_instances. Defined.
 Instance show_pc : Show pc :=
   {| show p :=
        let '(lbl, offset) := p in
-       "(blk " ++ (show lbl) ++ ", ofs " 
+       "(blk " ++ (show lbl) ++ ", ofs "
                ++ show_nat offset ++ ")"
   |}.
 

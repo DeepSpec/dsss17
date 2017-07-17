@@ -19,24 +19,24 @@
      uses a priority queue.
 
   We will be considering _mergeable_ priority queues, with one
-   additional operator: 
+   additional operator:
 
   - [ merge: priqueue -> priqueue -> priqueue ]
 
   The classic data structure for priority queues is the "heap", a balanced
-  binary tree in which the the key at any node is _bigger_ than all the 
+  binary tree in which the the key at any node is _bigger_ than all the
   keys in nodes below it.  With heaps, [empty] is constant time,
   [insert] and [delete_max] are logN time.  But [merge] takes NlogN
-  time, as one must take all the elements out of one queue and 
+  time, as one must take all the elements out of one queue and
   insert them into the other queue.
 
   Another way to do priority queues is by _balanced binary search trees_
   (such as red-black trees); again, [empty] is constant time,
   [insert] and [delete_max] are logN time, and [merge] takes NlogN
-  time, as one must take all the elements out of one queue and 
+  time, as one must take all the elements out of one queue and
   insert them into the other queue.
 
-  In the _Binom_ chapter we will examine an algorithm in which 
+  In the _Binom_ chapter we will examine an algorithm in which
   [empty] is constant time,  [insert], [delete_max], and [merge]
   are logN time.
 
@@ -45,8 +45,8 @@
    - [empty] takes constant time
    - [insert] takes constant time
    - [delete_max] takes linear time
-   - [merge] takes linear time 
-   
+   - [merge] takes linear time
+
 *)
 
 
@@ -75,7 +75,7 @@ Module Type PRIQUEUE.
   Parameter priq: priqueue -> Prop.
   Parameter Abs: priqueue -> list key -> Prop.
   Axiom can_relate:  forall p, priq p -> exists al, Abs p al.
-  Axiom abs_perm: forall p al bl, 
+  Axiom abs_perm: forall p al bl,
    priq p -> Abs p al -> Abs p bl -> Permutation al bl.
   Axiom  empty_priq: priq empty.
   Axiom empty_relate:  Abs empty nil.
@@ -94,14 +94,14 @@ Module Type PRIQUEUE.
    Permutation pl (k::ql) /\ Forall (ge k) ql.
   Axiom merge_priq: forall p q, priq p -> priq q -> priq (merge p q).
   Axiom merge_relate:
-    forall p q pl ql al, 
+    forall p q pl ql al,
        priq p -> priq q ->
        Abs p pl -> Abs q ql -> Abs (merge p q) al ->
        Permutation al (pl++ql).
 End PRIQUEUE.
 
 (** Take some time to consider whether this is the right specification!
-    As always, if we get the specification wrong, then proofs of 
+    As always, if we get the specification wrong, then proofs of
     "correctness" are not so useful.
 *)
 
@@ -123,19 +123,19 @@ Module List_Priqueue <: PRIQUEUE.
 (* ================================================================= *)
 (** ** Some preliminaries *)
 
-(** A copy of the [select] function from Selection.v, but 
+(** A copy of the [select] function from Selection.v, but
     getting the max element instead of the min element: *)
 
 Fixpoint select (i: nat) (l: list nat) : nat * list nat :=
 match l with
 |  nil => (i, nil)
-|  h::t => if i >=? h 
+|  h::t => if i >=? h
                then let (j, l') := select i t in (j, h::l')
                else let (j,l') := select h t in (j, i::l')
 end.
 
 (** **** Exercise: 3 stars (select_perm)  *)
-Lemma select_perm: forall i l, 
+Lemma select_perm: forall i l,
   let (j,r) := select i l in
    Permutation (i::l) (j::r).
 Proof. (* Copy your proof from Selection.v, and change one character. *)
@@ -193,7 +193,7 @@ Definition priq (p: priqueue) := True.
 
 (** The abstraction relation is trivial too. *)
 
-Inductive Abs':  priqueue -> list key -> Prop := 
+Inductive Abs':  priqueue -> list key -> Prop :=
 Abs_intro: forall p, Abs' p p.
 
 Definition Abs := Abs'.
@@ -211,7 +211,7 @@ Qed.
    to two different lists [al] and [bl], as long as one is a permutation of
    the other.  *)
 
-Lemma abs_perm: forall p al bl, 
+Lemma abs_perm: forall p al bl,
    priq p -> Abs p al -> Abs p bl -> Permutation al bl.
 Proof.
 intros.
@@ -240,7 +240,7 @@ Proof. constructor. Qed.
 
 (** **** Exercise: 2 stars (simple_priq_proofs)  *)
 Lemma delete_max_None_relate:
-  forall p, priq p -> 
+  forall p, priq p ->
       (Abs p nil <-> delete_max p = None).
 Proof.
 (* FILL IN HERE *) Admitted.
@@ -259,7 +259,7 @@ Lemma merge_priq:
 Proof. intros. constructor. Qed.
 
 Lemma merge_relate:
-    forall p q pl ql al, 
+    forall p q pl ql al,
        priq p -> priq q ->
        Abs p pl -> Abs q ql -> Abs (merge p q) al ->
        Permutation al (pl++ql).

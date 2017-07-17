@@ -257,7 +257,7 @@ Proof.
   destruct (Y==Y).
   - auto.
   - destruct n. auto.
-Qed. 
+Qed.
 
 (** *** Exercise [subst_eq_var]
 

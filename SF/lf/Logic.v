@@ -80,7 +80,7 @@ Check is_three.
 (* ===> nat -> Prop *)
 
 (** In Coq, functions that return propositions are said to define
-    _properties_ of their arguments. 
+    _properties_ of their arguments.
 
     For instance, here's a (polymorphic) property defining the
     familiar notion of an _injective function_. *)
@@ -246,7 +246,7 @@ Proof.
   split.
     - (* left *) apply HQ.
     - (* right *) apply HP.  Qed.
-  
+
 (** **** Exercise: 2 stars (and_assoc)  *)
 (** (In the following proof of associativity, notice how the _nested_
     intro pattern breaks the hypothesis [H : P /\ (Q /\ R)] down into

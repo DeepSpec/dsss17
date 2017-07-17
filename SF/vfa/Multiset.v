@@ -220,9 +220,9 @@ Proof.
   clear v bl Heqcl.
 
   (** From this point on, you don't need induction.
-    Use the lemmas [perm_trans], [delete_contents], 
+    Use the lemmas [perm_trans], [delete_contents],
      [in_perm_delete], [contents_in].   At _certain points_
-     you'll need to unfold the definitions of 
+     you'll need to unfold the definitions of
      [multiset_delete], [union], [singleton]. *)
 
   (* FILL IN HERE *) Admitted.
