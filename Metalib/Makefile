@@ -58,7 +58,7 @@ install: all
 	@$(MAKE) -f $(COQMKFILENAME) install
 
 clean:
-	if [ -e $(COQMKFILENAME) ] ; then @$(MAKE) -f $(COQMKFILENAME) clean ; fi
+	if [ -e $(COQMKFILENAME) ] ; then $(MAKE) -f $(COQMKFILENAME) clean ; fi
 	rm -f $(COQMKFILENAME)
 
 
