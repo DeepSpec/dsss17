@@ -1,13 +1,17 @@
-SUBDIRS=SF/lf SF/vfa compiler vminus
+EASYDIRS = SF/lf SF/vfa compiler vminus
+
+CLEANDIRS = $(EASYDIRS) Stlc qc
+# CLEANDIRS += Metalib
 
 all:
-	@set -e; for d in $(SUBDIRS); do $(MAKE) -C $$d; done
+	@set -e; for d in $(EASYDIRS); do echo Building $$d...; $(MAKE) -C $$d; done
 	(cd Metalib; make; make install; make doc)
 	(cd Stlc; make; make html)
-	-$(MAKE) qc-depends
+	$(MAKE) qc-depends
+	$(MAKE) -C qc
 
 clean:
-	@set -e; for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
+	@set -e; for d in $(CLEANDIRS); do echo Cleaning $$d...; $(MAKE) -C $$d clean; done
 
 qc-depends:
 	@command -v quickChick >/dev/null 2>&1 || \
@@ -22,4 +26,3 @@ qc-depends:
            echo   opam install coq-ext-lib \
            exit 1; \
         fi
-	$(MAKE) -C qc
