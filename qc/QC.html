@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>QC: Basics of QuickChick</title>
+<title>QC: Core QuickChick</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
 
-<h1 class="libtitle">QC<span class="subtitle">Basics of QuickChick</span></h1>
+<h1 class="libtitle">QC<span class="subtitle">Core QuickChick</span></h1>
 
 
 
@@ -67,8 +67,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
        returnGen : ?A -&gt; G ?A 
 </pre>
 
@@ -83,8 +82,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt;
+<pre>     ===&gt;
          [42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42] 
 </pre>
 
@@ -102,8 +100,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
         bindGen : G ?A -&gt; (?A -&gt; G ?B) -&gt; G ?B 
 </pre>
 
@@ -142,8 +139,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
         @choose
            : forall A : Type, ChoosableFromInterval A -&gt; A * A -&gt; G A  
 </pre>
@@ -161,8 +157,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
        [ 1, 2, 1, 9, 8, 1, 3, 6, 2, 1, 8, 0, 1, 1, 3, 5, 4, 10, 4, 6 ] 
 </pre>
 
@@ -192,8 +187,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
       listOf : G ?A -&gt; G (list ?A) 
 </pre>
 
@@ -205,8 +199,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
       [ [ 0, 3, 2, 0 ], 
         [ 1, 3, 4, 1, 0, 3, 0, 2, 2, 3, 2, 2, 2, 0, 4, 2, 3, 0, 1 ], 
         [ 3, 4, 3, 1, 2, 4, 4, 1, 0, 3, 4, 3, 2, 2, 4, 4, 1 ], 
@@ -241,8 +234,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
       vectorOf : nat -&gt; G ?A -&gt; G (list ?A) 
 </pre>
 
@@ -254,8 +246,7 @@
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
       [ [0, 1, 4], 
         [1, 1, 0], 
         [3, 3, 3], 
@@ -338,8 +329,7 @@ Now, to generate a random color, we just need to pick one of the
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
       elements : ?A -&gt; list ?A -&gt; G ?A 
 </pre>
 
@@ -355,8 +345,7 @@ Now, to generate a random color, we just need to pick one of the
 </div>
 
 <div class="doc">
-<pre>
-     ===&gt; 
+<pre>     ===&gt; 
      [Red, Green, Blue, Blue, Red, Yellow, Blue, Red, Blue, Blue, Red] 
 </pre>
 
@@ -587,7 +576,8 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">ret</span> <span class="id" type="var">Leaf</span> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">sz'</span> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">freq</span> [ (1,  <span class="id" type="var">ret</span> <span class="id" type="var">Leaf</span>) ;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">sz</span>, <span class="id" type="var">liftM3</span> <span class="id" type="var">Node</span> <span class="id" type="var">g</span> (<span class="id" type="var">genTreeSized'</span> <span class="id" type="var">sz'</span> <span class="id" type="var">g</span>) (<span class="id" type="var">genTreeSized'</span> <span class="id" type="var">sz'</span> <span class="id" type="var">g</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">sz</span>, <span class="id" type="var">liftM3</span> <span class="id" type="var">Node</span> <span class="id" type="var">g</span> (<span class="id" type="var">genTreeSized'</span> <span class="id" type="var">sz'</span> <span class="id" type="var">g</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> <span class="id" type="var">sz'</span> <span class="id" type="var">g</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 
@@ -635,8 +625,20 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
  This looks better. 
 <div class="paragraph"> </div>
 
- <div style="background-color:lightgray; color:red; margin:10px; padding:10px; "> better exercise: write genListSized 
-</div> <a name="lab54"></a><h4 class="section">Exercise: 3 stars (colorOptionGen)</h4>
+<a name="lab54"></a><h4 class="section">Exercise: 2 stars (genListSized)</h4>
+ Write a sized generator for lists, following <span class="inlinecode"><span class="id" type="var">genTreeSized'</span></span>. 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab55"></a><h4 class="section">Exercise: 3 stars (genColorOption)</h4>
  Write a custom generator for values of type <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">color</span></span>.  Make
     it generate <span class="inlinecode"><span class="id" type="var">None</span></span> about 1/10th of the time, and make it generate
     <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Red</span></span> three times as often as the other colors. 
@@ -650,7 +652,7 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab55"></a><h2 class="section">Checkers</h2>
+<a name="lab56"></a><h2 class="section">Checkers</h2>
 
 <div class="paragraph"> </div>
 
@@ -1076,7 +1078,7 @@ Note that, rather than just returning <span class="inlinecode"><span class="id" 
 </div>
 
 <div class="doc">
-<a name="lab56"></a><h1 class="section">Shrinking</h1>
+<a name="lab57"></a><h1 class="section">Shrinking</h1>
 
 <div class="paragraph"> </div>
 
@@ -1247,7 +1249,7 @@ Note that, rather than just returning <span class="inlinecode"><span class="id" 
 </div>
 
 <div class="doc">
-<a name="lab57"></a><h1 class="section">  </h1>
+<a name="lab58"></a><h1 class="section">  </h1>
 
 </div>
 <div class="code code-space">
@@ -1256,7 +1258,7 @@ Note that, rather than just returning <span class="inlinecode"><span class="id" 
 </div>
 
 <div class="doc">
-<a name="lab58"></a><h1 class="section">Putting it all Together</h1>
+<a name="lab59"></a><h1 class="section">Putting it all Together</h1>
 
 <div class="paragraph"> </div>
 
@@ -1351,7 +1353,7 @@ QuickChick&nbsp;tern_mirror_spec&nbsp;directly&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab59"></a><h1 class="section">Avoiding Work  :)</h1>
+<a name="lab60"></a><h1 class="section">Avoiding Work  :)</h1>
 
 <div class="paragraph"> </div>
 
@@ -1378,7 +1380,7 @@ QuickChick&nbsp;tern_mirror_spec&nbsp;directly&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab60"></a><h1 class="section">Collecting Statistics</h1>
+<a name="lab61"></a><h1 class="section">Collecting Statistics</h1>
 
 <div class="paragraph"> </div>
 
