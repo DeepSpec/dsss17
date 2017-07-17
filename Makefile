@@ -8,6 +8,8 @@ all:
 
 clean:
 	@set -e; for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
+	(cd Metalib; make clean)
+	(cd Stlc; make clean)
 
 qc-depends:
 	@command -v quickChick >/dev/null 2>&1 || \
