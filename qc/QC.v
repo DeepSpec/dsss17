@@ -7,7 +7,7 @@ Require Import List. Import ListNotations.
 Require Import List ZArith.
 
 From QuickChick Require Import QuickChick.
-Import QcDefaultNotation. Open Scope qc_scope.
+Import QcDefaultNotation. Import QcNotation. Open Scope qc_scope.
 Import GenLow GenHigh.
 Set Warnings "-extraction-opaque-accessed,-extraction".
 
@@ -29,12 +29,11 @@ Local Open Scope string.
 
 (** In QuickChick, a generator for elements of some type [A] belongs
     to the type [G A].  Intuitively, this type describes functions
-    that take a random seed to an element of [A], plus a new random
-    seed to be used for generating further random values.  (We will
-    see below that [G] is actually a bit richer than this, but this
-    intuition will do for now.)
+    that take a random seed to an element of [A].  (We will see below
+    that [G] is actually a bit richer, but this intuition will do for
+    now.) *)
 
-    QuickChick provides a number of primitives for building
+(** QuickChick provides a number of primitives for building
     generators.  First, [returnGen] takes a constant value and yields
     a generator that always returns this value. *)
 
@@ -63,9 +62,14 @@ Check bindGen.
         bindGen : G ?A -> (?A -> G ?B) -> G ?B 
 *) 
 
+(** (Of course, the implementation of [bindGen] must take care
+    to pass different random seeds to the two sub-generators!) *)
+
 (** With these two primitives in hand, we can make [G] an instance of
-    the [Monad] typeclass.  (This [Instance] should really be defined
-    within QuickChick itself, but it are not at the moment.) *)
+    the [Monad] typeclass. *)
+
+(** (This [Instance] should really be defined
+    within QuickChick itself, but it is not at the moment.) *)
 
 Instance gMonad : `{Monad G} | 3 :=
   {
@@ -76,11 +80,8 @@ Instance gMonad : `{Monad G} | 3 :=
 (* ================================================================= *)
 (** ** Primitive generators *)
 
-(** Next, QuickChick provides primitive generators for booleans,
-    natural numbers and integers. They are accessed via the [choose]
-    combinator. *)
-
-Print ChoosableFromInterval. 
+(** Next, QuickChick provides primitive generators for "ordered
+    types."  They are accessed via the [choose] combinator. *)
 
 Check @choose.
 (** 
@@ -93,6 +94,16 @@ Check @choose.
     [A], like natural numbers and integers ([Z]), for which it makes
     sense to randomly generate elements from a given interval. *)
 
+Print ChoosableFromInterval. 
+(** 
+===>
+Record ChoosableFromInterval (A : Type) : Type := Build_ChoosableFromInterval
+  { super : Ord A;
+    randomR : A * A -> RandomSeed -> A * RandomSeed;
+    ...
+  }.
+*)
+
 Sample (choose (0,10)).
 (** 
      ===> 
@@ -100,7 +111,7 @@ Sample (choose (0,10)).
 *)
 
 (** **** Exercise: 1 star, optional (cfi)  *)
-(** Print out the definition of [ChoosableFromInterval].  Can you
+(** Print out the full definition of [ChoosableFromInterval].  Can you
     understand what it means?  [] *)
 
 (* ================================================================= *)
@@ -174,14 +185,24 @@ Sample (vectorOf 3 (choose (0,4))).
   
     In addition to handling random-seed plumbing, the [G] monad also
     maintains a "current maximum size" (in the style of a "reader
-    monad", if you like that terminology): a natural number [n] that
-    serves as the upper bound on the depth of generated objects.  When
-    it is searching for counterexamples, QuickChick progressively
-    tries larger and larger values for [n], in order to explore larger
-    and deeper part of the search space.
+    monad", if you like that terminology): a natural number that
+    can be used as an upper bound on the depth of generated objects. *)
+
+(** Internally, [G A] is just a synonym for [nat -> RandomSeed -> A]. *)
+
+Module DefineG.
+
+Inductive G (A:Type) : Type :=
+| MkG : (nat -> RandomSeed -> A) -> G A.
+
+End DefineG.
+
+(** When it is searching for counterexamples, QuickChick progressively
+    tries larger and larger values for the size bound [n], in order to
+    explore larger and deeper part of the search space.
 
     Each generator can choose to interpret the size bound however it
-    wants, and there is no enforced guarantee that generators pay any
+    wants, and there is no enforced guarantee that generators pay
     attention to it at all; however, it is good practice to respect
     this bound when programming new generators. *)
 
@@ -231,10 +252,13 @@ Sample genColor'.
     that always picks an element of that list; otherwise the generator
     always returns the default object.  This makes Coq's totality
     checker happy, but makes [elements] a little awkward to use, since
-    typically its second argument will be a non-empty constant list.
-    To make this common case smoother, QuickChick provides convenient
-    notations that automatically extract the default. *)
+    typically its second argument will be a non-empty constant list. *)
+
+(** To make the common case smoother, QuickChick provides convenient
+    notations that automatically extract the default element. *)
+
 (** 
+
      " 'elems' [ x ] " := elements x (cons x nil)
      " 'elems' [ x ; y ] " := elements x (cons x (cons y nil))
      " 'elems' [ x ; y ; .. ; z ] " := elements x
@@ -254,9 +278,9 @@ Sample genColor.
 *)
 
 (** For more complicated ADTs, QuickChick provides more combinators.
-    We will showcase these using everyone's favorite datatype: trees!
+    We will showcase these using everyone's favorite datatype: trees! *)
 
-    Our trees are standard polymorphic binary trees; either [Leaf]s or
+(** Our trees are standard polymorphic binary trees; either [Leaf]s or
     [Node]s containing some payload of type [A] and two subtrees. *)
 
 Inductive Tree A :=
@@ -297,9 +321,9 @@ Check oneof.
     uniformly at random (as long as the list is not empty, in which
     case it picks from the default generator).  As for [elements],
     QuickChick introduces a more convenient notation [oneOf] to hide
-    this default element.
+    this default element. *)
 
-    At this point, Coq's termination checker is going to save us from
+(** At this point, Coq's termination checker is going to save us from
     shooting ourselves in the foot. The "obvious" first generator that
     one might write is the following function [genTree], which
     generates either a [Leaf] or else a [Node] whose subtrees are
@@ -322,9 +346,9 @@ Check oneof.
     choose to generate a [Node], we create two separate branches that
     must both be terminated with leaves.  From this, it is not hard to
     show that the _expected_ size of the generated trees is actually
-    infinite!
+    infinite! *)
 
-    The solution is to use the standard "fuel" idiom that all Coq
+(** The solution is to use the standard "fuel" idiom that all Coq
     users know.  We add an additional natural number [sz] as a
     parameter.  We decrease this size in each recursive call, and when
     it reaches [O], we always generate [Leaf].  Thus, the initial [sz]
@@ -369,10 +393,11 @@ Sample (genTreeSized 3 (choose(0,3))).
     see just by observing the result of [Sample] that there is a
     problem: [genTreeSized] produces way too many [Leaf]s!  This is
     actually to be expected, since half the time we generate a [Leaf]
-    right at the outset. We can obtain more interesting trees more
-    often if we skew the distribution towards [Node]s using the most
-    expressive QuickChick combinator, [frequency] and its associated
-    default-lifting notation [freq]. *)
+    right at the outset.  *)
+
+(** We can obtain bigger trees more often if we skew the distribution
+    towards [Node]s using the most expressive QuickChick combinator,
+    [frequency] and its associated default-lifting notation [freq]. *)
 
 Check frequency.
 (** 
@@ -380,11 +405,11 @@ Check frequency.
        frequency : G ?A -> seq (nat * G ?A) -> G ?A 
 *)
 
-(** The more convenient form, [freq], takes a list of generators, each
-    tagged with a natural number that serves as the weight of that
-    generator.  For example, in the following generator, a [Leaf] will
-    be generated 1 / (sz + 1) of the time and a [Node] the remaining
-    sz / (sz + 1) of the time.*)
+(** A more convenient derived notation, [freq], takes a list of
+    generators, each tagged with a natural number that serves as the
+    weight of that generator.  For example, in the following
+    generator, a [Leaf] will be generated 1 / (sz + 1) of the time and
+    a [Node] the remaining sz / (sz + 1) of the time. *)
 
 Fixpoint genTreeSized' {A} (sz : nat) (g : G A) : G (Tree A) :=
   match sz with
@@ -450,10 +475,9 @@ Sample (genTreeSized' 3 (choose(0,3))).
 (* ================================================================= *)
 (** ** Checkers *)
 
-(** To showcase how such a generator could be used in practice for
-    finding counterexamples, suppose we define a function for
-    "mirroring" a tree -- swapping its left and right subtrees
-    recursively. *)
+(** To showcase how such generators can be used to find
+    counterexamples, suppose we define a function for "mirroring" a
+    tree -- swapping its left and right subtrees recursively. *)
    
 Fixpoint mirror {A : Type} (t : Tree A) : Tree A :=
   match t with
@@ -480,10 +504,10 @@ Definition mirrorP (t : Tree nat) := eq_tree (mirror (mirror t)) t.
 (** Now we want to use our generator to create a lot of random trees
     and, for each one, check whether [mirrorP] returns [true] or
     [false].  That is, we want to use [mirrorP] to build a _generator
-    for test results_.
+    for test results_. *)
 
-    Let's open a playground module so we can show simplified versions
-    of the actual QUickChick definitions. *)
+(** Let's open a playground module so we can show simplified versions
+    of the actual QuickChick definitions. *)
 
 Module CheckerPlayground1.
 
@@ -502,28 +526,45 @@ Instance showResult : Show Result :=
 
 Definition Checker := G Result.
 
-(** To check [mirrorP], we need a way to build a [Checker] out of a
-    function from trees to booleans.  But let's start simpler and see
-    how to build a checker out of a [bool]. *)
+(** That is, a [Checker] embodies some way of performing a randomized
+    test about the truth of some proposition, which will yield either
+    [Success] (meaning that the proposition survived this test) or
+    [Failure] (meaning that this test demonstrated that the
+    proposition was false).  Sampling a [Checker] many times causes
+    many different tests to be performed. *)
 
-(**  Words needed 
- *)
+(** To check [mirrorP], we'll need a way to build a [Checker] out of a
+    function from trees to booleans.  But let's start simpler and see
+    how to build a [Checker] out of a [bool]. *)
+
+(** Actually, we will be wanting to build [Checker]s based on many
+    different types.  So let's begin by defining a typeclass
+    [Checkable], where an instance for [Checkable A] provides a way of
+    converting an [A] into a [Checker]. *)
+
 Class Checkable A :=
   {
     checker : A -> Checker
   }.
+
+(** Now we want to give a [bool] instance for [Checkable]. *)
 
 Instance checkableBool : Checkable bool :=
   {
     checker b := if b then ret Success else ret Failure
   }.
 
-End CheckerPlayground1.
+(** That is, the boolean value [true] passes every test we might
+    subject it to, while [false] fails all tests. *)
 
-(** Let's see what happens if we sample our favorite booleans.  (We
-    need to exit the playground so that we can do [Sample], because
-    [Sample] is implemented internally via extraction to OCaml, which
-    usually does not work from inside a [Module].) *)
+(** Let's see what happens if we sample checkers for our favorite
+    booleans, [true] and [false].  *)
+
+(** (We need to exit the playground so that we can do [Sample],
+    because [Sample] is implemented internally via extraction to
+    OCaml, which usually does not work from inside a [Module].) *)
+
+End CheckerPlayground1.
 
 Sample (CheckerPlayground1.checker true).
 (**
@@ -539,16 +580,16 @@ Sample (CheckerPlayground1.checker false).
        Failure, Failure, Failure, Failure]
 *)
 
-(** What we've done so far may look a a bit strange, since our
+(** What we've done so far may look a a bit strange, since these
     checkers always generate constant results.  We'll make things more
     interesting in a bit, but first let's pause to define one more
-    instance of [Checkable]. *)
-
-Module CheckerPlayground2.
-Export CheckerPlayground1.
+    basic instance of [Checkable]. *)
 
 (** A decidable [Prop] is not too different from a boolean, so we
     should be able to build a checker from that. *)
+
+Module CheckerPlayground2.
+Export CheckerPlayground1.
 
 Instance checkableDec `{P : Prop} `{Dec P} : Checkable P :=
   {
@@ -566,12 +607,13 @@ Conjecture c2 : 41 + 1 = 42.
 
 End CheckerPlayground2.
 
-(** The somewhat astononishing thing is that, even though these are
-    _conjectures_ (we haven't proved them, so the "evidence" that Coq
-    has for them internally is just an uninstantiated "evar"), but --
-    because the [Checkable] instance for decidable properties does not
-    look at its argument -- we can still build checkers from them and
-    sample from these checkers! *)
+(** The somewhat astononishing thing about the [Checkable] instance we
+    defined is that, even though these are _conjectures_ (we haven't
+    proved them, so the "evidence" that Coq has for them internally is
+    just an uninstantiated "evar"), but -- because the [Checkable]
+    instance for decidable properties does not look at its argument --
+    we can still build checkers from them and sample from these
+    checkers! *)
 
 Sample (CheckerPlayground1.checker CheckerPlayground2.c1).
 (**
@@ -587,9 +629,10 @@ Sample (CheckerPlayground1.checker CheckerPlayground2.c2).
        Success, Success, Success, Success]
 *)
 
-(** Again, the intuition is that, although we didn't present proofs,
-    Coq already "knows" either a proof or a disproof of each of these
-    conjectures because they are decidable. *)
+(** Again, the intuition is that, although we didn't present
+    proofs (and could not have, in the first case!), Coq already
+    "knows" either a proof or a disproof of each of these conjectures
+    because they are decidable. *)
 
 Module CheckerPlayground3.
 Import CheckerPlayground2.
@@ -602,33 +645,67 @@ Import CheckerPlayground2.
     long as the argument type of the function is something we know how
     to generate! *)
 
-Definition forAll {A B : Type} `{Checkable B} (g : G A) (f : A -> B) : Checker :=
+Definition forAll {A B : Type} `{Checkable B}
+             (g : G A) (f : A -> B)
+           : Checker :=
   a <- g ;;
   checker (f a).
 
 End CheckerPlayground3.
 
-Sample (CheckerPlayground3.forAll (genTreeSized' 3 (choose(0,3))) mirrorP).
+(** Let's try this out.  We can define a boolean test that returns [true]
+    for [Red] and [false] for other colors. *)
+
+Definition isRed c := 
+  match c with
+    Red => true
+  | _ => false
+  end.
+
+(** Since we can generate elements of [color] and we have a
+    [Checkable] instance for [bool], we can apply [forAll] to [isRed]
+    and sample from the resulting [Checker] to run some tests. *)
+
+Sample (CheckerPlayground3.forAll genColor isRed).
+(**
+
+      [Success, Failure, Failure, Failure, Success, Failure, 
+       Failure, Success, Failure, Failure, Success]
+*)
+
+(** Looks like not all colors are [Red].  Good. *)
+
+(** Now, what about [mirrorP]? *)
+
+Sample (CheckerPlayground3.forAll
+          (genTreeSized' 3 (choose(0,3)))
+          mirrorP).
 (**
 
       [Success, Success, Success, Success, Success, Success, Success, 
        Success, Success, Success, Success]
 *)
 
-(** Excellent: It looks like lots of tests are succeeding.  Now let's
-    try defining a bad property and see if we can detect that it's bad... *)
+(** Excellent: It looks like many tests are succeeding -- maybe the
+    property is true. *)
+
+(** Now let's try defining a bad property and see if we can detect
+    that it's bad... *)
 
 Definition faultyMirrorP (t : Tree nat) := eq_tree (mirror t) t.
 
-Sample (CheckerPlayground3.forAll (genTreeSized' 3 (choose(0,3))) faultyMirrorP).
+Sample (CheckerPlayground3.forAll
+          (genTreeSized' 3 (choose(0,3)))
+          faultyMirrorP).
 (**
 
       [Failure, Success, Failure, Success, Success, Success, Failure, 
        Success, Failure, Failure, Success]
 *)
 
-(** Great -- looks like a good number of tests are failing now.
-    There's only one fly in the ointment: What _are_ the tests that
+(** Great -- looks like a good number of tests are failing now. *)
+
+(** There's only one fly in the ointment: What _are_ the tests that
     are failing?  We can tell that the property is bad, but we can't
     see the counterexamples!
 
@@ -696,7 +773,9 @@ Definition forAll {A B : Type} `{Show A} `{Checkable B}
 
 End CheckerPlayground4.
 
-Sample (CheckerPlayground4.forAll (genTreeSized' 3 (choose(0,3))) faultyMirrorP).
+Sample (CheckerPlayground4.forAll
+          (genTreeSized' 3 (choose(0,3)))
+          faultyMirrorP).
 (**
 
       [Failure: (Node (2) (Node (3) (Node (2) (Leaf) (Leaf)) (Leaf)) 
@@ -715,90 +794,156 @@ Sample (CheckerPlayground4.forAll (genTreeSized' 3 (choose(0,3))) faultyMirrorP)
 *)
 
 (** The bug is found several times and actual counterexamples are
-    reported: nice!  (Indeed, what we've seen here basically what the
-    [QuickChick] command does; the only difference is that, instead of
-    running a fixed number of tests and returning their results in a
-    list, it runs tests only until the first counterexample is found.)
+    reported: nice! *)
 
-    However, these counterexamples leave something to be desired --
+(** Sampling repeatedly from a generator is just what the [QuickChick]
+    command does, except that, instead of running a fixed number of
+    tests and returning their results in a list, it runs tests only
+    until the first counterexample is found. *)
+
+QuickChick
+  (forAll
+     (genTreeSized' 3 (choose(0,3)))
+     faultyMirrorP).
+(**
+
+    QuickChecking (forAll (genTreeSized' 3 (choose (0, 3))) faultyMirrorP)
+
+    Node (0) (Node (0) (Node (2) (Leaf) (Leaf)) 
+                       (Node (1) (Leaf) (Leaf)))
+             (Node (1) (Node (0) (Leaf) (Leaf)) (Leaf))
+
+    *** Failed after 1 tests and 0 shrinks. (0 discards)
+*)
+
+(** However, these counterexamples leave something to be desired --
     they are all much larger than is really needed to illustrate the
     bad behavior of [faultyMirrorP].  This is where shrinking comes
     in... *)
 
-(* BCP STOPPED HERE *)
-
 (* ################################################################# *)
 (** * Shrinking *)
 
-(** Shrinking, also known as delta debugging, is a process that, given
-    a counterexample to some property, searches (greedily) for smaller
-    counterexamples.  Given a shrinking function [s] of type [A -> list
-    A] and a counterexample [x] of type [A] that is known to falsify
-    some property [p], QuickChick (lazily) tries [p] on all members of
-    [s x] until it finds another counterexample; then it repeats this
-    process.
+(** Shrinking (sometimes known as "delta debugging") is a process
+    that, given a counterexample to some property, searches (greedily)
+    for smaller counterexamples.
 
-    This greedy algorithm can only work if all elements of [s x] are
-    strictly "smaller" that [x] for all [x]. Most of the time, a
-    shrinking function for some type only returns elements that are
-    "one step" smaller. For example, consider the default shrinking
-    function for lists provided by QuickChick. *)
+    Given a shrinking function [s] of type [A -> list A] and a value
+    [x] of type [A] that is known to falsify some property [P],
+    QuickChick (lazily) tries [P] on all members of [s x] until it
+    finds another counterexample.  It then repeats this process
+    starting from this counterexample, until it reaches a point where
+    [x] fails property [P] but every element of [s x] succeeds.  This
+    [x] is then a minimal counterexample. *)
+
+(** Clearly, this greedy algorithm onlys work if all elements of
+    [s x] are strictly "smaller" than [x] for all [x] (that is, there
+    should be some total order on the type of [x] such that [s] is
+    strictly decreasing in this order).  This is the basic correctness
+    requirement for a shrinker. *)
+
+(** Here is a very simple shrinker for [color]s. *)
+
+Instance shrinkColor : Shrink color :=
+  {
+    shrink c :=
+      match c with
+      | Red => [ ]
+      | Green => [ Red ]
+      | Blue => [ Red; Green ]
+      | Yellow => [ Red; Green; Blue ]
+      end
+  }.
+
+(** Most of the time, shrinking functions should try to return
+    elements that are "one step smaller" than the one they are
+    given. For example, consider the default shrinking function for
+    lists provided by QuickChick. *)
 
 Print shrinkList.
 (** 
-      ===> 
-       shrinkList = 
-         fix shrinkList (A : Type) (shr : A -> seq A) (l : seq A) {struct l} :
-           seq (seq A) :=
-           match l with
-           | [::] => [::]
-           | x :: xs =>
-               ((xs :: List.map (fun xs' : seq A => x :: xs') (shrinkList A shr xs))%SEQ ++
-                List.map (fun x' : A => (x' :: xs)%SEQ) (shr x))%list
-           end
-              : forall A : Type, (A -> seq A) -> seq A -> seq (seq A)
+===> 
+  shrinkList = 
+    fun (A : Type) (H : Shrink A) => 
+       {| shrink := shrinkListAux shrink |}
+  : forall A : Type, Shrink A -> Shrink (list A)
 *)
 
-(** An empty list can not be shrunk - there is no smaller list.  A
-    cons cell can be shrunk in three ways: by returning the tail of
-    the list, by shrinking the tail of the list and consing the head,
-    or by shrinking the head and consing its tail. By induction, this
-    process can generate all smaller lists.
+Print shrinkListAux.
+(** 
+===> 
+  shrinkListAux = 
+    fix shrinkListAux (A : Type) (shr : A -> list A) (l : list A) :
+      list (list A) :=
+      match l with
+      | [] => []
+      | x :: xs =>
+          ((xs :: map (fun xs' : list A => x :: xs') 
+                      (shrinkListAux A shr xs)) ++
+           map (fun x' : A => x' :: xs) (shr x))
+      end
 
-    Writing a shrinking instance for trees is equally straightforward:
+  : forall A : Type, (A -> list A) -> list A -> list (list A)
+*)
+
+(** An empty list cannot be shrunk - there is no smaller list.  A cons
+    cell can be shrunk in three ways: by returning the tail of the
+    list, by shrinking the tail of the list and keeping the same head,
+    or by shrinking the head and keeping the same tail. By induction,
+    this process can generate all smaller lists.
+
+    (Pro tip: One refinement to the advice that shrinkers should
+    return "one step smaller" values is that, for potentially large
+    data structures, it can sometimes greatly improve performance if a
+    shrinker returns not only all the "slightly smaller" structures
+    but also one or two "much smaller" structures.  E.g. for a number
+    [x] greater than [2], we might shrink to [0; x div 2; pred x].) *)
+
+(** Writing a shrinking instance for trees is equally straightforward:
     we don't shrink [Leaf]s while for [Node]s we can return the left
-    or right subtrees, shrink the payload or one of the subtrees.*)
+    or right subtrees, shrink the payload or one of the subtrees. *)
 
 Open Scope list.
-Fixpoint shrinkTree {A} (s : A -> list A) (t : Tree A) : list (Tree A) :=
+Fixpoint shrinkTreeAux {A} 
+              (s : A -> list A) (t : Tree A)
+            : list (Tree A) :=
   match t with
     | Leaf => []
     | Node x l r => [l] ++ [r] ++
                     map (fun x' => Node x' l r) (s x) ++
-                    map (fun l' => Node x l' r) (shrinkTree s l) ++
-                    map (fun r' => Node x l r') (shrinkTree s r)
+                    map (fun l' => Node x l' r) (shrinkTreeAux s l) ++
+                    map (fun r' => Node x l r') (shrinkTreeAux s r)
   end.
 
-(**  Explain it 
- *)
-(** Armed with [shrinkTree], we use the [forAllShrink] property
-    combinator that takes an additional argument, a shrinker *)
+Instance shrinkTree {A} `{Shrink A} : Shrink (Tree A) := 
+  {| shrink x := shrinkTreeAux shrink x |}.
 
-(* QuickChick (forAllShrink (genTreeSized' 5 (choose (0,5))) (shrinkTree shrink) faultyMirrorP). *)
+(** With [shrinkTree] in hand, we can use the [forAllShrink] property
+    combinator, a variant of [forAll] that takes a shrinker as an
+    additional argument, to test properties like [faultyMirrorP]. *)
+
+(* QuickChick 
+     (forAllShrink 
+        (genTreeSized' 5 (choose (0,5))) 
+        (shrinkTree shrink) 
+        faultyMirrorP). *)
 (** 
-      ===> 
-       Node (0) (Leaf) (Node (0) (Leaf) (Leaf))
+===> 
+   Node (0) (Leaf) (Node (0) (Leaf) (Leaf))
 
-       *** Failed! After 1 tests and 8 shrinks 
+   *** Failed! After 1 tests and 8 shrinks 
 *)
 
 (** We now got a much simpler counterexample (in fact, this is one of
-    the two minimal ones) and can tell that the real problem occurs
-    when the subtrees of a [Node] are different. *)
+    the two minimal ones), from which it is easy to see that the real
+    problem occurs when the subtrees of a [Node] are different. *)
 
+(* ================================================================= *)
+(** ** Exercise: Ternary Trees *)
 
-
-(* Simple exercise : Ternary Trees *)
+(** For a comprehensive, but fairly simple, exercise involving most of
+    what we have seen, let's consider ternary trees (whose nodes have
+    three childen instead of two. *)
 
 Inductive TernaryTree A :=
 | TLeaf : TernaryTree A
@@ -808,16 +953,18 @@ Inductive TernaryTree A :=
 Arguments TLeaf {A}.
 Arguments TNode {A} _ _ _ _.
 
-(* Mirror for ternary trees *)
+(** Also consider the following (faulty?) mirror function on 
+    ternary trees, as well as an  *)
+
 Fixpoint tern_mirror {A : Type} (t : TernaryTree A) : TernaryTree A :=
   match t with
     | TLeaf => TLeaf
     | TNode x l m r => TNode x (tern_mirror r) m (tern_mirror l)
   end.
 
-(* Option 1: In-order, correct spec, faulty mirror *)
-(* Option 2: (I like this more) Pre-order, incorrect spec, fix traversal *)
-(* In-order traversal of ternary tree *)
+(** Finally, here is a function that converts a tree to a list using 
+    an in-order traversal. *)
+
 Definition tern_to_list {A : Type} (t : TernaryTree A) : list A :=
   let fix aux t def :=
       match t with 
@@ -827,105 +974,178 @@ Definition tern_to_list {A : Type} (t : TernaryTree A) : list A :=
       end in 
   aux t [].
 
-(* Equality for ternary trees *)
-Instance eq_dec_ternary A (x y : TernaryTree A) 
-         `{D : forall x y : A, Dec (x = y)} : Dec (x = y).
-Proof. 
-constructor; unfold ssrbool.decidable.
-decide equality.
-destruct (D a a0); auto.
-Defined.
+(** **** Exercise: 1 star (show_tern_tree)  *)
+(** Write a [Show] instance for Ternary Trees. *)
 
-(* Leo: They've alredy written enough show functions haven't they? *)
-(* EX 1: Derive a Show instance for Ternary Trees. *)
+(* FILL IN HERE *)
+(** [] *)
+
+(** **** Exercise: 2 stars: (gen_tern_tree)  *)
+(** Write a generator for ternary trees. *)
+
 (* FILL IN HERE *)
 
-(* Leo: TODO: Monad notation *)
-Import QcDoNotation.
-(* EX 2: Write a generator for ternary trees *)
+(** The following line should generate a bunch of nat ternary trees. *)
+(* Sample (@genTernTreeSized nat 3 (choose (0,10))). *)
+(** [] *)
+
+(** **** Exercise: 2 stars (shrink_tern_tree)  *)
+(** Write a shrinker for ternary trees. *)
+
 (* FILL IN HERE *)
+(** [] *)
 
-(* This should generate a bunch of nat ternary trees *)
-(* Sample (@genTernTreeSized nat 3 arbitrary). *)
-
-(* EX 3: Write a shrinker for ternary trees *)
-(* FILL IN HERE *)
-
-(* Converting a ternary tree to a list and reversing it should yield the same 
-   list as mirroring the tree and then converting it *)
+(** Converting a ternary tree to a list and reversing it should yield
+    the same list as mirroring the tree and then converting it *)
 Definition tern_mirror_reverse (t : TernaryTree nat) := 
   tern_to_list (tern_mirror t) = List.rev (tern_to_list t) ?.
 
-(* EX 4 : Using genTernTreeSized and shrinkTernTree find any bugs in tern_mirror *)
-(* FILL IN HERE *)
+(** **** Exercise: 4 stars (bug_finding_tern_tree)  *)
+(** Using genTernTreeSized and shrinkTernTree find (and fix!) any bugs in
+    tern_mirror. *)
 
-(* ################################################################# *)
-(** *  *)
+(* FILL IN HERE *)
+(** [] *)
 
 (* ################################################################# *)
 (** * Putting it all Together *)
 
-(**  typeclass magic to hide forAll (requires introducing Gen and GenSized) 
- *)
-(** QuickChick, just like QuickCheck, provides an [Arbitrary]
-    typeclass parameterized over some type [A] with two objects:
-    [arbitrary] and [shrink].
+(** Now we've got pretty much all the basic machinery we need, but the
+    way we write properties -- using [forAllShrink] and explicitly
+    providing generators and shrinkers -- is a bit heavy.  We can use
+    a bit more typeclass magic to lighten things.
 
-    The [arbitrary] object is a generator for elements of type [A]. If
-    we were to encode an [Arbitrary] instance for trees we would like
-    to use [genTreeSized']; however that generator takes an additional
-    size argument.  The [G] monad will provide that argument through
-    the combinator [sized].*)
-    
-Check sized.
-(** 
-      ===> 
-        sized : (nat -> G ?A) -> G ?A 
+    First, we introduce a typeclass [Gen A] with a single operator
+    [arbitrary] of type [G A]. *)
+
+Module DefineGen.
+  
+Class Gen (A : Type) :=
+  {
+    arbitrary : G A
+  }.
+
+End DefineGen.
+
+(** That is, [Gen] is a way of packaging generators for various types
+    so that we do not need to remember their names -- we can just call
+    them all [arbitrary]. *)
+
+Instance gen_color : Gen color :=
+  {
+    arbitrary := genColor
+  }.
+
+(** Next, for convenience we package [Gen] and [Shrink] together into
+    an [Arbitrary] typeclass that is a subclass of both. *)
+
+Module DefineArbitrary.
+Import DefineGen.
+
+Class Arbitrary (A : Type) `{Gen A} `{Shrink A}.
+
+(** (The empty "body" of [Arbitrary] is elided.) *)
+
+End DefineArbitrary.
+
+(** We can use the top-level [QuickChick] command on quantified
+    propositions with generatable decidable conclusions, stating just
+    the property and letting the typeclass machinery figure out the
+    rest.  For example, suppose we want to test this: *)
+
+Conjecture every_color_is_red : forall c, c = Red.
+
+(** Since we have already defined [Gen] and [Shrink] instances for
+    [color], we automatically get an [Arbitrary] instance.  The [Gen]
+    part is used by the checker instances for [forall] propositions to
+    generate random [color] arguments.
+
+    To show that the conclusion is decidable, we need to define a
+    [Dec] instance for equality on colors. *)
+
+Instance eq_dec_color (x y : color) : Dec (x = y).
+Proof.
+  Print Dec. apply Build_Dec. unfold ssrbool.decidable. decide equality.
+Defined.
+
+(** Putting it all together: *)
+
+QuickChick every_color_is_red.
+(**
+
+==>
+   QuickChecking every_color_is_red
+   Green
+   *** Failed after 1 tests and 1 shrinks. (0 discards)
 *)
 
-(** [sized] receives a function that given a number produces a
-    generator, just like [genTreeSized'], and returns a generator that
-    uses the size information inside the [G] monad.
+(* ################################################################# *)
+(** * Sized Generators *)
 
-    The [shrink] function is simply a shrinker like [shrinkTree]. *)
+(** Back to trees.
+
+    To build an [Arbitrary] instance for trees, we would like to use
+    [genTreeSized']; however, that generator takes an additional
+    [size] argument.  Fortunately, since the [G] monad itself includes
+    a size argument, we can "plumb" this argument into generators like
+    [genTreeSized'].  In other words, we can define an operator
+    [sized] that takes a sized generator and produces an unsized
+    one. *)
+
+Module DefineSized.
+Import DefineG.
+
+Definition sized {A : Type} (f : nat -> G A) : G A :=
+  MkG _
+      (fun n r =>
+         match f n with
+           MkG g => g n r
+         end).
+  
+End DefineSized.  
+(** To streamline assembling generators, it is convenient to introduce
+    one more typeclass, [GenSized], whose instances are sized
+    generators. *)
+
+Module DefineGenSized.
+
+Class GenSized (A : Type) :=
+  {
+    arbitrarySized : nat -> G A
+  }.
+
+(** We can then define a generic [Gen] instance for types that have a
+    [GenSized] instance, using [sized]: *)
+
+Instance GenOfGenSized {A} `{GenSized A} : Gen A :=
+  {
+    arbitrary := sized arbitrarySized
+  }.
+
+End DefineGenSized.
+
+(** Now we can make a [Gen] instance for trees by providing just an
+    implementation of [arbitrarySized]. *)
 
 Instance genTree {A} `{Gen A} : GenSized (Tree A) := 
-  {| arbitrarySized n := genTreeSized n arbitrary |}.
+  {| arbitrarySized n := genTreeSized' n arbitrary |}.
 
-Instance shrTree {A} `{Shrink A} : Shrink (Tree A) := 
-  {| shrink x := shrinkTree shrink x |}.
+(** Finally, with the [Arbitrary] instance for trees, we can supply
+    just [faultyMirrorP] to the [QuickChick] command. *)
 
-(** With this [Arbitrary] instance we can once again use the toplevel
-    [QuickChick] command with just the property.  *)
+QuickChick faultyMirrorP.
 
-(* QuickChick faultyMirrorP. *)
+(** **** Exercise: 2 stars (tern_tree_typeclasses)  *)
+(** Add typeclass instances for [GenSized] and [Shrink] so that you
+    can [QuickChick tern_mirror_spec] directly. *)
 
-(** [QuickChick] internally calls the function [quickCheck] with type
-    [forall prop. Checkable prop => prop -> Result]. But what _is_
-    [Checkable]? It is easy to see how a boolean is [Checkable]; we
-    can always tell if it is true or not and then return a [Result],
-    [Success]/[Failure] as appropriate.
-    
-    To see how executable properties are [Checkable], consider a
-    single argument function [p : A -> Bool] that returns a
-    boolean. If we know that [A] has [Show] and [Arbitrary] instances,
-    we can just call [forAllShrink] with [arbitrary] and
-    [shrink]. Going a step further, the result type doesn't really
-    need to be [Bool], it can be a [Checkable]! Thus, we can provide a
-    [Checkable] instance for arbitrary functions.*)
-
-Print testFun.
-
-(* EX 5 : Add typeclass instances for GenSized and Shrink so that you can
-QuickChick tern_mirror_spec directly *)
 (* FILL IN HERE *)
 
 (* QuickChick tern_mirror_spec. *)
-
-(* TODO: Move derivation stuff here? *)
+(** [] *)
 
 (* ################################################################# *)
-(** * Avoiding Work  :) *)
+(** * Automation *)
 
 (** While a lot of time putting a bit of time and effort in a
     generator and a shrinker, the examples shown here are fairly
@@ -935,32 +1155,43 @@ QuickChick tern_mirror_spec directly *)
     for _plain_ datatypes automatically. *)
 
 Derive Arbitrary for Tree.
-(* genSTree is defined *)
-(* shrTree0 is defined *)
+(* ===> genSTree is defined *)
+(* ===> shrTree is defined *)
 Print genSTree.
-Print shrTree0.
+Print shrTree.
 
 Derive Show for Tree.
-(* showTree0 is defined *)
+(* ===> showTree0 is defined *)
 Print showTree0.
 
 (* ################################################################# *)
 (** * Collecting Statistics *)
 
-(** Earlier in this tutorial we claimed that [genTreeSized] produced
-    "too many" [Leaf]s. But how can we justify that? Just looking at
-    the result of [Sample] gives us an idea that something is going
-    wrong but just observing a handful of samples cannot realistically
-    provide statistical guarantees. That is where [collect], another
-    property combinator, comes in. In Haskell notation, [collect]
-    would have the type [collect : Show A, Checkable prop => A -> prop
-    -> prop]; it takes some value of type [A] that can be shown and a
-    property, and returns the property itself. Whenever the resulting
-    property is exercised, the [A] object is captured and statistics
-    are collected.
+(** Earlier in this tutorial we claimed that our first definition of
+    [genTreeSized] produced "too many [Leaf]s."
 
-    For example, consider a [size] function on [Tree]s.
- *)
+    However, just looking at the result of [Sample] gives us an idea
+    that something is going wrong, but just observing a handful of
+    samples cannot realistically provide statistical guarantees. Can
+    we put this intuition on solid footing? *)
+
+(** This is where [collect], another property combinator, comes in. *)
+
+Check @collect.
+(** ===>
+
+     @collect
+       : forall A prop : Type, 
+           Show A -> Checkable prop -> A -> prop -> Checker
+*)
+
+(** That is, [collect] takes a checkable proposition and returns a new
+    [Checker] (intuitively, for the same proposition).  On the side,
+    it takes a value from some [Show]able type [A], which it remembers
+    internally (in an enriched variant of the [Result] structure that
+    we saw above) so that it can be displayed at the end. *)
+
+(** For example, suppose we measure the [size] of [Tree]s like this: *)
 
 Fixpoint size {A} (t : Tree A) : nat :=
   match t with
@@ -971,159 +1202,146 @@ Fixpoint size {A} (t : Tree A) : nat :=
 (** If we were to write a dummy property to check our generators and
     measure the size of generated trees, we could use [treeProp]
     below. *)
+(**
 
-Definition treeProp (g : nat -> G nat -> G (Tree nat)) n :=
-  forAll (g n (choose (0,n))) (fun t => 
-  collect (size t) true).
-
-(* QuickChick (treeProp genTreeSized  5). *)
-(** 
-      ===> 
-       4947 : 0
-       1258 : 1
-       673 : 2
-       464 : 6
-       427 : 5
-       393 : 3
-       361 : 7
-       302 : 4
-       296 : 8
-       220 : 9
-       181 : 10
-       127 : 11
-       104 : 12
-       83 : 13
-       64 : 14
-       32 : 15
-       25 : 16
-       16 : 17
-       13 : 18
-       6 : 19
-       5 : 20
-       2 : 21
-       1 : 23
+      ===> 4947 : 0 1258 : 1 673 : 2 464 : 6 427 : 5 393 : 3 361 : 7
+       302 : 4 296 : 8 220 : 9 181 : 10 127 : 11 104 : 12 83 : 13 64 :
+       14 32 : 15 25 : 16 16 : 17 13 : 18 6 : 19 5 : 20 2 : 21 1 : 23
        +++ OK, passed 10000 tests
 *)
 
 (** We see that 62.5%% of the tests are either [Leaf]s or empty
-    [Nodes], while too few tests have larger sizes. Compare that with
-    [genTreeSized'] below.  *)
+    [Node]s, while rather few tests have larger sizes.  *)
 
-(* QuickChick (treeProp genTreeSized' 5). *)(** 
-      ===> 
-       1624 : 0
-       571 : 10
-       564 : 12
-       562 : 11
-       559 : 9
-       545 : 8
-       539 : 14
-       534 : 13
-       487 : 7
-       487 : 15
-       437 : 16
-       413 : 6
-       390 : 17
-       337 : 5
-       334 : 1
-       332 : 18
-       286 : 19
-       185 : 4
-       179 : 20
-       179 : 2
-       138 : 21
-       132 : 3
-       87 : 22
-       62 : 23
-       19 : 24
-       10 : 25
-       6 : 26
-       2 : 27
-       +++ OK, passed 10000 tests
+(** Compare this with [genTreeSized'].  *)
+
+(* QuickChick (treeProp genTreeSized' 5). *)
+(**
+
+===> 
+   1624 : 0 571 : 10 564 : 12 562 : 11 559 : 9 545 : 8 539 :
+   14 534 : 13 487 : 7 487 : 15 437 : 16 413 : 6 390 : 17 337 : 5
+   334 : 1 332 : 18 286 : 19 185 : 4 179 : 20 179 : 2 138 : 21 132
+   : 3 87 : 22 62 : 23 19 : 24 10 : 25 6 : 26 2 : 27 
+
+   +++ OK, passed 10000 tests
 *)
 
-(** A lot fewer terms have small sizes, allowing us to explore larger terms*)
+(** A lot fewer terms have small sizes, allowing us to explore larger
+    terms. *)
 
+(* ################################################################# *)
+(** * Dealing with Preconditions *)
 
+(** A large class of properties that are commonly encountered in
+    property-based testing are _properties with preconditions_.  The
+    default QuickChick approach of generating inputs based on type
+    information can be inefficient for such properties, especially for
+    those with sparse preconditions (i.e. ones that are satisfied
+    rarely with respect to their input domain). *)
 
-
-
-
-(* Dealing with preconditions *)
-(* Consider inserting in a sorted list *)
-Fixpoint insert (x : nat) (l : list nat) := 
-  match l with 
-  | [] => [x] 
-  | y::ys => if x <=? y then x :: l else y :: insert x ys
-  end.
-
-(* Leo: Scoping/associativity between <? / &&. Maybe just andb? *)
 Open Scope bool.
-Fixpoint sorted (l : list nat) := 
-  match l with 
-  | [] => true
-  | x::xs => 
-    match xs with 
-    | [] => true
-    | y :: ys => (x <=? y) && (sorted xs)
-    end
-  end.
 
-(* We could test insert using the following {\em conditional} property: *)
-Import QcNotation. (* Do we want that? *)
+(** Consider inserting natural numbers in a sorted list (in ascending
+    order). *)
+
+Fixpoint insert (x : nat) (l : list nat) := 
+  match l with | [] => [x] | y::ys => if x <=? y then x :: l else y ::
+  insert x ys end.
+
+Fixpoint sorted (l : list nat) := 
+  match l with | [] => true | x::xs => match xs with | [] => true | y
+  :: ys => (x <=? y) && (sorted xs) end end.
+
+(** We could test [insert] using the following _conditional_
+property: *)
+
 Definition insert_spec (x : nat) (l : list nat) :=
   sorted l ==> sorted (insert x l).
 
 (* QuickChick insert_spec. *)
+(**
+<< 
+===> QuickChecking insert_spec +++ Passed 10000 tests (17325 discards)
+*)
 
-(* But how do we know if we have tested {\em enough}? *)
+(** To test this property, QuickChick will try to generate random
+    integers [x] and lists [l], _check_ whether the generated [l] is
+    sorted, and, if it is, proceed to check the conclusion. If it is
+    not, it will discard the generated inputs and try again. As we can
+    see, this can lead to many discarded tests (here, almost twice as
+    many as successful ones!) which waste a lot of CPU time and leads
+    to inefficient testing. *)
+
+(** But the wasted effort is the least of our problems! Let's take a
+    peek at the distribution of the lengths of generated lists using
+    [collect]. *)
+
 Definition insert_spec' (x : nat) (l : list nat) :=
   collect (List.length l) (insert_spec x l).
 
 (* QuickChick insert_spec'. *)
-(* 3.5k times [] *)
-(* 3.5k times singletons *)
-(* 2k times length 2 *)
-(* clearly, not good enough *)
+(**  ==> QuickChecking insert_spec' 3447 : 0 3446 : 1 1929 : 2 788 :
+    3 271 : 4 96 : 5 19 : 6 4 : 7 +++ Passed 10000 tests (17263
+    discards)
+>> *)
 
-(* For properties with preconditions, we write custom generators that satisfy the property directly! *)
-(* Let's generate sorted lists with elements between low and high *)
+(** The vast majority of inputs have length 2 or less! *)
+
+(** To deal with properties with preconditions, it is common to write
+    custom generators for well-distributed random data that satisfy
+    the property directly! *)
+
+(** For example, let's generate sorted lists with elements between low
+    and high... *)
+
 Fixpoint genSortedList (low high : nat) (size : nat) : G (list nat) :=
-  match size with 
-  | O => returnGen []
-  | S size' =>
-    if high <? low then returnGen []
-    else freq [ (1, returnGen []) 
-              ; (size, do! x  <- choose (low, high);
-                       do! xs <- genSortedList x high size';
-                       returnGen (x :: xs)) ]
-  end.
+  match size with | O => returnGen [] | S size' => if high <? low then
+  returnGen [] else freq [ (1, returnGen []) ; (size, x <-
+  choose (low, high);; xs <- genSortedList x high size';; returnGen (x
+  :: xs)) ] end.
 
-Sample (genSortedList 0 10 10).
+(** We use a [size] parameter to control the length of generated
+    lists.  If [size] is zero, we can only return the empty list which
+    is always sorted. If [size] is nonzero, we need to perform an
+    additional check if [high] is less than [low] (where we also
+    return the empty list).  If it is not, we can proceed to choose to
+    generate a cons cell, with its head generated between low and high
+    and its tail generated recursively. *)
+
+(* Sample (genSortedList 0 10 10). *)
+
+(** Collecting statistics about the length of lists generated using
+    our new generator... *)
 
 Definition insert_spec_sorted (x : nat) :=
-  forAllShrink (genSortedList 0 10 10) shrink 
-               (fun l => insert_spec' x l).
+  forAllShrink (genSortedList 0 10 10) shrink (fun l => insert_spec' x
+               l).
 
 (* QuickChick insert_spec_sorted. *)
-(** Much better! *)
+(** ... is much better! *)
 
 (** But are we done yet? *)
 
-(* EX (hard)
-   
-   Using "collect", figure out whether generating a sorted list of numbers
-   between 0 and 5 is uniform in the frequencies of the numbers generated.
+(** **** Exercise: 5 stars (uniform_sorted)  *)
+(** Using "collect", figure out whether generating a sorted list of
+    numbers between 0 and 5 is uniform in the frequencies of the
+    numbers generated.
 
-   Why? Write a different generator genSortedList' that achieves a more uniform
-   distribution, preserving the uniformity in the lengths
-   *)
+    Why? Write a different generator genSortedList' that achieves a
+    more uniform distribution, preserving the uniformity in the
+    lengths. *)
 
 (* FILL IN HERE *)
+(** [] *)
 
+(* ================================================================= *)
+(** ** Another Precondition: Binary Search Trees *)
 
+(** To conclude this chapter, we turn to binary search trees.  The
+    [isBST] predicate characterizes trees with elements between [low]
+    and [high]. *)
 
-(* EX : Binary Search Trees *)
 Fixpoint isBST (low high: nat) (t : Tree nat) := 
   match t with 
   | Leaf => true
@@ -1131,7 +1349,8 @@ Fixpoint isBST (low high: nat) (t : Tree nat) :=
                   && (isBST low x l) && (isBST x high r)
   end.
 
-(* Give them insert or have them write it? *)
+(** Here is a (faulty?) insertion function for binary search trees. *)
+
 Fixpoint insertBST (x : nat) (t : Tree nat) :=
   match t with 
   | Leaf => Node x Leaf Leaf
@@ -1139,12 +1358,32 @@ Fixpoint insertBST (x : nat) (t : Tree nat) :=
                    else Node x' l (insertBST x r)
   end.
 
+(** We would expect that if we insert an element that is within 
+    the bounds [low] and [high] to a binary search tree, then
+    the result is also a binary search tree. *)
+
 Definition insertBST_spec (low high : nat) (x : nat) (t : Tree nat) :=
-  (low <? x) ==> (x <? high) ==> (isBST low high t) ==> 
+  (low <? x) ==> 
+  (x <? high) ==> 
+  (isBST low high t) ==> 
   isBST low high (insertBST x t).                         
 
 (* QuickChick insertBST_spec. *)
-(* Too much wasted effort: 16 tests - 270 discards! *)
+(**  ==> 
+    QuickChecking insertBST_spec
+    0
+    5
+    4
+    Node (4) (Leaf) (Leaf)
+    *** Failed after 85 tests and 1 shrinks. (1274 discards)
+*)
+
+(** We can see that a bug exists when inserting an element into a
+    [Node] with the same payload: if the element already exists in the
+    binary search tree, we should not change it! *)
+  
+(** However there is too much wasted effort!  Indeed, if we fix the
+    bug ... *)
 
 Fixpoint insertBST' (x : nat) (t : Tree nat) :=
   match t with 
@@ -1158,9 +1397,20 @@ Definition insertBST_spec' (low high : nat) (x : nat) (t : Tree nat) :=
   (low <? x) ==> (x <? high) ==> (isBST low high t) ==> 
   isBST low high (insertBST' x t).                         
 
-(* QuickChick insertBST_spec'. *)
-(* Fixing the bug ==> Gave up! *)
+(** ... and try again: *)
 
-(* EX : Binary search tree generator 
-Write a generator that produces binary search trees directly, so that 
-you run 10000 tests with 0 discards *)
+(* QuickChick insertBST_spec'. *)
+(** 
+<< 
+===> 
+    QuickChecking insertBST_spec'
+    *** Gave up! Passed only 1281 tests
+    Discarded: 20000
+*)
+
+(** **** Exercise: 4 stars (gen_bst)  *)
+(** Write a generator that produces binary search trees directly, so
+    that you run 10000 tests with 0 discards. *)
+
+(* FILL IN HERE *)
+(** [] *)
