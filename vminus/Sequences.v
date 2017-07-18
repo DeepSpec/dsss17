@@ -1,12 +1,14 @@
-(* 
-  Acknowledgements:  
+(** * Sequences: Transition Systems *)
+
+(* ################################################################# *)
+(** * Acknowledgements *)
+(**
   This file is taken from the compiler verification development created by 
 
     Xavier Leroy, INRIA Paris-Rocquencourt                    
 
   and available at: http://gallium.inria.fr/~xleroy/courses/Eugene-2012/
 *)
-
 
 (** A library of relation operators defining sequences of transitions
   and useful properties about them. *)

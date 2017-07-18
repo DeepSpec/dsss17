@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>CompilerProp</title>
+<title>CompilerProp: Correctness of the Imp Compiler</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,100 +29,163 @@
 
 <div id="main">
 
-<h1 class="libtitle">CompilerProp</h1>
+<h1 class="libtitle">CompilerProp<span class="subtitle">Correctness of the Imp Compiler</span></h1>
 
-<div class="code code-tight">
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FunctionalExtensionality</span>. <span class="comment">(*&nbsp;TODO:&nbsp;don't&nbsp;really&nbsp;need&nbsp;this&nbsp;*)</span><br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">RelationClasses</span>.<br/>
 
-<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Util</span> <span class="id" type="var">Vminus.Classes</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Vminus</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.CFG</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.ListCFG</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Sequences</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.VminusOpSem</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Imp</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Compiler</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">V.Opsem</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Set</span> <span class="id" type="var">Bullet</span> <span class="id" type="var">Behavior</span> "Strict Subproofs".<br/>
-<span class="id" type="keyword">Unset</span> <span class="id" type="var">Printing</span> <span class="id" type="var">Records</span>.<br/>
-</div>
 
 <div class="doc">
-<a name="lab61"></a><h1 class="section">To possibly refactor into CFGProp</h1>
-<a name="lab62"></a><h2 class="section">Correspondence between concrete and abstract CFGs.</h2>
+<a name="lab91"></a><h1 class="section">Imp to Vminus Compiler Correctness</h1>
 
 <div class="paragraph"> </div>
 
- Asserts that the instruction sequence found at program point p in 
-    the control-flow graph g is exactly the list <span class="inlinecode"><span class="id" type="var">is</span></span>. 
-</div>
-<div class="code code-tight">
-
-<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insns_at_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">ListCFG.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">is</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">is</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">True</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">i</span> :: <span class="id" type="var">is'</span> ⇒ <span class="id" type="var">ListCFG.insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> ∧ <span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">p</span>) <span class="id" type="var">is'</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-</div>
-
-<div class="doc">
-Looking up the block labeled <span class="inlinecode"><span class="id" type="var">l</span></span> in the concrete represenation
-    agrees with the declarative specification. 
-</div>
-<div class="code code-tight">
-
-<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cfg_insns_at</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">l</span> <span class="id" type="var">is</span> <span class="id" type="var">e</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">ListCFG.lookup</span> <span class="id" type="var">g</span> <span class="id" type="var">l</span> = <span class="id" type="var">Some</span> <span class="id" type="var">is</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> (<span class="id" type="var">e</span>, <span class="id" type="var">g</span>) (<span class="id" type="var">block_entry</span> <span class="id" type="var">l</span>) <span class="id" type="var">is</span>.<br/>
-<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
-<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">pose</span> (<span class="id" type="var">k</span>:=@<span class="id" type="var">nil</span> <span class="id" type="var">insn</span>). <span class="id" type="var">change</span> <span class="id" type="var">is</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">k</span> ++ <span class="id" type="var">is</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">block_entry</span>. <span class="id" type="var">change</span> 0 <span class="id" type="keyword">with</span> (<span class="id" type="var">length</span> <span class="id" type="var">k</span>).<br/>
-&nbsp;&nbsp;<span class="id" type="var">clearbody</span> <span class="id" type="var">k</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">k</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">is</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">split</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">split</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ListCFG.lookup</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">assoc_in</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">k</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">S</span> (<span class="id" type="var">length</span> <span class="id" type="var">k</span>)) <span class="id" type="keyword">with</span> (<span class="id" type="var">length</span> (<span class="id" type="var">k</span> ++ [<span class="id" type="var">a</span>])). <span class="id" type="tactic">apply</span> <span class="id" type="var">IHis</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">app_assoc</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">app_length</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">PeanoNat.Nat.add_1_r</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<br/>
-</div>
-
-<div class="doc">
-<a name="lab63"></a><h1 class="section">End refactoring</h1>
+ This file proves the correctness of the Imp to Vminus compiler.  It follows
+the general strategy outlined by Xavier Leroy's DeepSpec Summer School lectures.
+The final simulation diagram is given in terms of the same <span class="inlinecode"><span class="id" type="var">Sequences</span></span>
+definitions used in those lectures.
 
 <div class="paragraph"> </div>
 
-<a name="lab64"></a><h2 class="section">Auxiliary definitions.</h2>
+There are a few challenges in proving that this compiler is correct:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> relating the output of the compiler to its representation as a ListCFG
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> setting up the correctness statements so that they are strong enough to prove
+   by induction
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> defining a simulation relation between the source Imp program and the Vminus
+   version after compilation
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> dealing with the fact that the compiler is monadic &mdash; we need to show that
+   its state evolves only <i>monotonically</i>
+
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab92"></a><h1 class="section">Sequences</h1>
+
+<div class="paragraph"> </div>
+
+ This development re-uses the <span class="inlinecode"><span class="id" type="var">Sequences</span></span> file from by Xavier Leroy's DSSS17
+compiler.  For our purposes, we need:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">star</span></span> <span class="inlinecode">(<span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">g</span>)</span> : the reflexive, transitive closure of the Vminus <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span>
+    relation (zero or more steps)
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">plus</span></span> <span class="inlinecode">(<span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">g</span>)</span> : the transitive closure of <span class="inlinecode"><span class="id" type="var">step</span></span> (one or more steps)
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">infseq</span></span> <span class="inlinecode">(<span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">g</span>)</span> <span class="inlinecode"><span class="id" type="var">s</span></span> : predicate saying that there's an infinite sequence of
+    steps starting from <span class="inlinecode"><span class="id" type="var">s</span></span>
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab93"></a><h1 class="section">Expression Compilation Properties</h1>
+
+<div class="paragraph"> </div>
+
+ We start by building up the properties needed to prove that the
+compiler generates correct Vminus code when compiling an expression.
+Intuitively, it should suffice to say that if the Imp evaluator says that an
+expression <span class="inlinecode"><span class="id" type="var">a</span>:<span class="id" type="var">aexp</span></span> evaluates to <span class="inlinecode"><span class="id" type="var">n</span></span>, then the corresponding code emitted by the
+compiler computes <span class="inlinecode"><span class="id" type="var">n</span></span> and returns it as a Vminus value (either as a literal or
+in a local identifier).
+
+<div class="paragraph"> </div>
+
+However, to prove that, we need to strengthen the invariants so that the
+induction will go through.  In particular, we need to know that the generated
+code doesn't alter the state of the Vminus memory, that the code doesn't
+(somehow) change the bindings of local variables in the environment, and that
+the compiler doesn't lose any information about the freshness of the <span class="inlinecode"><span class="id" type="var">uid</span></span>'s
+that it has generated.  
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> The value of any uid bound by the local environment before the expression
+
+</li>
+</ul>
+is computed remains unchanged after the expression is computed.
 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">ids_preserved</span> (<span class="id" type="var">cs</span>:<span class="id" type="var">list</span> <span class="id" type="var">uid</span>) (<span class="id" type="var">st</span> <span class="id" type="var">st'</span>:<span class="id" type="var">state</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">uid</span> <span class="id" type="var">n</span>, <span class="id" type="var">In</span> <span class="id" type="var">uid</span> <span class="id" type="var">cs</span> → <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_loc</span> <span class="id" type="var">st</span> <span class="id" type="var">uid</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span> → <span class="id" type="var">st_loc</span> <span class="id" type="var">st'</span> <span class="id" type="var">uid</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li>If the result is stored in a local uid, then it must be in the list of uids
+
+</li>
+</ul>
+generated by the compiler. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">good_return</span> (<span class="id" type="var">cs</span>:<span class="id" type="var">list</span> <span class="id" type="var">uid</span>) (<span class="id" type="var">v</span>:<span class="id" type="var">val</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">uid</span>, <span class="id" type="var">v</span> = <span class="id" type="var">val_uid</span> <span class="id" type="var">uid</span> → <span class="id" type="var">In</span> <span class="id" type="var">uid</span> <span class="id" type="var">cs</span>.<br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Moreover, the set of fresh uids generated during compilation grows
+
+</li>
+</ul>
+monotonically. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">ctx_incr</span> (<span class="id" type="var">cs</span> <span class="id" type="var">cs'</span>:<span class="id" type="var">list</span> <span class="id" type="var">uid</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
@@ -130,8 +193,8 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">ctx_incr_trans</span> : <span class="id" type="var">Transitive</span> <span class="id" type="var">ctx_incr</span>.<br/>
-<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
-<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ctx_incr</span>; <span class="id" type="tactic">intuition</span>. <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -139,23 +202,66 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 </div>
 
 <div class="doc">
-<a name="lab65"></a><h1 class="section">Proofs start here; commented out because of QuickChick for now</h1>
+<hr/>
+ <a name="lab94"></a><h1 class="section">General expression compilation correctness</h1>
 
+<div class="paragraph"> </div>
+
+ We can abstract the definition of correctness with respect to the compiler
+computation and the Imp evaluator used to give meaning to the expression.
+
+<div class="paragraph"> </div>
+
+We also have to generalize the statement of correctness so that it takes place
+in a context <span class="inlinecode"><span class="id" type="var">k</span></span> of instructions to continue with after the expression finishes
+evaluating. 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_correct</span> (<span class="id" type="var">comp</span> : <span class="id" type="var">ectmon</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>))<br/>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_correct</span> (<span class="id" type="var">comp</span> : <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">eval</span> : <span class="id" type="var">mem</span> → <span class="id" type="var">nat</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span> <span class="id" type="var">is</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">cs'</span>, (<span class="id" type="var">v</span>, <span class="id" type="var">is</span>)) = <span class="id" type="var">comp</span> <span class="id" type="var">cs</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st</span>) (<span class="id" type="var">is</span> ++ <span class="id" type="var">k</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">cs'</span>, (<span class="id" type="var">v</span>, <span class="id" type="var">is</span>)) = <span class="id" type="var">comp</span> <span class="id" type="var">cs</span> →                <br/>
+&nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st</span>) (<span class="id" type="var">is</span> ++ <span class="id" type="var">k</span>) →      <br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">st'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_mem</span> <span class="id" type="var">st'</span> = <span class="id" type="var">st_mem</span> <span class="id" type="var">st</span> ∧<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st'</span>) <span class="id" type="var">k</span> ∧<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_mem</span> <span class="id" type="var">st'</span> = <span class="id" type="var">st_mem</span> <span class="id" type="var">st</span> ∧   <span class="comment">(*&nbsp;&lt;----&nbsp;the&nbsp;memory&nbsp;is&nbsp;unchanged&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ListCFG.insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st'</span>) <span class="id" type="var">k</span> ∧  <span class="comment">(*&nbsp;&lt;---&nbsp;the&nbsp;code&nbsp;ran&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧       <span class="comment">(*&nbsp;&lt;----&nbsp;the&nbsp;Vminus&nbsp;machine&nbsp;steps&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ids_preserved</span> <span class="id" type="var">cs</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">good_return</span> <span class="id" type="var">cs'</span> <span class="id" type="var">v</span> ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ctx_incr</span> <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span> ∧<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eval_val</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st'</span>) <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> (<span class="id" type="var">eval</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eval_val</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st'</span>) <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> (<span class="id" type="var">eval</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>)). <span class="comment">(*&nbsp;&lt;-&nbsp;right&nbsp;ans!&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab95"></a><h1 class="section">Star vs. Plus</h1>
+<a name="lab96"></a><h4 class="section">Exercise: 1 star, recommended (why star?)</h4>
+ Why do we use <span class="inlinecode"><span class="id" type="var">star</span></span> in the definition of correctness? Would <span class="inlinecode"><span class="id" type="var">plus</span></span> work? 
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab97"></a><h1 class="section">Binop Compilation Correctness</h1>
+
+<div class="paragraph"> </div>
+
+ Assuming we have the correct compilations of two subexpressions, we 
+can use <span class="inlinecode"><span class="id" type="var">comp_bop</span></span> to correctly compile a binary operation.  
+
+<div class="paragraph"> </div>
+
+It is worth stepping through this proof to see how the simulation works &mdash; we 
+first extract information from the compiled code and then step the Vminus 
+state forward to trace the execution through the program.
+
+<div class="paragraph"> </div>
+
+The induction hypotheses let us use transitivity to compose together the 
+executions of the two sub expressions.  
+
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_bop_correct</span> : ∀ <span class="id" type="var">b</span> <span class="id" type="var">comp1</span> <span class="id" type="var">comp2</span> <span class="id" type="var">eval1</span> <span class="id" type="var">eval2</span><br/>
@@ -163,12 +269,15 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">IHa2</span>: <span class="id" type="var">comp_correct</span> <span class="id" type="var">comp2</span> <span class="id" type="var">eval2</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">comp_correct</span> (<span class="id" type="var">comp_bop</span> <span class="id" type="var">b</span> <span class="id" type="var">comp1</span> <span class="id" type="var">comp2</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">m</span> ⇒ <span class="id" type="var">bop_denote</span> <span class="id" type="var">b</span> (<span class="id" type="var">eval1</span> <span class="id" type="var">m</span>) (<span class="id" type="var">eval2</span> <span class="id" type="var">m</span>)).<br/>
-<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
-<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">comp_correct</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">b</span> <span class="id" type="var">comp1</span> <span class="id" type="var">comp2</span> <span class="id" type="var">eval1</span> <span class="id" type="var">eval2</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">until</span> <span class="id" type="var">v</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">Hcomp</span> <span class="id" type="var">Hinsns</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Extract&nbsp;information&nbsp;from&nbsp;the&nbsp;compiler&nbsp;*)</span><br/>
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">comp_bop</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hcomp</span>.<br/>
@@ -176,74 +285,121 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">comp1</span> <span class="id" type="var">cs</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">cs<sub>1</sub></span> [<span class="id" type="var">rl<sub>1</sub></span> <span class="id" type="var">rr<sub>1</sub></span>]] <span class="id" type="var">eqn</span>:<span class="id" type="var">Hc<sub>1</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">comp2</span> <span class="id" type="var">cs<sub>1</sub></span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">cs<sub>2</sub></span> [<span class="id" type="var">rl<sub>2</sub></span> <span class="id" type="var">rr<sub>2</sub></span>]] <span class="id" type="var">eqn</span>:<span class="id" type="var">Hc<sub>2</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hcomp</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">Hcomp</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Normalize&nbsp;the&nbsp;code&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">repeat</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">app_assoc</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hinsns</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Instatiate&nbsp;the&nbsp;first&nbsp;induction&nbsp;hypothesis:&nbsp;the&nbsp;automation&nbsp;uses&nbsp;Hc<sub>1</sub>&nbsp;and<br/>
+&nbsp;&nbsp;Hinsns&nbsp;to&nbsp;deduce&nbsp;the&nbsp;instantiation.*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="var">eelim</span> <span class="id" type="var">IHa1</span>; [| <span class="id" type="tactic">eauto</span> ..].<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>1</sub></span> (<span class="id" type="var">Hinv1</span> &amp; <span class="id" type="var">His1</span> &amp; <span class="id" type="var">Hstep1</span> &amp; <span class="id" type="var">Hpres1</span> &amp; <span class="id" type="var">Hret1</span> &amp; <span class="id" type="var">Hincr1</span> &amp; <span class="id" type="var">Heval1</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;the&nbsp;automation&nbsp;will&nbsp;find&nbsp;Hc<sub>2</sub>&nbsp;and&nbsp;His1&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="var">eelim</span> <span class="id" type="var">IHa2</span>; [| <span class="id" type="tactic">eauto</span> ..].<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> (<span class="id" type="var">Hinv2</span> &amp; <span class="id" type="var">His2</span> &amp; <span class="id" type="var">Hstep2</span> &amp; <span class="id" type="var">Hpres2</span> &amp; <span class="id" type="var">Hret2</span> &amp; <span class="id" type="var">Hincr2</span> &amp; <span class="id" type="var">Heval2</span>).<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">IHa1</span> <span class="id" type="var">IHa2</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">st<sub>2</sub>'</span>; <span class="id" type="tactic">set</span> (<span class="id" type="var">st<sub>2</sub></span>:=<span class="id" type="var">st<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> *; <span class="id" type="tactic">destruct</span> <span class="id" type="var">st<sub>2</sub>'</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;we&nbsp;need&nbsp;to&nbsp;insantiate&nbsp;the&nbsp;existential&nbsp;with&nbsp;the&nbsp;new&nbsp;state.&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First&nbsp;we&nbsp;destruct&nbsp;st<sub>2</sub>&nbsp;--&nbsp;which&nbsp;is&nbsp;the&nbsp;state&nbsp;that&nbsp;results&nbsp;after<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;having&nbsp;computed&nbsp;both&nbsp;subexpressions&nbsp;--&nbsp;but&nbsp;we&nbsp;remember&nbsp;its&nbsp;name.<br/>
+&nbsp;&nbsp;&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">st<sub>2</sub>'</span>. <span class="id" type="tactic">set</span> (<span class="id" type="var">st<sub>2</sub></span>:=<span class="id" type="var">st<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">destruct</span> <span class="id" type="var">st<sub>2</sub>'</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;We&nbsp;know&nbsp;that&nbsp;the&nbsp;program&nbsp;count&nbsp;will&nbsp;increment&nbsp;and&nbsp;that&nbsp;the&nbsp;local&nbsp;environment<br/>
+&nbsp;&nbsp;will&nbsp;be&nbsp;extended&nbsp;with&nbsp;the&nbsp;result&nbsp;of&nbsp;the&nbsp;bop.&nbsp;&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="var">eexists</span> {| <span class="id" type="var">st_pc</span>  := <span class="id" type="var">incr_pc</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st<sub>2</sub></span>);<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_loc</span> := <span class="id" type="var">Locals.update</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st<sub>2</sub></span>) (<span class="id" type="var">Uid.fresh</span> <span class="id" type="var">cs<sub>2</sub></span>) <span class="id" type="var">_</span> |}. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_loc</span> := <span class="id" type="var">Locals.update</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st<sub>2</sub></span>) (<span class="id" type="var">Uid.fresh</span> <span class="id" type="var">cs<sub>2</sub></span>) <span class="id" type="var">_</span> |}.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;exp_invar&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">transitivity</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>1</sub></span>). <span class="id" type="tactic">transitivity</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>2</sub></span>). <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hinv1</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;we&nbsp;have&nbsp;to&nbsp;establish&nbsp;that&nbsp;all&nbsp;of&nbsp;the&nbsp;properties&nbsp;hold&nbsp;of&nbsp;the&nbsp;resulting&nbsp;state.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;-  <span class="comment">(*&nbsp;The&nbsp;memory&nbsp;doesn't&nbsp;change.&nbsp;*)</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">transitivity</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>1</sub></span>). <span class="id" type="tactic">transitivity</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>2</sub></span>). <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">assumption</span>. <span class="id" type="tactic">assumption</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;insns_at_pc&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">His2</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">repeat</span> <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;The&nbsp;program&nbsp;counter&nbsp;advances&nbsp;as&nbsp;required.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">His2</span>; <span class="id" type="tactic">auto</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;star&nbsp;(Opsem.step&nbsp;g)&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_one</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_bop</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">His2</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">eval_bop</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heval2</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heval2</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">eval_val</span> <span class="id" type="var">st_loc0</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">Some</span> (<span class="id" type="var">eval1</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>))).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">symmetry</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;We&nbsp;need&nbsp;two&nbsp;uses&nbsp;of&nbsp;transitivity&nbsp;plus&nbsp;one&nbsp;additional&nbsp;step&nbsp;to&nbsp;account<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;the&nbsp;steps&nbsp;taken&nbsp;by&nbsp;the&nbsp;Vminus&nbsp;code&nbsp;to&nbsp;simulate&nbsp;the&nbsp;full&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">star_trans</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_one</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_bop</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">His2</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">eval_bop</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heval2</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heval2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">eval_val</span> <span class="id" type="var">st_loc0</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">Some</span> (<span class="id" type="var">eval1</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>))).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">symmetry</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">rl<sub>1</sub></span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">good_return</span> <span class="id" type="keyword">in</span> *.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">t<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">In</span> <span class="id" type="var">t<sub>0</sub></span> <span class="id" type="var">cs<sub>1</sub></span>). <span class="id" type="tactic">apply</span> <span class="id" type="var">Hret1</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ids_preserved</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hpres2</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hpres2</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;We&nbsp;need&nbsp;to&nbsp;use&nbsp;the&nbsp;fact&nbsp;that&nbsp;the&nbsp;first&nbsp;expression&nbsp;evaluates&nbsp;to&nbsp;the&nbsp;same&nbsp;value<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;the&nbsp;new&nbsp;execution&nbsp;context.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">rl<sub>1</sub></span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">good_return</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">In</span> <span class="id" type="var">t<sub>0</sub></span> <span class="id" type="var">cs<sub>1</sub></span>). <span class="id" type="tactic">apply</span> <span class="id" type="var">Hret1</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ids_preserved</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hpres2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hpres2</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">auto</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;ids_preserved&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_neq</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">change</span> <span class="id" type="var">st_loc0</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st<sub>2</sub></span>).<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hpres2</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hincr1</span>, <span class="id" type="var">Hincr2</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Uid.fresh_not_in</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;We&nbsp;need&nbsp;to&nbsp;use&nbsp;the&nbsp;freshness&nbsp;of&nbsp;the&nbsp;newly&nbsp;generated&nbsp;uid&nbsp;to&nbsp;show&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;updated&nbsp;local&nbsp;environment&nbsp;preserves&nbsp;all&nbsp;the&nbsp;old&nbsp;values.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">red</span>;  <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">uid</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_neq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">change</span> <span class="id" type="var">st_loc0</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st<sub>2</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hpres2</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Hincr1</span>, <span class="id" type="var">Hincr2</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Uid.fresh_not_in</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;good_return&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">red</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">uid'</span> <span class="id" type="var">Hid</span>. <span class="id" type="tactic">injection</span> <span class="id" type="var">Hid</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>. <span class="id" type="var">left</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;monotonicity&nbsp;of&nbsp;the&nbsp;state&nbsp;is&nbsp;easy&nbsp;to&nbsp;show&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">red</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">uid'</span> <span class="id" type="var">Hid</span>. <span class="id" type="tactic">injection</span> <span class="id" type="var">Hid</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>. <span class="id" type="var">left</span>; <span class="id" type="tactic">auto</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;ctx_incr&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">transitivity</span> <span class="id" type="var">cs<sub>1</sub></span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">transitivity</span> <span class="id" type="var">cs<sub>2</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ctx_incr</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>; <span class="id" type="tactic">intros</span>. <span class="id" type="var">right</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">transitivity</span> <span class="id" type="var">cs<sub>1</sub></span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">transitivity</span> <span class="id" type="var">cs<sub>2</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ctx_incr</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc<sub>2</sub></span>; <span class="id" type="tactic">intros</span>. <span class="id" type="var">right</span>; <span class="id" type="tactic">auto</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;eval_val&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_eq</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>1</sub></span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>). <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hinv1</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;as&nbsp;is&nbsp;that&nbsp;we&nbsp;got&nbsp;the&nbsp;right&nbsp;answer!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st<sub>1</sub></span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>). <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab98"></a><h1 class="section">Aexp Compilation Correctness</h1>
+
+<div class="paragraph"> </div>
+
+ Assuming we have the correct compilations of two subexpressions, we can use
+<span class="inlinecode"><span class="id" type="var">comp_bop</span></span> to correctly compile a binary operation. 
+<div class="paragraph"> </div>
+
+<a name="lab99"></a><h4 class="section">Exercise: 3 stars: (comp_aexp_correct)</h4>
+
+<div class="paragraph"> </div>
+
+ The new interesting case is handling the Imp identifiers, which compile to a
+<span class="inlinecode"><span class="id" type="var">load</span></span> instruction.  The approach is quite similar to the proof of the binop
+correctness.  Using it as a guideline, complete the case for AIds in the 
+proof below. 
+</div>
+<div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_aexp_correct</span> : ∀ (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">comp_correct</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a</span>) (<span class="id" type="var">aeval</span> <span class="id" type="var">a</span>).<br/>
-<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
-<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;comp_bop_correct&nbsp;takes&nbsp;care&nbsp;of&nbsp;all&nbsp;the&nbsp;inductive&nbsp;cases&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">a</span>; [ | | <span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_bop_correct</span>; <span class="id" type="tactic">auto</span> ..].<br/>
@@ -254,38 +410,32 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 &nbsp;&nbsp;∃ <span class="id" type="var">st</span>. <span class="id" type="tactic">repeat</span> <span class="id" type="tactic">split</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">red</span>; <span class="id" type="tactic">auto</span> <span class="id" type="keyword">using</span> <span class="id" type="var">star_refl</span>. <span class="id" type="tactic">discriminate</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"AId".&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">comp_correct</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span> <span class="id" type="var">g</span> <span class="id" type="var">st</span> <span class="id" type="var">is</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">Hcomp</span> <span class="id" type="var">Hinsns</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hcomp</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="tactic">fresh</span> <span class="id" type="var">cs</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">cs<sub>1</sub></span> <span class="id" type="var">idr</span>] <span class="id" type="var">eqn</span>:<span class="id" type="var">Hc</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hcomp</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">Hcomp</span>. <span class="id" type="tactic">subst</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st</span> <span class="id" type="var">into</span> <span class="id" type="var">st'</span>. <span class="id" type="tactic">set</span> (<span class="id" type="var">st</span> := <span class="id" type="var">st'</span>). <span class="id" type="tactic">destruct</span> <span class="id" type="var">st'</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">eexists</span> {| <span class="id" type="var">st_pc</span> := (<span class="id" type="var">incr_pc</span> (<span class="id" type="var">st_pc</span> <span class="id" type="var">st</span>));<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_loc</span> := <span class="id" type="var">Locals.update</span> (<span class="id" type="var">st_loc</span> <span class="id" type="var">st</span>) <span class="id" type="var">idr</span> <span class="id" type="var">_</span> |}. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hinsns</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_one</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">step_load</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hinsns</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="tactic">fresh</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hc</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">red</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_neq</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc</span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Uid.fresh_not_in</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">red</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc</span>. <span class="id" type="tactic">injection</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">idr</span> <span class="id" type="var">uid</span>. <span class="id" type="var">left</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc</span>; <span class="id" type="tactic">red</span>; <span class="id" type="tactic">intuition</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Locals.update_eq</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hc</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"AId".&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
 <br/>
 <span class="id" type="keyword">Local</span> <span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Resolve</span> <span class="id" type="var">comp_aexp_correct</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab100"></a><h1 class="section">Bexp Compilation Correctness</h1>
+
+<div class="paragraph"> </div>
+
+ Proving the correctness of boolean expression compilation follows
+analogously to that of aexps. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_bexp_correct</span> : ∀ (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>),<br/>
 &nbsp;&nbsp;<span class="id" type="var">comp_correct</span> (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">m</span> ⇒ <span class="id" type="var">b2n</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b</span> <span class="id" type="var">m</span>)).<br/>
-<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
-<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">b</span>.<br/>
 
@@ -330,58 +480,90 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 </div>
 
 <div class="doc">
+<hr/>
+ <a name="lab101"></a><h1 class="section">Tactic Support</h1>
+
+<div class="paragraph"> </div>
+
+ As we begin to prove more lemmas about our compiler, we'll see that the
+first step is usually to exploit facts about the compiler implementation, which
+amounts to "walking through" the behavior of the compiler on the given inputs.
+
+<div class="paragraph"> </div>
+
+This means that we investigate the compiler state state, exposing the various
+<span class="inlinecode"><span class="id" type="keyword">let</span></span> bindings, which are under the hood of the state monad, and destructing
+those too.
+
+<div class="paragraph"> </div>
+
+In practice, we arrived at this tactic by manually stepping through several of
+the cases of our proofs and noticing the common pattern of destruction.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">exploit_compile</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">x</span> : <span class="id" type="var">Compiler.cstate</span> |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="keyword">as</span> [[?<span class="id" type="var">lbls</span> ?<span class="id" type="var">ids</span>] ?<span class="id" type="var">bs</span>] <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : <span class="id" type="var">context</span>[<span class="id" type="keyword">let</span> (<span class="id" type="var">_</span>,_) := ?<span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <span class="id" type="var">_</span>] |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="keyword">as</span> [?<span class="id" type="var">l</span> ?<span class="id" type="var">r</span>] <span class="id" type="var">eqn</span>:?<span class="id" type="var">Heq</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : (<span class="id" type="var">_</span>, <span class="id" type="var">_</span>) = (<span class="id" type="var">_</span>, <span class="id" type="var">_</span>) |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : () |- <span class="id" type="var">_</span> ] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab102"></a><h1 class="section">Store Command Correctness</h1>
+
+<div class="paragraph"> </div>
+
+ Following the structure of the compiler, we now state a lemma that
+establishes the correctness of the function that compiles a <span class="inlinecode"><span class="id" type="var">store</span></span>.  There are
+a couple of things to note:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> First we define some helper definitions for compiling assignments and 
-    conditionals.
-<ul class="doclist">
-<li> To simplify the simulation: each store is compiled to its own basic block.
+<li> first, this lemma assumes that the code for the store resides at the start of
+   the block
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> second, we know that the store command takes at least one Vminus instruction,
+   so we can use <span class="inlinecode"><span class="id" type="var">plus</span></span>
 
 </li>
 </ul>
 
-</li>
-<li> Then we define the command compilation context as a state monad.
-<ul class="doclist">
-<li> Generate fresh uids (like the <span class="inlinecode"><span class="id" type="var">ectmon</span></span>)
+<div class="paragraph"> </div>
 
-</li>
-<li> Generate fresh block labels 
-
-</li>
-<li> Add instructions to the (partial) CFG
-
-</li>
-</ul>
-
-</li>
-<li> Then we define the translation of commands (recursively).
-
-</li>
-</ul>
+The lemma says that the memory in the state after the assignment contains the
+value obtained by evaluating <span class="inlinecode"><span class="id" type="var">a</span></span> in the original state, according to Imp
+semantics.  
 
 </div>
 <div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_store_correct</span> : <br/>
-&nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">a</span> <span class="id" type="var">v</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">cs</span> <span class="id" type="var">st</span>,<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">g</span> (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>) <span class="id" type="var">v</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">cs</span> <span class="id" type="var">st</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> <span class="id" type="var">le</span>) (<span class="id" type="var">strun</span> (<span class="id" type="var">comp_store</span> <span class="id" type="var">a</span> <span class="id" type="var">v</span> <span class="id" type="var">lr</span>) <span class="id" type="var">cs</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">st_pc</span> <span class="id" type="var">st</span> = (<span class="id" type="var">block_entry</span> <span class="id" type="var">le</span>) →<br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">st'</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">plus</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_pc</span> <span class="id" type="var">st'</span> = (<span class="id" type="var">block_entry</span> <span class="id" type="var">lr</span>) ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_mem</span> <span class="id" type="var">st'</span> = (<span class="id" type="var">Memory.update</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>) <span class="id" type="var">v</span> (<span class="id" type="var">aeval</span> <span class="id" type="var">a</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>))).<br/>
-<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
-<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">a</span> <span class="id" type="var">v</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">cs</span> <span class="id" type="var">st</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">strun</span>, <span class="id" type="var">comp_store</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type</span> <span class="id" type="var">of</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span> <span class="id" type="var">context</span>[<span class="id" type="keyword">let</span> (<span class="id" type="var">_</span>,_) := ?<span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="var">eqn</span>:<span class="id" type="var">Hc</span> <span class="id" type="keyword">end</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">x</span> <span class="id" type="var">is</span>].<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">symmetry</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hc</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">exploit_compile</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
@@ -391,15 +573,41 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="var">eexists</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_star_trans'</span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_left</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_store</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_tmn</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>9</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_refl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">split</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_star_trans'</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_left</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_store</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_step</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_tmn</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>9</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">star_refl</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab103"></a><h1 class="section">Conditionals</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab104"></a><h4 class="section">Exercise: 3 stars: (comp_cond_correct)</h4>
+
+<div class="paragraph"> </div>
+
+ The correctness of the function that compiled conditionals follows
+the same structure as that of <span class="inlinecode"><span class="id" type="var">comp_store_correct</span></span>. Using it as a guideline, 
+complete the proof below.
+
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_cond_correct</span> :<br/>
@@ -410,109 +618,50 @@ Looking up the block labeled <span class="inlinecode"><span class="id" type="var
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">plus</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_pc</span> <span class="id" type="var">st'</span> = <span class="id" type="var">block_entry</span> (<span class="id" type="keyword">if</span> <span class="id" type="var">beval</span> <span class="id" type="var">b</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>) <span class="id" type="keyword">then</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="var">l<sub>2</sub></span>) ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span> = <span class="id" type="var">st_mem</span> <span class="id" type="var">st'</span>.<br/>
-<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
-<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">strun</span>, <span class="id" type="var">comp_cond</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type</span> <span class="id" type="var">of</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span> <span class="id" type="var">context</span>[<span class="id" type="keyword">let</span> (<span class="id" type="var">_</span>,_) := ?<span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="var">eqn</span>:<span class="id" type="var">Hc</span> <span class="id" type="keyword">end</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">x</span> <span class="id" type="var">is</span>].<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">symmetry</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hc</span>.<br/>
-
-<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">eelim</span> (<span class="id" type="var">comp_bexp_correct</span> <span class="id" type="var">b</span>); <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st'</span> <span class="id" type="var">H'</span>. <span class="id" type="var">decompose</span> [<span class="id" type="var">and</span>] <span class="id" type="var">H'</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H'</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">st'</span> <span class="id" type="var">into</span> <span class="id" type="var">st''</span>. <span class="id" type="tactic">set</span> (<span class="id" type="var">st'</span> := <span class="id" type="var">st''</span>) <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">destruct</span> <span class="id" type="var">st''</span>.<br/>
-
-<br/>
-&nbsp;&nbsp;<span class="id" type="var">eexists</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_star_trans'</span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">plus_one</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_tmn</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>8</sub></span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">b</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>)); <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
 <br/>
-<span class="comment">(*&nbsp;**&nbsp;Compiling&nbsp;Commands&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-State:
+<hr/>
+ <a name="lab105"></a><h1 class="section">Correctness of the Compiler</h1>
 
 <div class="paragraph"> </div>
 
-<ul class="doclist">
-<li> list of used block labels
-
-</li>
-<li> list of used uids
-
-</li>
-<li> current cfg 
-</li>
-</ul>
-
-</div>
-<div class="code code-tight">
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">cstate</span> := (<span class="id" type="var">list</span> <span class="id" type="var">lbl</span> * <span class="id" type="var">list</span> <span class="id" type="var">uid</span> * <span class="id" type="var">list</span> <span class="id" type="var">ListCFG.block</span>)%<span class="id" type="var">type</span>.<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">ctmon</span> := (<span class="id" type="var">ST</span> <span class="id" type="var">cstate</span>).<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">fresh_lbl</span> : <span class="id" type="var">ctmon</span> <span class="id" type="var">lbl</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">bs</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">l</span> := <span class="id" type="var">Lbl.fresh</span> <span class="id" type="var">ls</span> <span class="id" type="keyword">in</span> <br/>
-&nbsp;&nbsp;(<span class="id" type="var">l</span>::<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">ListCFG.update</span> <span class="id" type="var">bs</span> <span class="id" type="var">l</span> [], <span class="id" type="var">l</span>).<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">raise_ectmon</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">ec</span>:<span class="id" type="var">ectmon</span> <span class="id" type="var">T</span>) : <span class="id" type="var">ctmon</span> <span class="id" type="var">T</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">cfg</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">is'</span>, <span class="id" type="var">r</span>) := <span class="id" type="var">ec</span> <span class="id" type="var">is</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;(<span class="id" type="var">ls</span>, <span class="id" type="var">is'</span>, <span class="id" type="var">cfg</span>, <span class="id" type="var">r</span>).<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">add_insns</span> (<span class="id" type="var">l</span>:<span class="id" type="var">lbl</span>) (<span class="id" type="var">b</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) : <span class="id" type="var">ctmon</span> <span class="id" type="var">unit</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">cfg</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">ListCFG.update</span> <span class="id" type="var">cfg</span> <span class="id" type="var">l</span> <span class="id" type="var">b</span>, <span class="id" type="var">tt</span>).<br/>
-
-<br/>
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
-</div>
-
-<div class="doc">
-<a name="lab66"></a><h1 class="section">Correctness?</h1>
+ As we saw in Xavier's lectures, Vminus is deterministic so it suffices to
+show a forward simulation to prove desired correspondence between Imp and its
+Vminus form.  The first big task in doing that is to somehow relate an Imp
+command to the code generated by the compiler.
 
 <div class="paragraph"> </div>
 
+Since our compiler generates explicitly named blocks, we can use the labels to
+help line up the Vminus code.
 
 <div class="paragraph"> </div>
 
-<ul class="doclist">
-<li> Vminus is deterministic
-<ul class="doclist">
-<li> Suffices to show a forward simulation. 
-</li>
-</ul>
-
-</li>
-</ul>
-
-<div class="paragraph"> </div>
-
-<a name="lab67"></a><h2 class="section">Simulation relation.</h2>
+<hr/>
+ <a name="lab106"></a><h2 class="section">Simulation relation.</h2>
 
 <div class="paragraph"> </div>
 
  Relate Imp commands to sequences of basic blocks in the cfg. 
+
+<div class="paragraph"> </div>
+
+  <span class="inlinecode"><span class="id" type="var">match_config</span></span> <span class="inlinecode"><span class="id" type="var">cmd</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> <span class="inlinecode"><span class="id" type="var">r</span></span> means that the Imp command <span class="inlinecode"><span class="id" type="var">cmd</span></span> resides as Vminus code
+  in ListCFG <span class="inlinecode"><span class="id" type="var">g</span></span> at a block labeled <span class="inlinecode"><span class="id" type="var">l</span></span> and exits via label <span class="inlinecode"><span class="id" type="var">r</span></span>.
+
 </div>
 <div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">match_config</span> : <span class="id" type="var">Imp.com</span> → (<span class="id" type="var">ListCFG.t</span> * <span class="id" type="var">lbl</span> * <span class="id" type="var">lbl</span>) → <span class="id" type="keyword">Prop</span> :=<br/>
@@ -536,6 +685,40 @@ State:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">match_config</span> (<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) (<span class="id" type="var">g</span>, <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>).<br/>
 
 <br/>
+<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">match_config</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab107"></a><h3 class="section">Lift the relation to whole states</h3>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> the Imp memory and the Vminus memory must be the same
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> the program counter is at the entry of a block labeled <span class="inlinecode"><span class="id" type="var">l</span></span>
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> the Vminus code at that resides at block <span class="inlinecode"><span class="id" type="var">l</span></span> matches the Imp command
+
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">match_states</span> (<span class="id" type="var">g</span>:<span class="id" type="var">ListCFG.t</span>) (<span class="id" type="var">r</span>:<span class="id" type="var">lbl</span>)<br/>
 &nbsp;&nbsp;: (<span class="id" type="var">com</span> * <span class="id" type="var">Imp.state</span>) → <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">match_states_intro</span> : ∀ <span class="id" type="var">c</span> <span class="id" type="var">mem</span> <span class="id" type="var">st</span> <span class="id" type="var">l</span>,<br/>
@@ -543,74 +726,91 @@ State:
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_pc</span> <span class="id" type="var">st</span> = <span class="id" type="var">block_entry</span> <span class="id" type="var">l</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span> = <span class="id" type="var">mem</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> (<span class="id" type="var">c</span>, <span class="id" type="var">mem</span>) <span class="id" type="var">st</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Program.Equality</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab68"></a><h2 class="section">Translation simulation: First try.</h2>
+<hr/>
+ <a name="lab108"></a><h2 class="section">Translation simulation: First try.</h2>
+
+<div class="paragraph"> </div>
+
+ Given the definition of <span class="inlinecode"><span class="id" type="var">match_states</span></span> it is not too hard to prove that one step of the 
+Imp small-step semantics can be simulated by (zero or more) steps of the Vminus semantics.
 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">simulation_step'</span> :<br/>
-&nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">c</span> <span class="id" type="var">c'</span> <span class="id" type="var">mem</span> <span class="id" type="var">mem'</span> <span class="id" type="var">st</span> <span class="id" type="var">r</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">Imp.step</span> (<span class="id" type="var">c</span>, <span class="id" type="var">mem</span>) (<span class="id" type="var">c'</span>, <span class="id" type="var">mem'</span>) →<br/>
-&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> (<span class="id" type="var">c</span>, <span class="id" type="var">mem</span>) <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span> <span class="id" type="var">st</span> <span class="id" type="var">r</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">Imp.step</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> <span class="id" type="var">s</span> <span class="id" type="var">st</span> →<br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">st'</span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">st</span> <span class="id" type="var">st'</span> ∧<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> (<span class="id" type="var">c'</span>, <span class="id" type="var">mem'</span>) <span class="id" type="var">st'</span>.<br/>
-<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
-<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> <span class="id" type="var">s'</span> <span class="id" type="var">st'</span>.<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st</span>. <span class="id" type="var">revert</span> <span class="id" type="var">r</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span> <span class="id" type="var">s'</span> <span class="id" type="var">st</span> <span class="id" type="var">r</span> <span class="id" type="var">Hstep</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">revert</span> <span class="id" type="var">st</span>. <span class="id" type="var">revert</span> <span class="id" type="var">r</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="id" type="tactic">dependent</span> <span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">intros</span>;<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [? ? ? ? <span class="id" type="var">H'</span>]; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H'</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hstep</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">r</span> <span class="id" type="var">vst</span> <span class="id" type="var">Hmatch</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span> <span class="id" type="keyword">as</span> [? ? ? ? <span class="id" type="var">Hm</span>]; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hm</span>; <span class="id" type="tactic">subst</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_Ass".&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_store_correct</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>6</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st'</span> [? [? ?]]]; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">MC_Skip</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_Seq".&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">IHstep</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> (<span class="id" type="var">st_mem</span> <span class="id" type="var">st</span>) <span class="id" type="var">mem'</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> (<span class="id" type="var">K</span>:=<span class="id" type="var">IHstep</span> <span class="id" type="var">ltac</span>:(<span class="id" type="tactic">auto</span>) <span class="id" type="var">ltac</span>:(<span class="id" type="tactic">auto</span>)); <span class="id" type="var">clearbody</span> <span class="id" type="var">K</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">IHstep</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">K</span> <span class="id" type="var">l<sub>2</sub></span> <span class="id" type="var">st</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">lapply</span> <span class="id" type="var">K</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [<span class="id" type="var">st'</span> [? ?]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">st'</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">specialize</span> (<span class="id" type="var">IHHstep</span> <span class="id" type="var">l<sub>2</sub></span> <span class="id" type="var">vst</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">lapply</span> <span class="id" type="var">IHHstep</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [<span class="id" type="var">vst'</span> [? ?]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">vst'</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_SeqSkip".&nbsp;*)</span><br/>
-&nbsp;&nbsp;∃ <span class="id" type="var">st</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H'</span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span>; <span class="id" type="tactic">subst</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">vst</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_IfTrue".&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_cond_correct</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>14</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st'</span> [? [? ?]]].<br/>
-&nbsp;&nbsp;∃ <span class="id" type="var">st'</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">symmetry</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_cond_correct</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>10</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st'</span> [? [? ?]]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ ∃ <span class="id" type="var">st'</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">assumption</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_IfFalse".&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_cond_correct</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>14</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st'</span> [? [? ?]]].<br/>
-&nbsp;&nbsp;∃ <span class="id" type="var">st'</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>3</sub></span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">symmetry</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_cond_correct</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>10</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">st'</span> [? [? ?]]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ ∃ <span class="id" type="var">st'</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">plus_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">assumption</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"S_While".&nbsp;*)</span><br/>
-&nbsp;&nbsp;∃ <span class="id" type="var">st</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">MC_If</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">MC_Skip</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hmatch</span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">vst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">star_refl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -618,33 +818,38 @@ State:
 </div>
 
 <div class="doc">
-<a name="lab69"></a><h1 class="section">Stuttering</h1>
+<hr/>
+ <a name="lab109"></a><h1 class="section">Stuttering</h1>
 
 <div class="paragraph"> </div>
 
- The proof above goes through, but does not ensure that if the
-    source program diverges the compiled program does not go wrong! 
+ Recall from Xavier's lectures: The proof above goes through, but does not
+    ensure that if the source program diverges the compiled program does not go
+    wrong!
 
 <div class="paragraph"> </div>
 
-    To fix it, we need to ensure that there is no "infinite stuttering"
-    in which the source program takes an infinite number of steps while 
-    the target terminates (or gets stuck).
+    To fix it, we need to ensure that there is no "infinite stuttering" in which
+    the source program takes an infinite number of steps while the target
+    terminates (or gets stuck).  
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab110"></a><h2 class="section">Eliminating Stuttering</h2>
 
 <div class="paragraph"> </div>
 
-<a name="lab70"></a><h2 class="section">Eliminating Stuttering</h2>
-
-<div class="paragraph"> </div>
-
- First, define an appropriate measure. 
+ First, we define an appropriate measure of the Imp command that will
+decrease whenever the Vminus program takes zero steps. With a bit of
+experimenting, we determine that a good candidate is twice the number of <span class="inlinecode"><span class="id" type="var">SKIP</span></span>
+commands plus 1 if the command starts with a <span class="inlinecode"><span class="id" type="var">WHILE</span></span>.  
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">num_skips</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">nat</span> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">weight_skips</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">nat</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span>) ⇒ <span class="id" type="var">num_skips</span> <span class="id" type="var">c<sub>1</sub></span> + <span class="id" type="var">num_skips</span> <span class="id" type="var">c<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| (<span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span>) ⇒ <span class="id" type="var">weight_skips</span> <span class="id" type="var">c<sub>1</sub></span> + <span class="id" type="var">weight_skips</span> <span class="id" type="var">c<sub>2</sub></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒ 2<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ 0<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
@@ -658,11 +863,22 @@ State:
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">com_size</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">nat</span> := <span class="id" type="var">num_skips</span> <span class="id" type="var">c</span> + <span class="id" type="var">while_head</span> <span class="id" type="var">c</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">com_size</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">nat</span> := <span class="id" type="var">weight_skips</span> <span class="id" type="var">c</span> + <span class="id" type="var">while_head</span> <span class="id" type="var">c</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab71"></a><h2 class="section">Lemmas about the measure.</h2>
+Lift to Imp states 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">imp_size</span> (<span class="id" type="var">st</span>:<span class="id" type="var">com</span> * <span class="id" type="var">mem</span>) : <span class="id" type="var">nat</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">c</span>, <span class="id" type="var">_</span>) := <span class="id" type="var">st</span> <span class="id" type="keyword">in</span> <span class="id" type="var">com_size</span> <span class="id" type="var">c</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab111"></a><h2 class="section">Lemmas about the measure.</h2>
 
 </div>
 <div class="code code-space">
@@ -672,8 +888,8 @@ State:
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">while_head_bound</span> : ∀ <span class="id" type="var">c</span>, <span class="id" type="var">while_head</span> <span class="id" type="var">c</span> &lt; 2.<br/>
-<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
-<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
+<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
+<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -681,8 +897,8 @@ State:
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">com_size_seq</span> : ∀ <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">com_size</span> <span class="id" type="var">c<sub>1</sub>'</span> &lt; <span class="id" type="var">com_size</span> <span class="id" type="var">c<sub>1</sub></span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">com_size</span> (<span class="id" type="var">c<sub>1</sub>'</span>;; <span class="id" type="var">c<sub>2</sub></span>) &lt; <span class="id" type="var">com_size</span> (<span class="id" type="var">c<sub>1</sub></span>;; <span class="id" type="var">c<sub>2</sub></span>).<br/>
-<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
-<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
+<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
+<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">com_size</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">c<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub>'</span>; <br/>
 &nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">omega</span>].<br/>
@@ -692,8 +908,8 @@ State:
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">com_size_seqskip</span> : ∀ <span class="id" type="var">c</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">com_size</span> <span class="id" type="var">c</span> &lt; <span class="id" type="var">com_size</span> (<span class="id" type="var">SKIP</span>;; <span class="id" type="var">c</span>).<br/>
-<div class="togglescript" id="proofcontrol11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')"><span class="show"></span></div>
-<div class="proofscript" id="proof11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')">
+<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
+<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">com_size</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>;<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">try</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
@@ -701,26 +917,27 @@ State:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">while_head_bound</span> <span class="id" type="var">X</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">omega</span>].<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
-
-<br/>
-<span class="comment">(*&nbsp;lift&nbsp;to&nbsp;states&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">imp_size</span> (<span class="id" type="var">st</span>:<span class="id" type="var">com</span> * <span class="id" type="var">mem</span>) : <span class="id" type="var">nat</span> := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">c</span>, <span class="id" type="var">_</span>) := <span class="id" type="var">st</span> <span class="id" type="keyword">in</span> <span class="id" type="var">com_size</span> <span class="id" type="var">c</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">match_config</span>.<br/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Resolve</span> <span class="id" type="var">com_size_seqskip</span> <span class="id" type="var">com_size_seq</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab72"></a><h2 class="section">Final simulation relation.</h2>
+<hr/>
+ <a name="lab112"></a><h2 class="section">Refining the simulation proof.</h2>
 
+<div class="paragraph"> </div>
+
+ The stronger statement of simulation shows that the Vminus code takes at
+least one step <i>unless</i> the size of the Imp state decreases according to our
+measure.  Intuitively: the only Imp commands that can translate to no Vminus
+instructions are <span class="inlinecode"><span class="id" type="var">SKIP</span></span> and, potentially, WHILE FALSE DO C DONE 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">transl_sim_step_final</span> :<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">simulation_step</span> :<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">g</span> <span class="id" type="var">r</span> <span class="id" type="var">imp_st</span> <span class="id" type="var">imp_st'</span> <span class="id" type="var">vmn_st</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">Imp.step</span> <span class="id" type="var">imp_st</span> <span class="id" type="var">imp_st'</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> <span class="id" type="var">imp_st</span> <span class="id" type="var">vmn_st</span> →<br/>
@@ -728,13 +945,13 @@ State:
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">plus</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">vmn_st</span> <span class="id" type="var">vmn_st'</span> ∨<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) <span class="id" type="var">vmn_st</span> <span class="id" type="var">vmn_st'</span> ∧ <span class="id" type="var">imp_size</span> <span class="id" type="var">imp_st'</span> &lt; <span class="id" type="var">imp_size</span> <span class="id" type="var">imp_st</span>) ∧<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">r</span> <span class="id" type="var">imp_st'</span> <span class="id" type="var">vmn_st'</span>.<br/>
-<div class="togglescript" id="proofcontrol12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')"><span class="show"></span></div>
-<div class="proofscript" id="proof12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')">
+<div class="togglescript" id="proofcontrol11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')"><span class="show"></span></div>
+<div class="proofscript" id="proof11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">vmn_st</span>. <span class="id" type="var">revert</span> <span class="id" type="var">r</span>.<br/>
 
 <br/>
-&nbsp;&nbsp;<span class="id" type="tactic">dependent</span> <span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">r</span> <span class="id" type="var">vmn_st</span> <span class="id" type="var">Hst</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">r</span> <span class="id" type="var">vmn_st</span> <span class="id" type="var">Hst</span>;<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hst</span> <span class="id" type="keyword">as</span> [? ? ? ? <span class="id" type="var">Hcfg</span>]; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hcfg</span>; <span class="id" type="tactic">subst</span>.<br/>
 
 <br/>
@@ -778,28 +995,25 @@ State:
 </div>
 
 <div class="doc">
-Is this enough? 
-<div class="paragraph"> </div>
-
-<a name="lab73"></a><h2 class="section">Relating initial states</h2>
+<hr/>
+ <a name="lab113"></a><h2 class="section">Relating the initial states</h2>
 
 <div class="paragraph"> </div>
 
  We still must relate the initial states! 
 <div class="paragraph"> </div>
 
- First, some helpers: 
+ First, some helpers: these show that compilation of store and conditionals 
+is never "trivial" &mdash; we always get some Vminus code.
+
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.LtacDebug</span>.<br/>
-
-<br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_store_not_nil</span> : ∀ <span class="id" type="var">a</span> <span class="id" type="var">v</span> <span class="id" type="var">l</span> <span class="id" type="var">cs</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">strun</span> (<span class="id" type="var">comp_store</span> <span class="id" type="var">a</span> <span class="id" type="var">v</span> <span class="id" type="var">l</span>) <span class="id" type="var">cs</span> ≠ [].<br/>
-<div class="togglescript" id="proofcontrol13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')"><span class="show"></span></div>
-<div class="proofscript" id="proof13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')">
+<div class="togglescript" id="proofcontrol12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')"><span class="show"></span></div>
+<div class="proofscript" id="proof12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">strun</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">comp_store</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">ma</span>.<br/>
@@ -814,8 +1028,8 @@ Is this enough?
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_cond_not_nil</span> : ∀ <span class="id" type="var">b</span> <span class="id" type="var">v</span> <span class="id" type="var">l</span> <span class="id" type="var">cs</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">strun</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">b</span> <span class="id" type="var">v</span> <span class="id" type="var">l</span>) <span class="id" type="var">cs</span> ≠ [].<br/>
-<div class="togglescript" id="proofcontrol14" onclick="toggleDisplay('proof14');toggleDisplay('proofcontrol14')"><span class="show"></span></div>
-<div class="proofscript" id="proof14" onclick="toggleDisplay('proof14');toggleDisplay('proofcontrol14')">
+<div class="togglescript" id="proofcontrol13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')"><span class="show"></span></div>
+<div class="proofscript" id="proof13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">strun</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">ma</span>.<br/>
@@ -831,23 +1045,46 @@ Is this enough?
 </div>
 
 <div class="doc">
-<a name="lab74"></a><h2 class="section">Compilation invariant</h2>
+<hr/>
+ <a name="lab114"></a><h2 class="section">Monotonicity of Compiler State</h2>
 
 <div class="paragraph"> </div>
 
- Compilation only "extends" the compilation state:
+ Compilation only <i>extends</i> the compilation state:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Uids and labels change only monotonically.
+<li> Uids and labels change only monotonically &mdash; we generate new fresh
+      identifiers by using <span class="inlinecode"><span class="id" type="tactic">fresh</span></span> and add them to the lists of generated uids.
+
+<div class="paragraph"> </div>
+
 
 </li>
-<li> Compilation never removes code.
+<li> Compilation never removes code; it only adds blocks to the CFG.
 
 </li>
 </ul>
-  
+
+<div class="paragraph"> </div>
+
+  There is one subtlety: when compiling a <span class="inlinecode"><span class="id" type="var">WHILE</span></span> command, the compiler
+  "reserves" a block for the entry to the loop.  This block is (temporarily)
+  added to the CFG with an empty instruction sequence.  The compiler then 
+  recursively compiles the body of the <span class="inlinecode"><span class="id" type="var">WHILE</span></span>, which might add several new blocks,
+  after which the loop entry block is filled in.  We thus need to keep track
+  of the "reserved" status of the entry block, and show that it doesn't change 
+  when compiling the body. 
+
+<div class="paragraph"> </div>
+
+  We characterize this property of "increasing state" as follows.  
+<div class="paragraph"> </div>
+
+ The comparison <span class="inlinecode"><span class="id" type="var">is</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">nil</span></span> allows the status of a block to change from "reserved" 
+(i.e. <span class="inlinecode"><span class="id" type="var">is</span></span> <span class="inlinecode">=</span> <span class="inlinecode">[]</span>) to "filled in" (i.e. <span class="inlinecode"><span class="id" type="var">is</span></span> <span class="inlinecode">≠</span> <span class="inlinecode">[]</span>). 
+
 </div>
 <div class="code code-tight">
 
@@ -861,12 +1098,27 @@ Is this enough?
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">cstate_incr_trans</span> : <span class="id" type="var">Transitive</span> <span class="id" type="var">cstate_incr</span>.<br/>
-<div class="togglescript" id="proofcontrol15" onclick="toggleDisplay('proof15');toggleDisplay('proofcontrol15')"><span class="show"></span></div>
-<div class="proofscript" id="proof15" onclick="toggleDisplay('proof15');toggleDisplay('proofcontrol15')">
+<div class="togglescript" id="proofcontrol14" onclick="toggleDisplay('proof14');toggleDisplay('proofcontrol14')"><span class="show"></span></div>
+<div class="proofscript" id="proof14" onclick="toggleDisplay('proof14');toggleDisplay('proofcontrol14')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">red</span>. <span class="id" type="tactic">inversion</span> 1. <span class="id" type="tactic">inversion</span> 1. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">intuition</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab115"></a><h3 class="section">Strong increasing state</h3>
+
+<div class="paragraph"> </div>
+
+ The strong version says that the blocks in <span class="inlinecode"><span class="id" type="var">ls</span></span> remain unchanged &mdash; this means 
+that their "reserved status" is unaffected. 
+
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">cstate_incr_strong</span> : <span class="id" type="var">cstate</span> → <span class="id" type="var">cstate</span> → <span class="id" type="keyword">Prop</span> :=<br/>
@@ -874,6 +1126,15 @@ Is this enough?
 &nbsp;&nbsp;&nbsp;&nbsp;(∀ <span class="id" type="var">l</span>, <span class="id" type="var">In</span> <span class="id" type="var">l</span> <span class="id" type="var">ls</span> → <span class="id" type="var">In</span> <span class="id" type="var">l</span> <span class="id" type="var">ls'</span>) →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(∀ <span class="id" type="var">l</span>, <span class="id" type="var">In</span> <span class="id" type="var">l</span> <span class="id" type="var">ls</span> → <span class="id" type="var">ListCFG.lookup</span> <span class="id" type="var">g</span> <span class="id" type="var">l</span> = <span class="id" type="var">ListCFG.lookup</span> <span class="id" type="var">g'</span> <span class="id" type="var">l</span>) →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">cstate_incr_strong</span> (<span class="id" type="var">ls</span>, <span class="id" type="var">ids</span>, <span class="id" type="var">g</span>) (<span class="id" type="var">ls'</span>, <span class="id" type="var">ids'</span>, <span class="id" type="var">g'</span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">cstate_incr_strong_refl</span> : <span class="id" type="var">Reflexive</span> <span class="id" type="var">cstate_incr_strong</span>.<br/>
+<div class="togglescript" id="proofcontrol15" onclick="toggleDisplay('proof15');toggleDisplay('proofcontrol15')"><span class="show"></span></div>
+<div class="proofscript" id="proof15" onclick="toggleDisplay('proof15');toggleDisplay('proofcontrol15')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">red</span>. <span class="id" type="tactic">intro</span> <span class="id" type="var">cs</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">cs</span> <span class="id" type="keyword">as</span> [[? ?] ?]. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">cstate_incr_strong_trans</span> : <span class="id" type="var">Transitive</span> <span class="id" type="var">cstate_incr_strong</span>.<br/>
@@ -886,21 +1147,26 @@ Is this enough?
 </div>
 
 <br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">cstate_incr_strong_refl</span> : <span class="id" type="var">Reflexive</span> <span class="id" type="var">cstate_incr_strong</span>.<br/>
-<div class="togglescript" id="proofcontrol17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')"><span class="show"></span></div>
-<div class="proofscript" id="proof17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">red</span>. <span class="id" type="tactic">intro</span> <span class="id" type="var">cs</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">cs</span> <span class="id" type="keyword">as</span> [[? ?] ?]. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
 </div>
+
+<div class="doc">
+<hr/>
+ <a name="lab116"></a><h2 class="section">Monotonicity of Compiler State</h2>
+
+<div class="paragraph"> </div>
+
+ When we add instructions to a block, the state goes from "reserved" to
+filled in. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">add_insns_incr</span> : ∀ <span class="id" type="var">l</span> <span class="id" type="var">is</span> <span class="id" type="var">g</span> <span class="id" type="var">ls</span> <span class="id" type="var">ids</span> <span class="id" type="var">cs'</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">ListCFG.lookup</span> <span class="id" type="var">g</span> <span class="id" type="var">l</span> = <span class="id" type="var">Some</span> [] →<br/>
 &nbsp;&nbsp;<span class="id" type="var">add_insns</span> <span class="id" type="var">l</span> <span class="id" type="var">is</span> (<span class="id" type="var">ls</span>, <span class="id" type="var">ids</span>, <span class="id" type="var">g</span>) = (<span class="id" type="var">cs'</span>, <span class="id" type="var">tt</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr</span> (<span class="id" type="var">ls</span>, <span class="id" type="var">ids</span>, <span class="id" type="var">g</span>) <span class="id" type="var">cs'</span>.<br/>
-<div class="togglescript" id="proofcontrol18" onclick="toggleDisplay('proof18');toggleDisplay('proofcontrol18')"><span class="show"></span></div>
-<div class="proofscript" id="proof18" onclick="toggleDisplay('proof18');toggleDisplay('proofcontrol18')">
+<div class="togglescript" id="proofcontrol17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')"><span class="show"></span></div>
+<div class="proofscript" id="proof17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">cs'</span> <span class="id" type="keyword">as</span> [[? ?] ?]. <span class="id" type="tactic">intros</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">intuition</span>.<br/>
@@ -910,12 +1176,21 @@ Is this enough?
 </div>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ectmon_incr_strong</span> : <br/>
-&nbsp;&nbsp;∀ (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span>:<span class="id" type="var">ectmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">r</span>:<span class="id" type="var">A</span>) <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span> ,<br/>
-&nbsp;&nbsp;<span class="id" type="var">raise_ectmon</span> <span class="id" type="var">m</span> <span class="id" type="var">cs</span> = (<span class="id" type="var">cs'</span>, <span class="id" type="var">r</span>) →<br/>
+</div>
+
+<div class="doc">
+Lifting the FRESH monad into the CMD monad will create a computation that
+never adds blocks, so its state increases "strongly". 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">FRESH_incr_strong</span> : <br/>
+&nbsp;&nbsp;∀ (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span>:<span class="id" type="var">FRESH</span> <span class="id" type="var">A</span>) (<span class="id" type="var">r</span>:<span class="id" type="var">A</span>) <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span> ,<br/>
+&nbsp;&nbsp;<span class="id" type="var">liftF</span> <span class="id" type="var">m</span> <span class="id" type="var">cs</span> = (<span class="id" type="var">cs'</span>, <span class="id" type="var">r</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr_strong</span> <span class="id" type="var">cs</span> <span class="id" type="var">cs'</span>.<br/>
-<div class="togglescript" id="proofcontrol19" onclick="toggleDisplay('proof19');toggleDisplay('proofcontrol19')"><span class="show"></span></div>
-<div class="proofscript" id="proof19" onclick="toggleDisplay('proof19');toggleDisplay('proofcontrol19')">
+<div class="togglescript" id="proofcontrol18" onclick="toggleDisplay('proof18');toggleDisplay('proofcontrol18')"><span class="show"></span></div>
+<div class="proofscript" id="proof18" onclick="toggleDisplay('proof18');toggleDisplay('proofcontrol18')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">cs</span> <span class="id" type="keyword">as</span> [[? ?] ?], <span class="id" type="var">cs'</span> <span class="id" type="keyword">as</span> [[? ?] ?].<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> 1.<br/>
@@ -925,14 +1200,28 @@ Is this enough?
 </div>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab117"></a><h3 class="section">Filling in reserved blocks</h3>
+ If we create a fresh label (and thereby reserve a block) and then do some
+compilation that doesn't fill in any reserved blocks, we can then add
+instructions to the reserved block.  The end-to-end behavior of this sequence
+does not change the status of blocks reserved earlier, so the whole thing
+increases "strongly". 
+</div>
+<div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">fresh_add_incr_strong</span> :<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">l</span> <span class="id" type="var">is</span> <span class="id" type="var">cs<sub>1</sub></span> <span class="id" type="var">cs<sub>2</sub></span> <span class="id" type="var">cs<sub>3</sub></span> <span class="id" type="var">cs<sub>4</sub></span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">fresh_lbl</span> <span class="id" type="var">cs<sub>1</sub></span> = (<span class="id" type="var">cs<sub>2</sub></span>, <span class="id" type="var">l</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr_strong</span> <span class="id" type="var">cs<sub>2</sub></span> <span class="id" type="var">cs<sub>3</sub></span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">add_insns</span> <span class="id" type="var">l</span> <span class="id" type="var">is</span> <span class="id" type="var">cs<sub>3</sub></span> = (<span class="id" type="var">cs<sub>4</sub></span>, <span class="id" type="var">tt</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr_strong</span> <span class="id" type="var">cs<sub>1</sub></span> <span class="id" type="var">cs<sub>4</sub></span>.<br/>
-<div class="togglescript" id="proofcontrol20" onclick="toggleDisplay('proof20');toggleDisplay('proofcontrol20')"><span class="show"></span></div>
-<div class="proofscript" id="proof20" onclick="toggleDisplay('proof20');toggleDisplay('proofcontrol20')">
+<div class="togglescript" id="proofcontrol19" onclick="toggleDisplay('proof19');toggleDisplay('proofcontrol19')"><span class="show"></span></div>
+<div class="proofscript" id="proof19" onclick="toggleDisplay('proof19');toggleDisplay('proofcontrol19')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">until</span> <span class="id" type="var">cs<sub>4</sub></span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">Hfresh</span> <span class="id" type="var">Hincr</span> <span class="id" type="var">Hadd</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">cs<sub>1</sub></span> <span class="id" type="keyword">as</span> [[? ?] ?], <span class="id" type="var">cs<sub>2</sub></span> <span class="id" type="keyword">as</span> [[? ?] ?],<br/>
@@ -943,35 +1232,35 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>8</sub></span>. <span class="id" type="var">right</span>; <span class="id" type="tactic">auto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">Lbl.fresh</span> <span class="id" type="var">l<sub>0</sub></span> ≠ <span class="id" type="var">l</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Lbl.fresh_not_in</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">ListCFG.update_neq</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>13</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">ListCFG.update_neq</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">right</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">ListCFG.update_neq</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>13</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">ListCFG.update_neq</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">assumption</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Ltac</span> <span class="id" type="var">bind_step</span> <span class="id" type="var">H</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type</span> <span class="id" type="var">of</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">context</span>[<span class="id" type="keyword">let</span> (<span class="id" type="var">_</span>,_) := ?<span class="id" type="var">b</span> <span class="id" type="keyword">in</span> <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">b</span> <span class="id" type="keyword">as</span> [?<span class="id" type="var">x</span> ?<span class="id" type="var">y</span>] <span class="id" type="var">eqn</span>:?<span class="id" type="var">Hb</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
 
-<br/>
-<span class="id" type="keyword">Ltac</span> <span class="id" type="var">compile</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">repeat</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">x</span> : <span class="id" type="var">Compiler.cstate</span> |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="keyword">as</span> [[?<span class="id" type="var">lbls</span> ?<span class="id" type="var">ids</span>] ?<span class="id" type="var">bs</span>] <br/>
-<span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">H</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">context</span>[<span class="id" type="var">Compiler.add_insns</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>]</span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"></span>&nbsp;=&gt;&nbsp;simpl&nbsp;in&nbsp;H&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : <span class="id" type="var">context</span>[<span class="id" type="keyword">let</span> (<span class="id" type="var">_</span>,_) := ?<span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <span class="id" type="var">_</span>] |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span> <span class="id" type="keyword">as</span> [?<span class="id" type="var">l</span> ?<span class="id" type="var">r</span>] <span class="id" type="var">eqn</span>:?<span class="id" type="var">Heq</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : (<span class="id" type="var">_</span>, <span class="id" type="var">_</span>) = (<span class="id" type="var">_</span>, <span class="id" type="var">_</span>) |- <span class="id" type="var">_</span>] ⇒ <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| [ <span class="id" type="var">H</span> : () |- <span class="id" type="var">_</span> ] ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<div class="doc">
+<hr/>
+ <a name="lab118"></a><h3 class="section">The command compiler</h3>
+
+<div class="paragraph"> </div>
+
+ The command compiler doesn't touch reserved blocks, so we can prove that it
+affects the state under the stronger monotonicity requirements.
+ 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_com_incr_strong</span>: ∀ <span class="id" type="var">c</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span> <span class="id" type="var">e</span> <span class="id" type="var">r</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">comp_com</span> <span class="id" type="var">c</span> <span class="id" type="var">r</span> <span class="id" type="var">cst</span> = (<span class="id" type="var">cst'</span>, <span class="id" type="var">e</span>) → <span class="id" type="var">cstate_incr_strong</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span>.<br/>
-<div class="togglescript" id="proofcontrol21" onclick="toggleDisplay('proof21');toggleDisplay('proofcontrol21')"><span class="show"></span></div>
-<div class="proofscript" id="proof21" onclick="toggleDisplay('proof21');toggleDisplay('proofcontrol21')">
+<div class="togglescript" id="proofcontrol20" onclick="toggleDisplay('proof20');toggleDisplay('proofcontrol20')"><span class="show"></span></div>
+<div class="proofscript" id="proof20" onclick="toggleDisplay('proof20');toggleDisplay('proofcontrol20')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span> <span class="id" type="var">e</span> <span class="id" type="var">r</span> <span class="id" type="var">Htr</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Htr</span>; <span class="id" type="var">compile</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span> <span class="id" type="var">e</span> <span class="id" type="var">r</span> <span class="id" type="var">Htr</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Htr</span>; <span class="id" type="var">exploit_compile</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"CSkip".*)</span><br/>
@@ -980,7 +1269,7 @@ Is this enough?
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"CAss".&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">fresh_add_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ectmon_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">FRESH_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"CSeq".&nbsp;*)</span><br/>
@@ -992,32 +1281,55 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc1</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc2</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">fresh_add_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ectmon_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">FRESH_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"CWhile".&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">fresh_add_incr_strong</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ectmon_incr_strong</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">FRESH_incr_strong</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eauto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab119"></a><h3 class="section">Weakening</h3>
+
+<div class="paragraph"> </div>
+
+ Of course, the "strong" monotonicity property implies regular
+monotonicity. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">cstate_incr_weaken</span> : ∀ <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr_strong</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span>.<br/>
-<div class="togglescript" id="proofcontrol22" onclick="toggleDisplay('proof22');toggleDisplay('proofcontrol22')"><span class="show"></span></div>
-<div class="proofscript" id="proof22" onclick="toggleDisplay('proof22');toggleDisplay('proofcontrol22')">
+<div class="togglescript" id="proofcontrol21" onclick="toggleDisplay('proof21');toggleDisplay('proofcontrol21')"><span class="show"></span></div>
+<div class="proofscript" id="proof21" onclick="toggleDisplay('proof21');toggleDisplay('proofcontrol21')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> 1. <span class="id" type="var">constructor</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
+</div>
+
+<div class="doc">
+And so the whole command compiler is also monotonic according to the
+<span class="inlinecode"><span class="id" type="var">cstate_incr</span></span> 
+</div>
+<div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">comp_com_incr</span>: ∀ <span class="id" type="var">c</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span> <span class="id" type="var">e</span> <span class="id" type="var">r</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">comp_com</span> <span class="id" type="var">c</span> <span class="id" type="var">r</span> <span class="id" type="var">cst</span> = (<span class="id" type="var">cst'</span>, <span class="id" type="var">e</span>) → <span class="id" type="var">cstate_incr</span> <span class="id" type="var">cst</span> <span class="id" type="var">cst'</span>.<br/>
-<div class="togglescript" id="proofcontrol23" onclick="toggleDisplay('proof23');toggleDisplay('proofcontrol23')"><span class="show"></span></div>
-<div class="proofscript" id="proof23" onclick="toggleDisplay('proof23');toggleDisplay('proofcontrol23')">
+<div class="togglescript" id="proofcontrol22" onclick="toggleDisplay('proof22');toggleDisplay('proofcontrol22')"><span class="show"></span></div>
+<div class="proofscript" id="proof22" onclick="toggleDisplay('proof22');toggleDisplay('proofcontrol22')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">cstate_incr_weaken</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_com_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
@@ -1028,11 +1340,13 @@ Is this enough?
 </div>
 
 <div class="doc">
-<a name="lab75"></a><h2 class="section">Relating Initial Compilation</h2>
+<hr/>
+ <a name="lab120"></a><h2 class="section">Relating Initial Compilation</h2>
 
 <div class="paragraph"> </div>
 
- The key lemma is: 
+ Finally, we can relate the initial state of the CFG machine obtained by 
+compiling the Imp command.  The key lemma is: 
 </div>
 <div class="code code-tight">
 
@@ -1041,10 +1355,10 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="var">comp_com</span> <span class="id" type="var">c</span> <span class="id" type="var">lr</span> <span class="id" type="var">csti</span> = (<span class="id" type="var">cst</span>, <span class="id" type="var">le</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">cstate_incr</span> <span class="id" type="var">cst</span> (<span class="id" type="var">x</span>, <span class="id" type="var">g'</span>) →<br/>
 &nbsp;&nbsp;<span class="id" type="var">match_config</span> <span class="id" type="var">c</span> (<span class="id" type="var">e</span>, <span class="id" type="var">g'</span>, <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>).<br/>
-<div class="togglescript" id="proofcontrol24" onclick="toggleDisplay('proof24');toggleDisplay('proofcontrol24')"><span class="show"></span></div>
-<div class="proofscript" id="proof24" onclick="toggleDisplay('proof24');toggleDisplay('proofcontrol24')">
+<div class="togglescript" id="proofcontrol23" onclick="toggleDisplay('proof23');toggleDisplay('proofcontrol23')"><span class="show"></span></div>
+<div class="proofscript" id="proof23" onclick="toggleDisplay('proof23');toggleDisplay('proofcontrol23')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">csti</span> <span class="id" type="var">cst</span> <span class="id" type="var">x</span> <span class="id" type="var">g'</span> <span class="id" type="var">e</span> <span class="id" type="var">Hcomp</span> <span class="id" type="var">Hincr</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hcomp</span>; <span class="id" type="var">compile</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">csti</span> <span class="id" type="var">cst</span> <span class="id" type="var">x</span> <span class="id" type="var">g'</span> <span class="id" type="var">e</span> <span class="id" type="var">Hcomp</span> <span class="id" type="var">Hincr</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hcomp</span>; <span class="id" type="var">exploit_compile</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;Case&nbsp;"CSkip".&nbsp;*)</span><br/>
@@ -1081,18 +1395,18 @@ Is this enough?
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">comp_com_incr</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_weaken</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">fresh_add_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ectmon_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">FRESH_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc2</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_weaken</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">fresh_add_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ectmon_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">FRESH_incr_strong</span>; <span class="id" type="tactic">eauto</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq1</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">Heq1</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq2</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">compile</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exploit_compile</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq3</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">Heq3</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">cfg_insns_at</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hincr</span>. <span class="id" type="tactic">subst</span>.<br/>
@@ -1113,7 +1427,7 @@ Is this enough?
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc</span>. <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">comp_com_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq0</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ectmon_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FRESH_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq1</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="tactic">transitivity</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_weaken</span>; <span class="id" type="tactic">eauto</span>.<br/>
@@ -1136,7 +1450,7 @@ Is this enough?
 
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">comp_com_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq0</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ectmon_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">FRESH_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq1</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq0</span>. <span class="id" type="tactic">subst</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq2</span>. <span class="id" type="tactic">subst</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq1</span>. <span class="id" type="tactic">subst</span>.<br/>
@@ -1154,8 +1468,28 @@ Is this enough?
 </div>
 
 <br/>
-<span class="comment">(*&nbsp;adapted&nbsp;from&nbsp;Leroy,&nbsp;OPLSS&nbsp;'12&nbsp;Compil.v&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;Generic&nbsp;simulation&nbsp;proof.&nbsp;*)</span><br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">match_config_initial</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">c</span> <span class="id" type="var">m</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">g</span>, <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>) = <span class="id" type="var">compile</span> <span class="id" type="var">c</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">lr</span> (<span class="id" type="var">c</span>, <span class="id" type="var">m</span>) (<span class="id" type="var">init_state</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">compile</span>, <span class="id" type="var">comp_prog</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="var">exploit_compile</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">match_init</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_weaken</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_strong_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab121"></a><h1 class="section">Simulation Diagram</h1>
+
+<div class="paragraph"> </div>
+
+ Recall the simulation diagram from Xavier's lectures. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Section</span> <span class="id" type="var">SIMULATION_DIAGRAM</span>.<br/>
@@ -1253,6 +1587,18 @@ Is this enough?
 
 <br/>
 <span class="id" type="keyword">End</span> <span class="id" type="var">SIMULATION_DIAGRAM</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab122"></a><h1 class="section">Vminus Instance</h1>
+
+<div class="paragraph"> </div>
+
+ We can complete the same simulation diagram for this Imp to Vminus
+compiler. 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">vminus_terminates</span> (<span class="id" type="var">g</span>:<span class="id" type="var">ListCFG.t</span>) (<span class="id" type="var">m</span> <span class="id" type="var">m'</span>:<span class="id" type="var">mem</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
@@ -1278,26 +1624,21 @@ Is this enough?
 &nbsp;&nbsp;(<span class="id" type="var">g</span>, <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>) = <span class="id" type="var">compile</span> <span class="id" type="var">c</span> →<br/>
 &nbsp;&nbsp;∃ <span class="id" type="var">x</span>, <span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> <span class="id" type="var">lr</span>) [(<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">tmn_ret</span>)].<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">compile</span>, <span class="id" type="var">comp_prog</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="var">compile</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">compile</span>, <span class="id" type="var">comp_prog</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="var">exploit_compile</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">cfg_insns_at</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">comp_com_incr_strong</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heq1</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq1</span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>6</sub></span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">ListCFG.update_eq</span>; <span class="id" type="tactic">auto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">match_config_initial</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">le</span> <span class="id" type="var">lr</span> <span class="id" type="var">c</span> <span class="id" type="var">m</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">g</span>, <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>) = <span class="id" type="var">compile</span> <span class="id" type="var">c</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">lr</span> (<span class="id" type="var">c</span>, <span class="id" type="var">m</span>) (<span class="id" type="var">init_state</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">compile</span>, <span class="id" type="var">comp_prog</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="var">compile</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">econstructor</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<div class="doc">
+<hr/>
+ <a name="lab123"></a><h1 class="section">Correct When Terminating</h1>
 
-<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">match_init</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_weaken</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">cstate_incr_strong_refl</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Theorem</span> <span class="id" type="var">compile_program_correct_terminating</span>:<br/>
@@ -1306,11 +1647,13 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="var">imp_terminates</span> <span class="id" type="var">c</span> <span class="id" type="var">m</span> <span class="id" type="var">m'</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">vminus_terminates</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span> <span class="id" type="var">m'</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
+<div class="togglescript" id="proofcontrol24" onclick="toggleDisplay('proof24');toggleDisplay('proofcontrol24')"><span class="show"></span></div>
+<div class="proofscript" id="proof24" onclick="toggleDisplay('proof24');toggleDisplay('proofcontrol24')">
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">imp_terminates</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">assert</span> (∃ <span class="id" type="var">machconf2</span>, <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">star</span> (<span class="id" type="var">step</span> <span class="id" type="var">g</span>) (<span class="id" type="var">init_state</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span>) <span class="id" type="var">machconf2</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∧ <span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">lr</span> (<span class="id" type="var">SKIP</span>, <span class="id" type="var">m'</span>) <span class="id" type="var">machconf2</span>).<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">simulation_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">transl_sim_step_final</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">simulation_star</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">simulation_step</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">match_config_initial</span>; <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">machconf2</span> [<span class="id" type="var">STAR</span> <span class="id" type="var">MS</span>]].<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">MS</span>; <span class="id" type="tactic">subst</span>.<br/>
@@ -1318,6 +1661,17 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="tactic">red</span>. ∃ <span class="id" type="var">x</span>, <span class="id" type="var">machconf2</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>4</sub></span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>3</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">eauto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab124"></a><h1 class="section">Correct When Diverging</h1>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Theorem</span> <span class="id" type="var">compile_program_correct_diverging</span>:<br/>
@@ -1326,10 +1680,15 @@ Is this enough?
 &nbsp;&nbsp;<span class="id" type="var">imp_diverges</span> <span class="id" type="var">c</span> <span class="id" type="var">m</span> →<br/>
 &nbsp;&nbsp;<span class="id" type="var">vminus_diverges</span> <span class="id" type="var">g</span> <span class="id" type="var">m</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
+<div class="togglescript" id="proofcontrol25" onclick="toggleDisplay('proof25');toggleDisplay('proofcontrol25')"><span class="show"></span></div>
+<div class="proofscript" id="proof25" onclick="toggleDisplay('proof25');toggleDisplay('proofcontrol25')">
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">red</span>; <span class="id" type="tactic">intros</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">simulation_infseq</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">match_states</span> := <span class="id" type="var">match_states</span> <span class="id" type="var">g</span> <span class="id" type="var">lr</span>); <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">transl_sim_step_final</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">match_config_initial</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">simulation_step</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">match_config_initial</span>; <span class="id" type="tactic">eauto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
 </div>
 </div>
 

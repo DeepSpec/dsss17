@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Iteration</title>
+<title>Iteration: Bounded Loops</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,9 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">Iteration</h1>
+<h1 class="libtitle">Iteration<span class="subtitle">Bounded Loops</span></h1>
+
 
 <div class="code code-tight">
+
+<br/>
 <span class="comment">(*&nbsp;*********************************************************************)</span><br/>
 <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Compcert&nbsp;verified&nbsp;compiler&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
@@ -58,15 +61,10 @@
 </div>
 
 <div class="doc">
-Bounded iterators 
-</div>
-<div class="code code-tight">
+<a name="lab125"></a><h1 class="section">Bounded iterators</h1>
 
-<br/>
-<span class="comment">(*&nbsp;we&nbsp;can&nbsp;get&nbsp;away&nbsp;with&nbsp;using&nbsp;unary&nbsp;nats&nbsp;in&nbsp;our&nbsp;toy&nbsp;compiler<br/>
-&nbsp;&nbsp;&nbsp;Q:&nbsp;why&nbsp;does&nbsp;compcert&nbsp;use&nbsp;positive&nbsp;vs.&nbsp;binary&nbsp;nats?&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;how&nbsp;are&nbsp;they&nbsp;extracted&nbsp;--&nbsp;extra&nbsp;cons&nbsp;for&nbsp;each&nbsp;number?<br/>
-&nbsp;&nbsp;&nbsp;binary&nbsp;nats&nbsp;are&nbsp;better&nbsp;supported&nbsp;in&nbsp;the&nbsp;stdlib*)</span><br/>
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">NArith</span> <span class="id" type="var">FunctionalExtensionality</span>.<br/>

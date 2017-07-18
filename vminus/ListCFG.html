@@ -10,7 +10,7 @@
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -33,7 +33,11 @@
 
 
 <div class="doc">
-<a name="lab38"></a><h1 class="section">List-based CFG Implementation</h1>
+ListCFG: A list-based CFG Implementation 
+</div>
+
+<div class="doc">
+<a name="lab48"></a><h1 class="section">List-based CFG Implementation</h1>
 
 <div class="paragraph"> </div>
 
@@ -69,7 +73,7 @@ A control-flow graph is an entry label with a list of blocks.
 
 <div class="doc">
 <hr/>
- <a name="lab39"></a><h1 class="section">Syntactically Well-formed ListCFGs</h1>
+ <a name="lab49"></a><h1 class="section">Syntactically Well-formed ListCFGs</h1>
 
 <div class="paragraph"> </div>
 
@@ -94,6 +98,16 @@ A control-flow graph is an entry label with a list of blocks.
 <div class="paragraph"> </div>
 
    
+<div class="paragraph"> </div>
+
+  This definition of control-flow-graph syntactic well-formedness could
+  be reformulated to use the Metatheory Library rather than the explicit use of
+  NoDup here.  In particular, the ListCFG representation is an association list
+  mapping labels to blocks) and the blocks themselves are also association lists.
+  The NoDup requirements here could be replaced by the Metatheory Library's notion 
+  of <span class="inlinecode"><span class="id" type="var">uniq</span></span>.  Porting the Vminus development to better make use of the Metatheory
+  library is left as an exercise for the reader :-) 
+  
 </div>
 <div class="code code-tight">
 
@@ -101,8 +115,8 @@ A control-flow graph is an entry label with a list of blocks.
 &nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_cfg'</span> : <span class="id" type="var">cfg</span> → <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_cfg_intro</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">l</span> <span class="id" type="var">bs</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hlbls</span>: <span class="id" type="var">NoDup</span> (<span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">bs</span>))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Huids</span>: <span class="id" type="var">NoDup</span> (<span class="id" type="var">flat_map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) (<span class="id" type="var">snd</span> <span class="id" type="var">b</span>)) <span class="id" type="var">bs</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hlbls</span>: <span class="id" type="var">NoDup</span> (<span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">bs</span>))  <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Huids</span>: <span class="id" type="var">NoDup</span> (<span class="id" type="var">flat_map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) (<span class="id" type="var">snd</span> <span class="id" type="var">b</span>)) <span class="id" type="var">bs</span>)) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hentry</span>: <span class="id" type="var">In</span> <span class="id" type="var">l</span> (<span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">bs</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hnonnil</span>: ¬ <span class="id" type="var">In</span> [] (<span class="id" type="var">map</span> (@<span class="id" type="var">snd</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">bs</span>)),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_cfg'</span> (<span class="id" type="var">l</span>, <span class="id" type="var">bs</span>).<br/>
@@ -115,8 +129,13 @@ A control-flow graph is an entry label with a list of blocks.
 </div>
 
 <div class="doc">
+EX5? (naming challenge)  Port the above definition of wf_cfg' to use the <span class="inlinecode"><span class="id" type="var">uniq</span></span> predicate from the Metatheory library. 
+      Fix up all of the proofs!
+   
+<div class="paragraph"> </div>
+
 <hr/>
- <a name="lab40"></a><h2 class="section">Implementing the interface requirements:</h2>
+ <a name="lab50"></a><h2 class="section">Implementing the interface requirements:</h2>
 
 </div>
 <div class="code code-space">
@@ -139,180 +158,154 @@ A control-flow graph is an entry label with a list of blocks.
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">uid_at_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">cfg</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">uid</span>:<span class="id" type="var">uid</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">c</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>).<br/>
+</div>
 
-<br/>
+<div class="doc">
+For all of the following exercises, reference
+      CFG.v as well as the other recommended files. 
+<div class="paragraph"> </div>
+
+<a name="lab51"></a><h4 class="section">Exercise: 2 stars, optional (wf_pc_insn)</h4>
+ Prove that well formed program counters always 
+      point to an instruction (you shouldn't need any
+      other definitions): 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_pc_insn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p</span>, <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">i</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">wf_pc</span>, <span class="id" type="var">insn_at_pc</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span>; <span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">decompose</span> [<span class="id" type="var">ex</span> <span class="id" type="var">and</span>] <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-<br/>
+<div class="doc">
+<a name="lab52"></a><h4 class="section">Exercise: 2 stars, optional (wf_pc_tmn)</h4>
+ Prove that every block has a terminator. See 
+      PeanoNat.Nat and util for some helpful theorems. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_pc_tmn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p</span>, <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">p'</span>, <span class="id" type="var">tmn_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> ∧ <span class="id" type="var">le_pc</span> <span class="id" type="var">p</span> <span class="id" type="var">p'</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
-<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-
-<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">wf_pc</span>, <span class="id" type="var">tmn_pc</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span>. <span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">decompose</span> [<span class="id" type="var">ex</span> <span class="id" type="var">and</span>] <span class="id" type="var">H<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;∃ (<span class="id" type="var">t<sub>0</sub></span>, <span class="id" type="var">pred</span> (<span class="id" type="var">length</span> <span class="id" type="var">x</span>)). <span class="id" type="tactic">split</span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">constructor</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">PeanoNat.Nat.lt_le_pred</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">Nth_length</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
-</div>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 
 <br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;Helper&nbsp;lemma:&nbsp;blocks&nbsp;have&nbsp;non-zero&nbsp;length.&nbsp;*)</span><br/>
+</div>
 
-<br/>
+<div class="doc">
+<a name="lab53"></a><h4 class="section">Exercise: 2 stars, optional (wf_cfg_block_len)</h4>
+ Prove that well formed control flow graphs 
+      have non-zero length. See list 
+      theorems about In and map. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_cfg_block_len</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">l</span> <span class="id" type="var">is</span>, <span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">is</span>) (<span class="id" type="var">snd</span> <span class="id" type="var">g</span>) → <span class="id" type="var">length</span> <span class="id" type="var">is</span> ≠ 0.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> 1. <span class="id" type="tactic">intros</span> <span class="id" type="var">l<sub>0</sub></span> <span class="id" type="var">is</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">is</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">Hnonnil</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">in_map</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">f</span>:=@<span class="id" type="var">snd</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-<br/>
+<div class="doc">
+<a name="lab54"></a><h4 class="section">Exercise: 3 stars, optional (wf_pc_le_tmn)</h4>
+ Prove there are no "gaps" in the pc labels. 
+      In other words, that all pcs that come before
+      some arbitrary but particular pc are well formed. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_pc_le_tmn</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">p'</span>, <span class="id" type="var">tmn_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p'</span> → ∀ <span class="id" type="var">p</span>, <span class="id" type="var">le_pc</span> <span class="id" type="var">p</span> <span class="id" type="var">p'</span> → <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
-<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">wf_pc</span>, <span class="id" type="var">tmn_pc</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">H</span> <span class="id" type="var">p'</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">p</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span>, <span class="id" type="var">p'</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">decompose</span> [<span class="id" type="var">ex</span> <span class="id" type="var">and</span>] <span class="id" type="var">H<sub>0</sub></span>. ∃ <span class="id" type="var">x</span>.<br/>
-
-<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">wf_cfg_block_len</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>3</sub></span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">contradict</span> <span class="id" type="var">H<sub>3</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_lt_n_Sm</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">erewrite</span> &lt;- <span class="id" type="var">S_pred</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">length_Nth</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span> <span class="id" type="keyword">as</span> [? ?].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab55"></a><h4 class="section">Exercise: 3 stars, optional (wf_entry)</h4>
+ Prove there is an instruction in the entry block. 
+      Take a look at theorems about in and map in List. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_entry</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>)).<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
-<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">wf_pc</span>. <span class="id" type="tactic">inversion</span> 1. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">in_map_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hentry</span> <span class="id" type="keyword">as</span> [[? ?] [? ?]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">l<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>. <span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">wf_cfg_block_len</span> <span class="id" type="var">g</span> <span class="id" type="var">H</span> <span class="id" type="var">t<sub>0</sub></span> []) <span class="id" type="keyword">as</span> <span class="id" type="var">contra</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">g</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">apply</span> <span class="id" type="var">contra</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eexists</span>. <span class="id" type="var">eexists</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">subst</span> <span class="id" type="var">l</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab56"></a><h4 class="section">Exercise: 3 stars, optional (insn_at_pc_func)</h4>
+ Prove that insn_at_pc with respect to a CFG g is a 
+      function from program counter to instruction. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insn_at_pc_func</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">functional</span> (<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span>).<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
-<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">functional</span>, <span class="id" type="var">insn_at_pc</span>. <span class="id" type="tactic">inversion</span> 1. <span class="id" type="tactic">destruct</span> <span class="id" type="var">a</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span> [<span class="id" type="var">is<sub>1</sub></span> [<span class="id" type="var">Hin1</span> <span class="id" type="var">Hnth1</span>]] [<span class="id" type="var">is<sub>2</sub></span> [<span class="id" type="var">Hin2</span> <span class="id" type="var">Hnth2</span>]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> (<span class="id" type="var">is<sub>1</sub></span> = <span class="id" type="var">is<sub>2</sub></span>). <span class="id" type="tactic">intro</span>; <span class="id" type="tactic">subst</span> <span class="id" type="var">is<sub>2</sub></span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">Nth_eq</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">NoDup_assoc_func</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab57"></a><h4 class="section">Exercise: 4 stars, optional (uid_at_pc_inj)</h4>
+ Prove that uid_at_pc with respect to a CFG g is injective. 
+      Take a look at List for In and map, and Util. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">uid_at_pc_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">injective</span> (<span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span>).<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
-<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">injective</span>, <span class="id" type="var">uid_at_pc</span>, <span class="id" type="var">insn_at_pc</span>. <span class="id" type="tactic">inversion</span> 1.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">n<sub>1</sub></span>] [<span class="id" type="var">l<sub>2</sub></span> <span class="id" type="var">n<sub>2</sub></span>] <span class="id" type="var">uid</span> [<span class="id" type="var">c<sub>1</sub></span> [<span class="id" type="var">is<sub>1</sub></span> [<span class="id" type="var">Hin1</span> <span class="id" type="var">Hnth1</span>]]] [<span class="id" type="var">c<sub>2</sub></span> [<span class="id" type="var">is<sub>2</sub></span> [<span class="id" type="var">Hin2</span> <span class="id" type="var">Hnth2</span>]]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> ((<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">is<sub>1</sub></span>) = (<span class="id" type="var">l<sub>2</sub></span>, <span class="id" type="var">is<sub>2</sub></span>)).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">Heq</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Heq</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">Heq</span>. <span class="id" type="tactic">f_equal</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">NoDup_flat_map__NoDup</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Huids</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">change</span> <span class="id" type="var">is<sub>1</sub></span> <span class="id" type="keyword">with</span> (<span class="id" type="var">snd</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">is<sub>1</sub></span>)) <span class="id" type="keyword">in</span> <span class="id" type="var">Hnth1</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">change</span> <span class="id" type="var">is<sub>2</sub></span> <span class="id" type="keyword">with</span> (<span class="id" type="var">snd</span> (<span class="id" type="var">l<sub>2</sub></span>, <span class="id" type="var">is<sub>2</sub></span>)) <span class="id" type="keyword">in</span> <span class="id" type="var">Hnth2</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">NoDup_nth_inj</span>; <span class="id" type="tactic">eauto</span>.<br/>
-
-<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">set</span> (<span class="id" type="var">f<sub>1</sub></span> <span class="id" type="var">b</span> := <span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) (<span class="id" type="var">snd</span> <span class="id" type="var">b</span>)) <span class="id" type="keyword">in</span> *.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">NoDup_flat_map</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">is<sub>1</sub></span>) (<span class="id" type="var">l<sub>2</sub></span>, <span class="id" type="var">is<sub>2</sub></span>) <span class="id" type="var">uid</span> <span class="id" type="var">f<sub>1</sub></span> <span class="id" type="var">bs</span>); <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">f<sub>1</sub></span>; <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">in_map_iff</span>. ∃ (<span class="id" type="var">uid</span>, <span class="id" type="var">c<sub>1</sub></span>); <span class="id" type="tactic">eauto</span> <span class="id" type="keyword">using</span> <span class="id" type="var">Nth_In</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">in_map_iff</span>. ∃ (<span class="id" type="var">uid</span>, <span class="id" type="var">c<sub>2</sub></span>); <span class="id" type="tactic">eauto</span> <span class="id" type="keyword">using</span> <span class="id" type="var">Nth_In</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab58"></a><h4 class="section">Exercise: 3 stars, optional (uid_at_pc_func)</h4>
+ Prove that uid_at_pc with respect to a CFG g 
+      is a function. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">uid_at_pc_func</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">functional</span> (<span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span>).<br/>
-<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
-<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
-&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">Hwfc</span>. <span class="id" type="var">specialize</span> (<span class="id" type="var">insn_at_pc_func</span> <span class="id" type="var">g</span> <span class="id" type="var">Hwfc</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">functional</span>, <span class="id" type="var">uid_at_pc</span>. <span class="id" type="tactic">intros</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">c<sub>1</sub></span> ?]. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">c<sub>2</sub></span> ?].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">cut</span> ((<span class="id" type="var">b<sub>1</sub></span>,<span class="id" type="var">c<sub>1</sub></span>) = (<span class="id" type="var">b<sub>2</sub></span>,<span class="id" type="var">c<sub>2</sub></span>)). <span class="id" type="tactic">inversion</span> 1; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab59"></a><h4 class="section">Exercise: 2 stars, optional (eq_pc_uid)</h4>
+ Prove that if two instructions are at the same
+      pc in a well formed CFG, then their ids are the same. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">eq_pc_uid</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">pc</span> <span class="id" type="var">id<sub>1</sub></span> <span class="id" type="var">id<sub>2</sub></span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> (<span class="id" type="var">id<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub></span>) →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">pc</span> (<span class="id" type="var">id<sub>2</sub></span>, <span class="id" type="var">c<sub>2</sub></span>) →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">id<sub>1</sub></span> = <span class="id" type="var">id<sub>2</sub></span>.<br/>
-<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
-<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
-&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">uid_at_pc_func</span> <span class="id" type="var">g</span> <span class="id" type="var">H</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">functional</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">red</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
-
-<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">blocks_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> → ∀ <span class="id" type="var">l</span> <span class="id" type="var">is<sub>1</sub></span> <span class="id" type="var">is<sub>2</sub></span>, <span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">is<sub>1</sub></span>) (<span class="id" type="var">snd</span> <span class="id" type="var">g</span>) → <span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">is<sub>2</sub></span>) (<span class="id" type="var">snd</span> <span class="id" type="var">g</span>) → <span class="id" type="var">is<sub>1</sub></span> = <span class="id" type="var">is<sub>2</sub></span>.<br/>
+<div class="doc">
+<a name="lab60"></a><h4 class="section">Exercise: 2 stars, optional (blocks_inj)</h4>
+ Prove that in a cfg, for each label there 
+      exists a single block. See Util. 
+</div>
+<div class="code code-tight">
+&nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">blocks_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> → ∀ <span class="id" type="var">l</span> <span class="id" type="var">is<sub>1</sub></span> <span class="id" type="var">is<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">is<sub>1</sub></span>) (<span class="id" type="var">snd</span> <span class="id" type="var">g</span>) → <span class="id" type="var">In</span> (<span class="id" type="var">l</span>, <span class="id" type="var">is<sub>2</sub></span>) (<span class="id" type="var">snd</span> <span class="id" type="var">g</span>) → <span class="id" type="var">is<sub>1</sub></span> = <span class="id" type="var">is<sub>2</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
-<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">H</span> <span class="id" type="var">l</span> <span class="id" type="var">is<sub>1</sub></span> <span class="id" type="var">is<sub>2</sub></span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">NoDup_assoc_func</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
-<br/>
+<div class="doc">
+<a name="lab61"></a><h4 class="section">Exercise: 3 stars, optional (pc_at_uid_inj)</h4>
+ Prove the other end of uid_at_pc_inj, 
+      showing that uid_at_pc is a bijection. 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">pc_at_uid_inj</span> : ∀ <span class="id" type="var">g</span>, <span class="id" type="var">wf_cfg</span> <span class="id" type="var">g</span> →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">injective</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">p</span> ⇒ <span class="id" type="var">uid_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">x</span>).<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
-<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">injective</span>, <span class="id" type="var">uid_at_pc</span>, <span class="id" type="var">insn_at_pc</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">g</span> <span class="id" type="var">Hwf</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> [<span class="id" type="var">l</span> <span class="id" type="var">n</span>] [<span class="id" type="var">c<sub>1</sub></span> [<span class="id" type="var">is<sub>1</sub></span> [<span class="id" type="var">Hin1</span> <span class="id" type="var">Hn<sub>1</sub></span>]]] [<span class="id" type="var">c<sub>2</sub></span> [<span class="id" type="var">is<sub>2</sub></span> [<span class="id" type="var">Hin2</span> <span class="id" type="var">Hn<sub>2</sub></span>]]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwf</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">is<sub>1</sub></span> = <span class="id" type="var">is<sub>2</sub></span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">NoDup_assoc_func</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">subst</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> ((<span class="id" type="var">a<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub></span>) = (<span class="id" type="var">a<sub>2</sub></span>, <span class="id" type="var">c<sub>2</sub></span>)) <span class="id" type="keyword">as</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">Nth_eq</span>; <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
 <div class="doc">
 <hr/>
- <a name="lab41"></a><h2 class="section">Working with ListCFG</h2>
+ <a name="lab62"></a><h2 class="section">Working with ListCFG</h2>
 
 </div>
 <div class="code code-space">
@@ -346,7 +339,7 @@ Lookup the block in the list.
 </div>
 
 <div class="doc">
-<a name="lab42"></a><h2 class="section">Simple lemmas about CFG modifications.</h2>
+<a name="lab63"></a><h2 class="section">Simple lemmas about CFG modifications.</h2>
 
 </div>
 <div class="code code-space">
@@ -356,8 +349,8 @@ Lookup the block in the list.
 &nbsp;&nbsp;&nbsp;&nbsp;∀ (<span class="id" type="var">is</span> : <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) (<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span> : <span class="id" type="var">lbl</span>) (<span class="id" type="var">bs</span> : <span class="id" type="var">list</span> <span class="id" type="var">block</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">l<sub>1</sub></span> = <span class="id" type="var">l<sub>2</sub></span> → <span class="id" type="var">lookup</span> (<span class="id" type="var">update</span> <span class="id" type="var">bs</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">is</span>) <span class="id" type="var">l<sub>2</sub></span> = <span class="id" type="var">Some</span> <span class="id" type="var">is</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
-<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">lookup</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Lbl.eq_dec</span> <span class="id" type="var">l<sub>2</sub></span> <span class="id" type="var">l<sub>2</sub></span>); <span class="id" type="tactic">tauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
@@ -368,8 +361,8 @@ Lookup the block in the list.
 &nbsp;&nbsp;&nbsp;&nbsp;∀ (<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span> : <span class="id" type="var">lbl</span>) (<span class="id" type="var">is</span> : <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) (<span class="id" type="var">bs</span>: <span class="id" type="var">list</span> <span class="id" type="var">block</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">l<sub>1</sub></span> ≠ <span class="id" type="var">l<sub>2</sub></span> → <span class="id" type="var">lookup</span> (<span class="id" type="var">update</span> <span class="id" type="var">bs</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">is</span>) <span class="id" type="var">l<sub>2</sub></span> = <span class="id" type="var">lookup</span> <span class="id" type="var">bs</span> <span class="id" type="var">l<sub>2</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')"><span class="show"></span></div>
-<div class="proofscript" id="proof11" onclick="toggleDisplay('proof11');toggleDisplay('proofcontrol11')">
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">Lbl.eq_dec</span> <span class="id" type="var">l<sub>2</sub></span> <span class="id" type="var">l<sub>1</sub></span>); <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">tauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
@@ -380,7 +373,62 @@ Lookup the block in the list.
 
 <div class="doc">
 <hr/>
- <a name="lab43"></a><h2 class="section">Implementing fetch</h2>
+ <a name="lab64"></a><h2 class="section">Correspondence between <span class="inlinecode"><span class="id" type="var">lookup</span></span> and <span class="inlinecode"><span class="id" type="var">insn_at_pc</span></span>.</h2>
+
+<div class="paragraph"> </div>
+
+ The following proposition asserts that the instruction sequence found at
+    program point <span class="inlinecode"><span class="id" type="var">p</span></span> in the control-flow graph <span class="inlinecode"><span class="id" type="var">g</span></span> is exactly the list <span class="inlinecode"><span class="id" type="var">is</span></span>.
+    Note that this connects the dynamic notion of what it means to "increment"
+    the program counter to the static notion of the list of instructions.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insns_at_pc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">cfg</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">is</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">is</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">True</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">i</span> :: <span class="id" type="var">is'</span> ⇒ <span class="id" type="var">ListCFG.insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> ∧ <span class="id" type="var">insns_at_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">incr_pc</span> <span class="id" type="var">p</span>) <span class="id" type="var">is'</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+We prove that looking up the block labeled <span class="inlinecode"><span class="id" type="var">l</span></span> in the concrete
+    representation agrees with <span class="inlinecode"><span class="id" type="var">insns_at_pc</span></span>.
+
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cfg_insns_at</span> : ∀ (<span class="id" type="var">bs</span>:<span class="id" type="var">list</span> <span class="id" type="var">block</span>) (<span class="id" type="var">l</span>:<span class="id" type="var">lbl</span>) (<span class="id" type="var">is</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) (<span class="id" type="var">e</span>:<span class="id" type="var">lbl</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">lookup</span> <span class="id" type="var">bs</span> <span class="id" type="var">l</span> = <span class="id" type="var">Some</span> <span class="id" type="var">is</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">insns_at_pc</span> (<span class="id" type="var">e</span>, <span class="id" type="var">bs</span>) (<span class="id" type="var">block_entry</span> <span class="id" type="var">l</span>) <span class="id" type="var">is</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">pose</span> (<span class="id" type="var">k</span>:=@<span class="id" type="var">nil</span> <span class="id" type="var">insn</span>). <span class="id" type="var">change</span> <span class="id" type="var">is</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">k</span> ++ <span class="id" type="var">is</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">block_entry</span>. <span class="id" type="var">change</span> 0 <span class="id" type="keyword">with</span> (<span class="id" type="var">length</span> <span class="id" type="var">k</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="var">clearbody</span> <span class="id" type="var">k</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">k</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">is</span>; <span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">split</span>. <span class="id" type="var">eexists</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">lookup</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">assoc_in</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">k</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">S</span> (<span class="id" type="var">length</span> <span class="id" type="var">k</span>)) <span class="id" type="keyword">with</span> (<span class="id" type="var">length</span> (<span class="id" type="var">k</span> ++ [<span class="id" type="var">a</span>])). <span class="id" type="tactic">apply</span> <span class="id" type="var">IHis</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">app_assoc</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">app_length</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">PeanoNat.Nat.add_1_r</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab65"></a><h2 class="section">Implementing fetch</h2>
 
 </div>
 <div class="code code-space">
@@ -406,8 +454,8 @@ Helper lemma for proving that fetch corresponds to insn_at_pc
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fetch</span> (<span class="id" type="var">entry_label</span>, <span class="id" type="var">blks</span>) (<span class="id" type="var">trgt_label</span>, <span class="id" type="var">trgt_offset</span>) = <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ↔<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">instrs</span>, <span class="id" type="var">In</span> (<span class="id" type="var">trgt_label</span>, <span class="id" type="var">instrs</span>) <span class="id" type="var">blks</span> ∧ <span class="id" type="var">Nth</span> <span class="id" type="var">i</span> <span class="id" type="var">instrs</span> <span class="id" type="var">trgt_offset</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')"><span class="show"></span></div>
-<div class="proofscript" id="proof12" onclick="toggleDisplay('proof12');toggleDisplay('proofcontrol12')">
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">entry_label</span> <span class="id" type="var">blks</span> <span class="id" type="var">trgt_label</span> <span class="id" type="var">trgt_offset</span> <span class="id" type="var">i</span> <span class="id" type="var">nodup</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">fetch</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lookup</span> <span class="id" type="var">blks</span> <span class="id" type="var">trgt_label</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">found</span>.<br/>
@@ -442,8 +490,8 @@ Helper lemma for proving that fetch corresponds to insn_at_pc
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-<div class="togglescript" id="proofcontrol13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')"><span class="show"></span></div>
-<div class="proofscript" id="proof13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')">
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> [<span class="id" type="var">l</span> <span class="id" type="var">blks</span>] <span class="id" type="var">pc</span> <span class="id" type="var">i</span> <span class="id" type="var">wf_g</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">wf_g</span> <span class="id" type="keyword">as</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="var">l'</span> <span class="id" type="var">blks'</span> <span class="id" type="var">nodup</span> <span class="id" type="var">nodup_uid</span> <span class="id" type="var">l_in_blks</span> <span class="id" type="var">blks_not_empty</span> [<span class="id" type="var">l_l'</span> <span class="id" type="var">blks_blk</span>]].<br/>

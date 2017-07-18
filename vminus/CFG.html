@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>CFG</title>
+<title>CFG: Control-flow Graphs</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,14 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">CFG</h1>
+<h1 class="libtitle">CFG<span class="subtitle">Control-flow Graphs</span></h1>
+
 
 
 <div class="doc">
-
-<div class="paragraph"> </div>
-
- Vminus programs are structured into <i>control-flow graphs</i>
+Vminus programs are structured into <i>control-flow graphs</i>
     (CFG), which, conceptually, are graphs whose <i>nodes</i> are
     instructions and whose <i>edges</i> are determined by the control
     structure of the program.
@@ -56,7 +54,7 @@
  
 <div class="paragraph"> </div>
 
-<a name="lab32"></a><h1 class="section">Program points</h1>
+<a name="lab42"></a><h1 class="section">Program points</h1>
 
 <div class="paragraph"> </div>
 
@@ -75,7 +73,7 @@
 </div>
 
 <div class="doc">
-Each <span class="inlinecode"><span class="id" type="var">pc</span></span> has a label 
+Each <span class="inlinecode"><span class="id" type="var">pc</span></span> has a label, corresponding to its block 
 </div>
 <div class="code code-tight">
 
@@ -122,7 +120,7 @@ The entry point of a block is offset <span class="inlinecode">0</span>.
 
 <div class="doc">
 <hr/>
- <a name="lab33"></a><h1 class="section">Interface for syntactically well-formed CFGs</h1>
+ <a name="lab43"></a><h1 class="section">Interface for syntactically well-formed CFGs</h1>
 
 <div class="paragraph"> </div>
 
@@ -172,7 +170,7 @@ The entry point of a block is offset <span class="inlinecode">0</span>.
 </div>
 
 <div class="doc">
-<a name="lab34"></a><h3 class="section">Basic parameters of the model</h3>
+<a name="lab44"></a><h3 class="section">Basic parameters of the model</h3>
 
 <div class="paragraph"> </div>
 
@@ -194,7 +192,7 @@ Well-formed program points.
 </div>
 
 <div class="doc">
-<a name="lab35"></a><h3 class="section"> </h3>
+<a name="lab45"></a><h3 class="section"> </h3>
 
 <div class="paragraph"> </div>
 
@@ -216,7 +214,7 @@ Is the program point a block terminator?
 </div>
 
 <div class="doc">
-<a name="lab36"></a><h3 class="section">Program point properties</h3>
+<a name="lab46"></a><h3 class="section">Program point properties</h3>
 
 <div class="paragraph"> </div>
 
@@ -300,7 +298,7 @@ If <span class="inlinecode"><span class="id" type="var">g</span></span> is well-
 </div>
 
 <div class="doc">
-<a name="lab37"></a><h3 class="section">Block properties</h3>
+<a name="lab47"></a><h3 class="section">Block properties</h3>
 
 <div class="paragraph"> </div>
 

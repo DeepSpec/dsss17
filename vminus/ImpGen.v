@@ -1,4 +1,7 @@
-(** ** QuickChick infrastructure for Imp **)
+(** * ImpGen: QuickChick infrastructure for Imp *)
+
+(* ################################################################# *)
+(** * In Progress *)
 
 Require Import List.
 Import ListNotations.

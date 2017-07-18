@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Classes</title>
+<title>Classes: Typeclass Definitions</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,9 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">Classes</h1>
+<h1 class="libtitle">Classes<span class="subtitle">Typeclass Definitions</span></h1>
+
 
 <div class="code code-tight">
+
+<br/>
 <span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vellvm&nbsp;-&nbsp;the&nbsp;Verified&nbsp;LLVM&nbsp;project&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
@@ -41,6 +44,13 @@
 &nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab4"></a><h1 class="section">Yet another library of typeclasses</h1>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
@@ -51,9 +61,14 @@
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span> <span class="id" type="var">Bool</span> <span class="id" type="var">String</span> <span class="id" type="var">Utf8</span>.<br/>
 <span class="id" type="keyword">Export</span> <span class="id" type="var">ListNotations</span>.<br/>
 <span class="id" type="var">From</span> <span class="id" type="var">Coq.Program</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Basics</span> <span class="id" type="keyword">Syntax</span>.<br/>
-
-<br/>
 <span class="id" type="var">Arguments</span> <span class="id" type="var">String.append</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> : <span class="id" type="tactic">simpl</span> <span class="id" type="var">never</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab5"></a><h1 class="section">General notations</h1>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Notation</span> "t $ r" := (<span class="id" type="var">t</span> <span class="id" type="var">r</span>)<br/>
@@ -78,9 +93,13 @@ applied.
 <span class="id" type="var">Arguments</span> <span class="id" type="var">flip</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> /.<br/>
 <span class="id" type="var">Arguments</span> <span class="id" type="var">const</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> /.<br/>
 <span class="id" type="keyword">Type</span><span class="id" type="var">classes</span> <span class="id" type="var">Transparent</span> <span class="id" type="var">id</span> <span class="id" type="var">compose</span> <span class="id" type="var">flip</span> <span class="id" type="var">const</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Setoid&nbsp;Equivalence&nbsp;-------------------------------------------------------&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab6"></a><h1 class="section">Setoid Equivalence</h1>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Class</span> <span class="id" type="var">Equiv</span> <span class="id" type="var">A</span> := <span class="id" type="var">equiv</span>: <span class="id" type="var">relation</span> <span class="id" type="var">A</span>.<br/>
@@ -107,6 +126,8 @@ setoid equalities into Leibniz equalities, and <span class="inlinecode"><span cl
 reverse. 
 </div>
 <div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Class</span> <span class="id" type="var">LeibnizEquiv</span> <span class="id" type="var">A</span> `{<span class="id" type="var">Equiv</span> <span class="id" type="var">A</span>} := <span class="id" type="var">leibniz_equiv</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">x</span> ≡ <span class="id" type="var">y</span> → <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
 <span class="id" type="keyword">Lemma</span> <span class="id" type="var">leibniz_equiv_iff</span> `{<span class="id" type="var">LeibnizEquiv</span> <span class="id" type="var">A</span>, !<span class="id" type="var">Reflexive</span> (@<span class="id" type="var">equiv</span> <span class="id" type="var">A</span> <span class="id" type="var">_</span>)} (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>) :<br/>
 &nbsp;&nbsp;<span class="id" type="var">x</span> ≡ <span class="id" type="var">y</span> ↔ <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
@@ -130,9 +151,12 @@ reverse.
 </div>
 
 <div class="doc">
-Equality &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-  Introduce some Haskell style like notations. 
+<a name="lab7"></a><h1 class="section">Equality</h1>
+ Introduce some Haskell style like notations. 
 </div>
 <div class="code code-tight">
+
+<br/>
 <span class="id" type="keyword">Notation</span> "(=)" := <span class="id" type="var">eq</span> (<span class="id" type="var">only</span> <span class="id" type="var">parsing</span>).<br/>
 <span class="id" type="keyword">Notation</span> "( x =)" := (<span class="id" type="var">eq</span> <span class="id" type="var">x</span>) (<span class="id" type="var">only</span> <span class="id" type="var">parsing</span>).<br/>
 <span class="id" type="keyword">Notation</span> "(= x )" := (λ <span class="id" type="var">y</span>, <span class="id" type="var">eq</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span>) (<span class="id" type="var">only</span> <span class="id" type="var">parsing</span>).<br/>
@@ -173,11 +197,11 @@ equality.
 </div>
 
 <div class="doc">
-<a name="lab3"></a><h1 class="section">Type classes</h1>
+<a name="lab8"></a><h1 class="section">Type classes</h1>
 
 <div class="paragraph"> </div>
 
-<a name="lab4"></a><h2 class="section">Decidable propositions &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</h2>
+<a name="lab9"></a><h2 class="section">Decidable propositions</h2>
  This type class by (Spitters/van der Weegen, 2011) collects decidable
 propositions. For example to declare a parameter expressing decidable equality
 on a type <span class="inlinecode"><span class="id" type="var">A</span></span> we write <span class="inlinecode">`{∀</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">A</span>,</span> <span class="inlinecode"><span class="id" type="var">Decidable</span></span> <span class="inlinecode">(<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span>)}</span> and use it by writing
@@ -237,7 +261,7 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 </div>
 
 <div class="doc">
-<a name="lab5"></a><h2 class="section">Functors &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-</h2>
+<a name="lab10"></a><h2 class="section">Functors</h2>
 
 </div>
 <div class="code code-space">
@@ -278,7 +302,7 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 </div>
 
 <div class="doc">
-<a name="lab6"></a><h2 class="section">Monads &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-</h2>
+<a name="lab11"></a><h2 class="section">Monads</h2>
 
 </div>
 <div class="code code-space">
@@ -395,9 +419,13 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">flat_map_concat_map</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHa</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Defined</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Binary&nbsp;Sums&nbsp;(for&nbsp;informative&nbsp;error&nbsp;messages)&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab12"></a><h2 class="section">Binary Sums (for informative error messages)</h2>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">sum_map</span> {<span class="id" type="var">X</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>} (<span class="id" type="var">f</span> : <span class="id" type="var">A</span> → <span class="id" type="var">B</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">X</span> + <span class="id" type="var">A</span>) : <span class="id" type="var">X</span> + <span class="id" type="var">B</span> :=<br/>
@@ -435,9 +463,13 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 <span class="id" type="keyword">Next</span> <span class="id" type="keyword">Obligation</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">a</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Defined</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Continuations&nbsp;------------------------------------------------------------&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab13"></a><h2 class="section">Continuations</h2>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">cont</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) := (<span class="id" type="var">A</span> → <span class="id" type="var">False</span>) → <span class="id" type="var">False</span>.<br/>
@@ -524,9 +556,13 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">f</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>0</sub></span>).<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Defined</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Monads&nbsp;with&nbsp;error&nbsp;--------------------------------------------------------&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab14"></a><h2 class="section">Monads with error</h2>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Class</span> <span class="id" type="var">ExceptionMonad</span> <span class="id" type="var">E</span> <span class="id" type="var">F</span> `{<span class="id" type="var">Monad</span> <span class="id" type="var">F</span>} := <span class="id" type="var">raise</span> : ∀ {<span class="id" type="var">A</span>}, <span class="id" type="var">E</span> → <span class="id" type="var">F</span> <span class="id" type="var">A</span>.<br/>
@@ -561,9 +597,13 @@ on a type <span class="inlinecode"><span class="id" type="var">A</span></span> w
 &nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">y</span> &lt;- <span class="id" type="var">monad_fold_right</span> <span class="id" type="var">f</span> <span class="id" type="var">xs</span> <span class="id" type="var">a</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">f</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Show&nbsp;typeclasses&nbsp;---------------------------------------------------------&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab15"></a><h2 class="section">StringOf</h2>
+
+</div>
+<div class="code code-space">
 
 <br/>
 <span class="id" type="keyword">Class</span> <span class="id" type="var">StringOf</span> (<span class="id" type="var">T</span>:<span class="id" type="keyword">Type</span>) := <span class="id" type="var">string_of</span> : <span class="id" type="var">T</span> → <span class="id" type="var">string</span>.<br/>

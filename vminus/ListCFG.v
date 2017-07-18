@@ -1,3 +1,4 @@
+(** ListCFG: A list-based CFG Implementation *)
 Require Import Arith.
 Require Import List.
 Import ListNotations.
@@ -36,12 +37,21 @@ Module ListCFG <: CFG.
       - there are no empty blocks
 
    *)
+
+  (**  This definition of control-flow-graph syntactic well-formedness could
+  be reformulated to use the Metatheory Library rather than the explicit use of
+  NoDup here.  In particular, the ListCFG representation is an association list
+  mapping labels to blocks) and the blocks themselves are also association lists.
+  The NoDup requirements here could be replaced by the Metatheory Library's notion 
+  of [uniq].  Porting the Vminus development to better make use of the Metatheory
+  library is left as an exercise for the reader :-) 
+  *)
   
   Inductive wf_cfg' : cfg -> Prop :=
     wf_cfg_intro :
       forall l bs
-        (Hlbls: NoDup (map (@fst _ _) bs))
-        (Huids: NoDup (flat_map (fun b => map (@fst _ _) (snd b)) bs))
+        (Hlbls: NoDup (map (@fst _ _) bs))  
+        (Huids: NoDup (flat_map (fun b => map (@fst _ _) (snd b)) bs)) 
         (Hentry: In l (map (@fst _ _) bs))
         (Hnonnil: ~ In [] (map (@snd _ _) bs)),
         wf_cfg' (l, bs).
@@ -49,6 +59,11 @@ Module ListCFG <: CFG.
   (* hack around some Coq limitation re inductive types & parameters *)
   Definition wf_cfg := wf_cfg'.
 
+  
+  (** EX5? (naming challenge) *)
+  (** Port the above definition of wf_cfg' to use the [uniq] predicate from the Metatheory library. 
+      Fix up all of the proofs!
+   *)
     
   (**  ------------------------------------------------------------------------- *)  
   (** ** Implementing the interface requirements: *)
@@ -68,130 +83,103 @@ Module ListCFG <: CFG.
   Definition uid_at_pc (g:cfg) (p:pc) (uid:uid) : Prop :=
     exists c, insn_at_pc g p (uid, c).
 
+  (** For all of the following exercises, reference
+      CFG.v as well as the other recommended files. *) 
+  
+  (** **** Exercise: 2 stars, optional (wf_pc_insn)  *)
+  (** Prove that well formed program counters always 
+      point to an instruction (you shouldn't need any
+      other definitions): *)  
   Lemma wf_pc_insn : forall g, wf_cfg g ->
     forall p, wf_pc g p -> exists i, insn_at_pc g p i.
   Proof.
-    unfold wf_pc, insn_at_pc. destruct p; intros. 
-    decompose [ex and] H0. eauto.
-  Qed.
+    (* FILL IN HERE *) Admitted.
 
+
+  (** **** Exercise: 2 stars, optional (wf_pc_tmn)  *)
+  (** Prove that every block has a terminator. See 
+      PeanoNat.Nat and util for some helpful theorems. *)
   Lemma wf_pc_tmn : forall g, wf_cfg g ->
     forall p, wf_pc g p -> exists p', tmn_pc g p' /\ le_pc p p'.
   Proof.
-
-    unfold wf_pc, tmn_pc. destruct p. intros.
-    decompose [ex and] H0. 
-    exists (t0, pred (length x)). split. eauto.
-    constructor. 
-    apply PeanoNat.Nat.lt_le_pred.
-    eapply Nth_length; eauto.
-  Qed.
+  (* FILL IN HERE *) Admitted.
 
 
   (* Helper lemma: blocks have non-zero length. *)
-  
+  (** **** Exercise: 2 stars, optional (wf_cfg_block_len)  *)
+  (** Prove that well formed control flow graphs 
+      have non-zero length. See list 
+      theorems about In and map. *)
   Lemma wf_cfg_block_len : forall g, wf_cfg g ->
     forall l is, In (l, is) (snd g) -> length is <> 0.
   Proof.
-    inversion 1. intros l0 is H1.  destruct is; simpl; auto. 
-    contradict Hnonnil. 
-    eapply in_map with (f:=@snd _ _) in H1. auto.
-  Qed.
+    (* FILL IN HERE *) Admitted.
 
+  (** **** Exercise: 3 stars, optional (wf_pc_le_tmn)  *)
+  (** Prove there are no "gaps" in the pc labels. 
+      In other words, that all pcs that come before
+      some arbitrary but particular pc are well formed. *)
   Lemma wf_pc_le_tmn : forall g, wf_cfg g ->
     forall p', tmn_pc g p' -> forall p, le_pc p p' -> wf_pc g p.
   Proof.
-    unfold wf_pc, tmn_pc. intros g H p' H0 p H1.  destruct p, p'.
-    decompose [ex and] H0. exists x.
+    (* FILL IN HERE *) Admitted.    
 
-    destruct x. apply wf_cfg_block_len in H3; auto. contradict H3; auto.
-    inversion H1; subst. apply le_lt_n_Sm in H5. 
-    erewrite <- S_pred in H5. 
-    apply length_Nth in H5 as [? ?]. 
-    eexists. split; eauto. eauto.
-  Qed.
-  
+  (** **** Exercise: 3 stars, optional (wf_entry)  *)
+  (** Prove there is an instruction in the entry block. 
+      Take a look at theorems about in and map in List. *)
   Lemma wf_entry : forall g, wf_cfg g ->
     wf_pc g (block_entry (entry_block g)).
   Proof.
-    unfold wf_pc. inversion 1. simpl.
-    apply in_map_iff in Hentry as [[? ?] [? ?]].
-    destruct l0.
-    exfalso. pose proof (wf_cfg_block_len g H t0 []) as contra. 
-    subst g; simpl in *. apply contra; auto.
-    eexists. eexists. 
-    simpl in *. subst l. split; eauto.
-    simpl; eauto.
-  Qed.
-  
+    (* FILL IN HERE *) Admitted.    
+
+  (** **** Exercise: 3 stars, optional (insn_at_pc_func)  *)
+  (** Prove that insn_at_pc with respect to a CFG g is a 
+      function from program counter to instruction. *)
   Lemma insn_at_pc_func : forall g, wf_cfg g ->
     functional (insn_at_pc g).
   Proof.
-    unfold functional, insn_at_pc. inversion 1. destruct a.
-    intros b1 b2 [is1 [Hin1 Hnth1]] [is2 [Hin2 Hnth2]].
-    cut (is1 = is2). intro; subst is2. eapply Nth_eq; eauto.
-    eapply NoDup_assoc_func; eauto.
-  Qed.
-  
+  (* FILL IN HERE *) Admitted.    
+
+  (** **** Exercise: 4 stars, optional (uid_at_pc_inj)  *)
+  (** Prove that uid_at_pc with respect to a CFG g is injective. 
+      Take a look at List for In and map, and Util. *)
   Lemma uid_at_pc_inj : forall g, wf_cfg g ->
     injective (uid_at_pc g).
   Proof.
-    unfold injective, uid_at_pc, insn_at_pc. inversion 1.
-    intros [l1 n1] [l2 n2] uid [c1 [is1 [Hin1 Hnth1]]] [c2 [is2 [Hin2 Hnth2]]].
-    cut ((l1, is1) = (l2, is2)).
-    intro Heq. inversion Heq; clear Heq. f_equal.
-    eapply NoDup_flat_map__NoDup in Huids; eauto.
-    change is1 with (snd (l1, is1)) in Hnth1.
-    change is2 with (snd (l2, is2)) in Hnth2.
-    subst; eapply NoDup_nth_inj; eauto. 
+  (* FILL IN HERE *) Admitted.
 
-    set (f1 b := map (@fst _ _) (snd b)) in *.
-    apply (NoDup_flat_map (l1, is1) (l2, is2) uid f1 bs); auto.
-    unfold f1; simpl. 
-    apply in_map_iff. exists (uid, c1); eauto using Nth_In.
-    apply in_map_iff. exists (uid, c2); eauto using Nth_In.
-  Qed.
-
+  (** **** Exercise: 3 stars, optional (uid_at_pc_func)  *)
+  (** Prove that uid_at_pc with respect to a CFG g 
+      is a function. *)
   Lemma uid_at_pc_func : forall g, wf_cfg g ->
     functional (uid_at_pc g).
-  Proof.
-    intros g Hwfc. specialize (insn_at_pc_func g Hwfc).
-    unfold functional, uid_at_pc. intros.
-    destruct H0 as [c1 ?]. destruct H1 as [c2 ?].
-    cut ((b1,c1) = (b2,c2)). inversion 1; auto.
-    eauto.
-  Qed.
+(* FILL IN HERE *) Admitted.
 
+  (** **** Exercise: 2 stars, optional (eq_pc_uid)  *)
+  (** Prove that if two instructions are at the same
+      pc in a well formed CFG, then their ids are the same. *)
   Lemma eq_pc_uid : forall g pc id1 id2 c1 c2,
     wf_cfg g ->
     insn_at_pc g pc (id1, c1) ->
     insn_at_pc g pc (id2, c2) ->
     id1 = id2.
-  Proof.
-    intros. pose proof (uid_at_pc_func g H).
-    unfold functional in H2. eapply H2; red; eauto.
-  Qed.
+(* FILL IN HERE *) Admitted.
 
-  
-  Lemma blocks_inj : forall g, wf_cfg g -> forall l is1 is2, In (l, is1) (snd g) -> In (l, is2) (snd g) -> is1 = is2.
+  (** **** Exercise: 2 stars, optional (blocks_inj)  *)
+  (** Prove that in a cfg, for each label there 
+      exists a single block. See Util. *)
+  Lemma blocks_inj : forall g, wf_cfg g -> forall l is1 is2,
+        In (l, is1) (snd g) -> In (l, is2) (snd g) -> is1 = is2.
   Proof.
-    intros g H l is1 is2 H0 H1.
-    inversion H.
-    subst; simpl in *.
-    eapply NoDup_assoc_func; eauto.
-  Qed.
-  
+  (* FILL IN HERE *) Admitted.
+
+  (** **** Exercise: 3 stars, optional (pc_at_uid_inj)  *)
+  (** Prove the other end of uid_at_pc_inj, 
+      showing that uid_at_pc is a bijection. *)
   Lemma pc_at_uid_inj : forall g, wf_cfg g ->
                              injective (fun x p => uid_at_pc g p x).
   Proof.
-    unfold injective, uid_at_pc, insn_at_pc.
-    intros g Hwf a1 a2 [l n] [c1 [is1 [Hin1 Hn1]]] [c2 [is2 [Hin2 Hn2]]].
-    inversion Hwf. subst. simpl in *.
-    assert (is1 = is2).
-    eapply NoDup_assoc_func; eauto. subst.
-    assert ((a1, c1) = (a2, c2)) as H. eapply Nth_eq; eauto.
-    inversion H. reflexivity.
-  Qed.
+  (* FILL IN HERE *) Admitted.
 
   (**  ------------------------------------------------------------------------- *)  
   (** ** Working with ListCFG *)
@@ -236,6 +224,47 @@ Module ListCFG <: CFG.
     destruct (Lbl.eq_dec l2 l1); subst; tauto.
   Qed.
 
+
+(**  ------------------------------------------------------------------------- *)
+(* ================================================================= *)
+(** ** Correspondence between [lookup] and [insn_at_pc]. *)
+
+(** The following proposition asserts that the instruction sequence found at
+    program point [p] in the control-flow graph [g] is exactly the list [is].
+    Note that this connects the dynamic notion of what it means to "increment"
+    the program counter to the static notion of the list of instructions.
+*)
+
+Fixpoint insns_at_pc (g:cfg) (p:pc) (is:list insn) : Prop := 
+  match is with
+    | nil => True
+    | i :: is' => ListCFG.insn_at_pc g p i /\ insns_at_pc g (incr_pc p) is'
+  end.
+
+(** We prove that looking up the block labeled [l] in the concrete
+    representation agrees with [insns_at_pc].
+*)
+
+Lemma cfg_insns_at : forall (bs:list block) (l:lbl) (is:list insn) (e:lbl),
+  lookup bs l = Some is ->
+  insns_at_pc (e, bs) (block_entry l) is.
+Proof.
+  intros.
+  pose (k:=@nil insn). change is with (k ++ is) in H.
+  unfold block_entry. change 0 with (length k).
+  clearbody k. generalize dependent k.
+  induction is; intros.
+  - simpl; auto.
+  - simpl. split. eexists. split.
+    unfold lookup in H.
+    apply assoc_in in H. simpl; eauto.
+    clear H. induction k; simpl; auto.
+    replace (S (length k)) with (length (k ++ [a])). apply IHis.
+      rewrite <- app_assoc. auto. rewrite app_length.
+      simpl. apply PeanoNat.Nat.add_1_r.
+Qed.
+
+  
   (**  ------------------------------------------------------------------------- *)  
   (** ** Implementing fetch *)
   

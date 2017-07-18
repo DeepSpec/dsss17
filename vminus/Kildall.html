@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Kildall</title>
+<title>Kildall: Forward Dataflow Analysis</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,9 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">Kildall</h1>
+<h1 class="libtitle">Kildall<span class="subtitle">Forward Dataflow Analysis</span></h1>
+
 
 <div class="code code-tight">
+
+<br/>
 <span class="comment">(*&nbsp;*********************************************************************)</span><br/>
 <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Compcert&nbsp;verified&nbsp;compiler&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
@@ -55,23 +58,46 @@
 &nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Acknowledgements&nbsp;---------------------------------------------------------&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;<br/>
-&nbsp;&nbsp;This&nbsp;file&nbsp;is&nbsp;heavily&nbsp;based&nbsp;on:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;lib/Lattice.v&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;backend/Kildall.v&nbsp;<br/>
-&nbsp;&nbsp;from&nbsp;the&nbsp;CompCert&nbsp;development,&nbsp;&nbsp;modified&nbsp;to&nbsp;remove&nbsp;dependencies&nbsp;and&nbsp;<br/>
-&nbsp;&nbsp;optimizations.<br/>
-*)</span><br/>
+<div class="doc">
+<a name="lab126"></a><h1 class="section">Acknowledgements</h1>
+
+<div class="paragraph"> </div>
+
+  This file is heavily based on:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> lib/Lattice.v 
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> backend/Kildall.v 
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+  from the CompCert development,  modified to remove dependencies and 
+  optimizations.
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Equalities</span> <span class="id" type="var">Orders</span>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FSets</span> <span class="id" type="var">FMaps</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Iteration</span> <span class="id" type="var">Util</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Iteration</span> <span class="id" type="var">Vminus.Util</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">FORWARD_SOLVER</span>.<br/>

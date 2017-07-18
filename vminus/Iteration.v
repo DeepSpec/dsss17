@@ -1,3 +1,5 @@
+(** * Iteration: Bounded Loops *)
+
 (* *********************************************************************)
 (*                                                                     *)
 (*              The Compcert verified compiler                         *)
@@ -23,12 +25,8 @@
  ---------------------------------------------------------------------------- *)
 
 
-(** Bounded iterators *)
-
-(* we can get away with using unary nats in our toy compiler
-   Q: why does compcert use positive vs. binary nats? 
-      how are they extracted -- extra cons for each number?
-   binary nats are better supported in the stdlib*)
+(* ################################################################# *)
+(** * Bounded iterators *)
 
 Require Import NArith FunctionalExtensionality.
 

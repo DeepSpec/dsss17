@@ -1,7 +1,3 @@
-(* TODO: License / Which Version of Imp? *)
-
-
-(* ################################################################# *)
 (** * Imp: Simple Imperative Programs *)
 
 (** This file presents a variant of the Imp programming language 
@@ -14,8 +10,8 @@ Require Import Equalities Arith.
 Require Import Vminus.Atom Vminus.Env.
 Require Import Vminus.Sequences.
 
-(* ----------------------------------------------------------------- *)
-(** *** Identifiers *)
+(* ================================================================= *)
+(** ** Identifiers *)
 
 (** To simplify the compilation process, this variant of Imp uses 
     [Atom.t] values as variable identifiers.  [Atom.t] is also used by

@@ -1,3 +1,5 @@
+(** * Util: Miscellaneous Utilities *)
+
 (* -------------------------------------------------------------------------- *
  *                     Vellvm - the Verified LLVM project                     *
  *                                                                            *
@@ -8,6 +10,8 @@
  *   3 of the License, or (at your option) any later version.                 *
  ---------------------------------------------------------------------------- *)
 
+(* ################################################################# *)
+(** * Utilities for the Vminus development *)
 
 Require Import Arith Equalities EqualitiesFacts Orders List.
 Import ListNotations.

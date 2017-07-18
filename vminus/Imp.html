@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Imp</title>
+<title>Imp: Simple Imperative Programs</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,11 +29,8 @@
 
 <div id="main">
 
-<h1 class="libtitle">Imp</h1>
+<h1 class="libtitle">Imp<span class="subtitle">Simple Imperative Programs</span></h1>
 
-<div class="code code-tight">
-<span class="comment">(*&nbsp;TODO:&nbsp;License&nbsp;/&nbsp;Which&nbsp;Version&nbsp;of&nbsp;Imp?&nbsp;*)</span><br/>
-</div>
 
 <div class="doc">
 
@@ -54,7 +51,7 @@
 </div>
 
 <div class="doc">
-<a name="lab17"></a><h3 class="section">Identifiers</h3>
+<a name="lab27"></a><h2 class="section">Identifiers</h2>
 
 <div class="paragraph"> </div>
 
@@ -82,7 +79,7 @@
 </div>
 
 <div class="doc">
-<a name="lab18"></a><h3 class="section">Arithmetic expressions</h3>
+<a name="lab28"></a><h3 class="section">Arithmetic expressions</h3>
  Arithmetic expressions are just the same as in Imp. 
 </div>
 <div class="code code-tight">
@@ -97,7 +94,7 @@
 </div>
 
 <div class="doc">
-<a name="lab19"></a><h3 class="section">Boolean expressions</h3>
+<a name="lab29"></a><h3 class="section">Boolean expressions</h3>
  Boolean expressions are also just the same as in Imp.  Since (as
     we'll see) Vminus doesn't support boolean values natively, we'll
     have to compile these to natural numbers. 
@@ -115,7 +112,7 @@
 </div>
 
 <div class="doc">
-<a name="lab20"></a><h3 class="section">Commands</h3>
+<a name="lab30"></a><h3 class="section">Commands</h3>
  The commands are just the same as in Imp. 
 </div>
 <div class="code code-tight">
@@ -130,7 +127,7 @@
 </div>
 
 <div class="doc">
-<a name="lab21"></a><h3 class="section">Notation</h3>
+<a name="lab31"></a><h3 class="section">Notation</h3>
 
 </div>
 <div class="code code-space">
@@ -147,7 +144,7 @@
 </div>
 
 <div class="doc">
-<a name="lab22"></a><h3 class="section">An Example:</h3>
+<a name="lab32"></a><h3 class="section">An Example:</h3>
 
 <pre>
 X ::= 5;;
@@ -160,7 +157,7 @@ END
 
 <div class="paragraph"> </div>
 
-<a name="lab23"></a><h2 class="section">Operational Semantics</h2>
+<a name="lab33"></a><h2 class="section">Operational Semantics</h2>
 
 <div class="paragraph"> </div>
 
@@ -178,7 +175,7 @@ END
 </div>
 
 <div class="doc">
-<a name="lab24"></a><h3 class="section">Arithmetic evaluation</h3>
+<a name="lab34"></a><h3 class="section">Arithmetic evaluation</h3>
  Arithmetic and boolean expressions are evaluated in a given 
     state. 
 </div>
@@ -196,7 +193,7 @@ END
 </div>
 
 <div class="doc">
-<a name="lab25"></a><h3 class="section">Boolean evaluation</h3>
+<a name="lab35"></a><h3 class="section">Boolean evaluation</h3>
 
 </div>
 <div class="code code-space">
@@ -212,7 +209,7 @@ END
 </div>
 
 <div class="doc">
-<a name="lab26"></a><h3 class="section">Small step evaluation relation</h3>
+<a name="lab36"></a><h3 class="section">Small step evaluation relation</h3>
 
 </div>
 <div class="code code-space">

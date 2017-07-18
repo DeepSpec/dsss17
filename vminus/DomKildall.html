@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>DomKildall</title>
+<title>DomKildall: Dominators via Kildall</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,7 +29,8 @@
 
 <div id="main">
 
-<h1 class="libtitle">DomKildall</h1>
+<h1 class="libtitle">DomKildall<span class="subtitle">Dominators via Kildall</span></h1>
+
 
 <div class="code code-tight">
 <span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
@@ -44,14 +45,15 @@
 </div>
 
 <div class="doc">
-Implementation via fixpoint iteration. 
+<a name="lab127"></a><h1 class="section">Computing Dominators</h1>
+ Implementation via fixpoint iteration. 
 </div>
 <div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Program.Equality</span>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Equalities</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Dom</span> <span class="id" type="var">Kildall</span> <span class="id" type="var">Util</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Dom</span> <span class="id" type="var">Vminus.Kildall</span> <span class="id" type="var">Vminus.Util</span>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FSets</span> <span class="id" type="var">FMaps</span>.<br/>
 
 <br/>

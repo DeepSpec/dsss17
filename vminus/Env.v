@@ -1,3 +1,5 @@
+(** * Env: Environments *)
+
 (* -------------------------------------------------------------------------- *
  *                     Vellvm - the Verified LLVM project                     *
  *                                                                            *
@@ -8,13 +10,11 @@
  *   3 of the License, or (at your option) any later version.                 *
  ---------------------------------------------------------------------------- *)
 
-
-(* ################################################################# *)
-(** * Environments *)
-
 Require Import Equalities List.
 Set Implicit Arguments.
 
+(* ################################################################# *)
+(** * Environments *)
 (** An _environment_ maps values of type [K.t] to values of type 
     V. This module implements updateable environments using Coq 
     functions and proves some simple facts about equality. *)
