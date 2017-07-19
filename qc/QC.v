@@ -1202,6 +1202,11 @@ Fixpoint size {A} (t : Tree A) : nat :=
 (** If we were to write a dummy property to check our generators and
     measure the size of generated trees, we could use [treeProp]
     below. *)
+
+Definition treeProp (gen : nat -> G nat -> G (Tree nat)) (s : nat) :=
+  (forAll (gen s (choose (0,3))) (fun l : Tree nat => collect (size l) true)).
+
+QuickChick (treeProp genTreeSized 5).
 (**
 
       ===> 4947 : 0 1258 : 1 673 : 2 464 : 6 427 : 5 393 : 3 361 : 7
