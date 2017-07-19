@@ -46,7 +46,7 @@ Conjecture removeP : forall x l,  ~ (In x (remove x l)).
     the discrepancy between the definition and specification is
     to _test_ it: *)
 
-QuickChick removeP.
+(* QuickChick removeP. *)
 
 (** The [QuickChick] command takes a property (which must be 
     "executable" -- we'll see later exactly what this means) and 

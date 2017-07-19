@@ -1,11 +1,5 @@
 (** * TImp: Case Study: a Typed Imperative Language *)
 
-(* BCP: Some random things to do soon:
-     - 80-column-ify
-     - Turn exercises into SF-style using EX tags
-     - Start producing a TERSE version that we can use for lecturing
-*)
-
 Set Warnings "-notation-overridden,-parsing".
 Set Warnings "-extraction-opaque-accessed,-extraction".
 Require Import Coq.Bool.Bool.
@@ -22,7 +16,7 @@ Import QcDefaultNotation. Open Scope qc_scope.
 Set Bullet Behavior "Strict Subproofs".
 
 Require Import Equalities.
-Require Import QC.
+From QC Require Import QC.
 Import QcNotation.
 
 
@@ -63,22 +57,15 @@ Import QcNotation.
 (* ================================================================= *)
 (** ** Atoms *)
 
-(* Leo: How can we cite things in SF-style? *)
-(* BCP: Do you mean bibliographic citations?  Or URLs?  Urls are
-   http://likethis and bib stuff is \Bib{Like This, 2017}, plus add
-   it to Bib.v (following the style of SF) and make sure Bib.v is in
-   the Makefile. *)
-(* Leo: Decide: atoms, [Atom]s or [Atoms]? *)
-(* BCP: I think switching back and forth between the first and second is fine. *)
 (** For the type of identifiers of TImp we are going to borrow (a simplified
     version of) [Atom] from Penn's Metatheory library. [Atom] is essentially a
     wrapper around [nat] which supports decidable equality and [fresh]: given
     any finite set of atoms, one can produce one that is distinct from all of
     the atoms in the set. *)
 
-(** We declare that atoms are an instance of Coq's [UsualDecidableType].
-    That is, the standard coq equality [(=)] is decidable for them. 
-  *)
+(** The signature ([Module Type]) of atoms extends the signature
+    [UsualDecidableType].  The force of this is that the standard coq
+    equality [(=)] is decidable for atoms. *)
 
 Module Type ATOM <: UsualDecidableType.
 
@@ -99,7 +86,8 @@ Module Atom : ATOM.
 
   Definition t := nat.
 
-(** ...which means decidable equality comes for free from the standard library: *)
+(** ...which means decidable equality comes for free from the standard
+    library: *)
 
   Definition eq_dec := eq_nat_dec.
   
@@ -147,7 +135,7 @@ Fixpoint get_fresh_atoms n l :=
 (* ================================================================= *)
 (** ** Types *)
 
-(** To continue, here is the type of types in TImp, [ty]: *)
+(** Here is the type of types in TImp: *)
 
 Inductive ty := TBool | TNat. 
 
@@ -180,9 +168,7 @@ Check showty.
 (** The decidable equality instances are not yet derived fully automatically.
     However, the boilerplate for it is largely straightforward. As we saw in 
     the previous chapters, [Dec] is a typeclass wrapper around ssreflect's 
-    [decidable]. We just unfold that and use the [decide equality tactic].
-
-  *)
+    [decidable]. We just unfold that and use the [decide equality] tactic. *)
 
 Instance eq_dec_ty (x y : ty) : Dec (x = y) := {}.
 Proof. unfold ssrbool.decidable; decide equality. Defined.
@@ -190,19 +176,21 @@ Proof. unfold ssrbool.decidable; decide equality. Defined.
 (* ================================================================= *)
 (** ** List Map with Decidable Equality *)
 
-(** To encode typing environments and, later on, states, we will need 
-    maps from atoms to values. The function-based representation in base 
-    Imp is not suited for testing: we will need to be able to access the 
-    domain of the map, fold over it and test for equality; all operations
-    not supported by (Coq) functions. Therefore, we introduce a small 
-    list-based map that takes usual decidable types (like [Atom]) as input.
+(** To encode typing environments and, later on, states, we will need
+    maps from atoms to values. The function-based representation in
+    the _Software Foundations_ version of Imp is not suited for
+    testing: we will need to be able to access the domain of the map,
+    fold over it and test for equality; not all operations are
+    supported by (Coq) functions. Therefore, we introduce a small
+    list-based map that takes usual decidable types (like [Atom]) as
+    input.
 
     The operations we need are:
     
        - [empty] : To create the empty map.
-       - [get]   : To look up the binding of an element, if any.
-       - [set]   : To update the binding of an element.
-       - [dom]   : To get the list of keys in the map.
+       - [get] : To look up the binding of an element, if any.
+       - [set] : To update the binding of an element.
+       - [dom] : To get the list of keys in the map.
   *)
     
 Module Type Map (K:UsualDecidableType).
@@ -419,12 +407,9 @@ Derive Show for exp.
 (** ** Typed Expressions *)
 
 (** The following inductive relation characterizes well-typed expressions
-    of a particular type. It is rather unsurprising, using [bound_to] to 
-    access the typing context in the variable case *)
+    of a particular type. It is rather unsurprising, using [bound_to] to access
+    the typing context in the variable case *)
 
-(* BCP: Maybe define a Notation for this to lighten the presentation? *)
-(* Leo: "\in" doesn't work. What symbol do we want? Ascii? *)
-(* Leo: No idea how to make this slide prettier... *)
 Reserved Notation "Gamma '||-' e ':-' T" (at level 40).
 
 Inductive has_type : context -> exp -> ty -> Prop := 
@@ -457,7 +442,7 @@ Inductive has_type : context -> exp -> ty -> Prop :=
 
 where "Gamma '||-' e ':-' T" := (has_type Gamma e T).
 
-(** Once again, we need a decidable instance for the typing relation of 
+(** Once again, we need a decidable instance for the typing relation of
     TImp. You can skip to the next exercise if you are not interested in
     specific proof details. *)
 
@@ -477,8 +462,8 @@ Ltac solve_inductives Gamma :=
   *)
 
 Instance dec_has_type (e : exp) (Gamma : context) (T : ty) 
-  : Dec (Gamma ||- e :- T) :=
-  { dec := _ }.
+  : Dec (Gamma ||- e :- T)
+  := { dec := _ }.
 Proof with solve_sum.
   (* I need move: :'( *)
   generalize dependent Gamma.
@@ -490,13 +475,13 @@ Proof with solve_sum.
   destruct (dec_bound_to Gamma t T); destruct dec; solve_sum.
 Defined.
 
+Instance shrink_atom : Shrink Atom.t := 
+  { shrink := fun _ => [] }.
+
 (** **** Exercise: 3 stars (arbitraryExp)  *)
 (** Derive [Arbitrary] for expressions. Write a conditional property that is
     trivially always true with the precondition that an expression is
-    well-typed. Try to check that property. What happens?
-
-    (You will need to provide a [Shrink] instance for [Atom]. The result of
-    shrinking an atom can be empty for now) *)
+    well-typed. Try to check that property. What happens? *)
 
 (* FILL IN HERE *)
 
@@ -540,22 +525,22 @@ Instance gOptMonad : `{Monad GOpt} :=
 
 (** Which brings us to our first large sized generator for typed expressions.
     We asumme that [Gamma] and [T] are inputs to the generation process. We also
-    use a [size] parameter to control the depth of generated expressions.
- *)
+    use a [size] parameter to control the depth of generated expressions.  *)
 
 (** Let's start with a much smaller relation: [has_type_1] (which consists of
     just the first constructor of [has_type]), that will allow us to demonstrate
-    how to build up complex generators for typed expressions from smaller parts. *)
+    how to build up complex generators for typed expressions from smaller
+    parts. *)
 
 Inductive has_type_1 : context -> exp -> ty -> Prop := 
   | Ty_Var1 : forall x T Gamma, 
       bound_to Gamma x T -> has_type_1 Gamma (EVar x) T.
 
-(** To generate [e] such that for [has_type_1 Gamma e T] holds, we need to 
-    pick one of its constructors to try and satisfy. Here, that means [Ty_Var1]. To satisfy, [Ty_Var1], (given [Gamma] and [T]), we need to generate 
-    [x] such that [bound_to Gamma x T]. But we already have such a generator!
-    We just need to wrap it in an [EVar].
-  *)
+(** To generate [e] such that for [has_type_1 Gamma e T] holds, we need to pick
+    one of its constructors to try and satisfy. Here, that means [Ty_Var1]. To
+    satisfy, [Ty_Var1], (given [Gamma] and [T]), we need to generate [x] such
+    that [bound_to Gamma x T]. But we already have such a generator!  We just
+    need to wrap it in an [EVar].  *)
 
 Definition gen_typed_evar (Gamma : context) (T : ty) : G (option exp) :=
   x <- gen_typed_atom_from_context Gamma T;;
@@ -576,11 +561,10 @@ Inductive has_type_2 : context -> exp -> ty -> Prop :=
 | Ty_True2 : forall Gamma, has_type_2 Gamma ETrue TBool
 | Ty_False2 : forall Gamma, has_type_2 Gamma EFalse TBool.
 
-(** We can already generate values satisfying [Ty_Var2] using [gen_typed_evar]. 
-    For the rest of the rules, we will need to pattern match on the input 
-    [T], since [Ty_Num] can only be used if [T = TNat], while [Ty_True] and 
-    [Ty_False] can only be satisfied if [T = TBool]. 
-  *)
+(** We can already generate values satisfying [Ty_Var2] using [gen_typed_evar].
+    For the rest of the rules, we will need to pattern match on the input [T],
+    since [Ty_Num] can only be used if [T = TNat], while [Ty_True] and
+    [Ty_False] can only be satisfied if [T = TBool].  *)
 
 Definition base' Gamma T : list (G (option exp)) := 
       gen_typed_evar Gamma T ::
@@ -612,16 +596,38 @@ Definition base Gamma T :=
                  ; (1, ret EFalse) ]
       end.
 
-(** In the recursive constructors of [has_type], we will also need to pattern
-    match on the input [T]. If, for example, [T = TNat], then we can only
-    satisfy typing derivations whose conclusion is of the form 
-    [has_type Gamma _ TNat], i.e. [Ty_Plus], [Ty_Minus] and [Ty_Mult].
+(** To see how we handle recursive rules, consider a third sub-relation 
+    [has_type_3]: *)
 
-    Consider [Ty_Plus]: we will need to recursively generate expressions [e1]
-    and [e2] that have type [TNat], with potentially smaller sizes to ensure
-    termination.
+Inductive has_type_3 : context -> exp -> ty -> Prop :=
+ | Ty_Var3 : forall x T Gamma, 
+     bound_to Gamma x T -> has_type_3 Gamma (EVar x) T
+ | Ty_Plus3 : forall Gamma e1 e2, 
+    has_type_3 Gamma e1 TNat -> has_type_3 Gamma e2 TNat ->
+    has_type_3 Gamma (EPlus e1 e2) TNat.
 
-    We put everything together in the following generator *)
+(** To enforce termination, we add a [size] parameter. The base case 
+    ([Ty_Var3]) is handled using [gen_typed_evar] just like before. 
+    The non-base case can choose between trying to satisfy [Ty_Var3]
+    and trying to satisfy [Ty_Plus3]. For the latter, the input type 
+    [T] must be [TNat], otherwise it is not applicable. Once again, that 
+    leads to a match.
+*)
+
+Fixpoint gen_has_type_3 size Gamma T : G (option exp) := 
+  match size with 
+  | O => gen_typed_evar Gamma T
+  | S size' => 
+    backtrack ([ (1, gen_typed_evar Gamma T) ] 
+               ++ match T with 
+                  | TNat => [ (size, e1 <- gen_has_type_3 size' Gamma TNat;;
+                                     e2 <- gen_has_type_3 size' Gamma TNat;;
+                                     ret (EPlus e1 e2)) ]
+                  | _ => []
+                  end)
+  end.
+
+(** We put everything together in the following, full generator *)
 
 Fixpoint gen_exp_typed_sized (size : nat) (Gamma : context) (T : ty) 
   : G (option exp) :=
@@ -857,6 +863,36 @@ Definition expression_soundness_exec :=
 (* ================================================================= *)
 (** ** Shrinking for Expressions *)
 
+(** Let's see what happens if we use the default shrinker for expressions carelessly.
+  *)
+
+Derive Shrink for exp.
+
+Definition expression_soundness_exec_firstshrink := 
+  let num_vars := 4 in 
+  let top_level_size := 3 in
+  forAll (gen_context num_vars)  (fun Gamma =>
+  forAll (gen_typed_state Gamma) (fun st =>
+  forAll arbitrary (fun T =>                                    
+  forAllShrink (gen_exp_typed_sized 3 Gamma T) shrink (fun me => 
+  match me with  
+  | Some e => negb (isNone (eval st e))
+  | _ => false
+  end)))).   
+
+(* QuickChick expression_soundness_exec_firstshrink. *)
+
+(**  ==> 
+  QuickChecking expression_soundness_exec_firsttry
+  [(1,TBool), (2,TNat), (3,TBool), (4,TBool)]
+  [(1,VBool false), (2,VNat 0), (3,VBool true), (4,VBool false)]
+  TBool
+  None
+  *** Failed after 4 tests and 5 shrinks. (0 discards)
+*)
+
+(** The expression shrunk to [None]. That's useless! *)
+
 (** We not only need to shrink expressions, we need to shrink them so that their
     type is preserved! To accomplish that we need to follow a reverse procedure
     than with the generators: look at a typing derivation and see what parts of
@@ -867,7 +903,6 @@ Definition expression_soundness_exec :=
     for [EEq e1 e2], we could to shrink [e1] or [e2] again preserving their
     [TNat] types, but we couldn't shrink to [e1] or [e2] as their type is wrong.
     *)
-(* Leo: Not sure how to break up this slide... *)
    
 Fixpoint shrink_exp_typed (T : ty) (e : exp) : list exp :=
   match e with 

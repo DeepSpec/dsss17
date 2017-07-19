@@ -76,7 +76,7 @@
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">returnGen</span> 42).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(returnGen&nbsp;42).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -171,7 +171,7 @@ Record ChoosableFromInterval (A : Type) : Type := Build_ChoosableFromInterval
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">choose</span> (0,10)).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(choose&nbsp;(0,10)).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -213,7 +213,7 @@ Record ChoosableFromInterval (A : Type) : Type := Build_ChoosableFromInterval
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">listOf</span> (<span class="id" type="var">choose</span> (0,4))).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(listOf&nbsp;(choose&nbsp;(0,4))).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -260,7 +260,7 @@ Record ChoosableFromInterval (A : Type) : Type := Build_ChoosableFromInterval
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">vectorOf</span> 3 (<span class="id" type="var">choose</span> (0,4))).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(vectorOf&nbsp;3&nbsp;(choose&nbsp;(0,4))).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -377,7 +377,7 @@ Now, to generate a random color, we just need to pick one of the
 &nbsp;&nbsp;<span class="id" type="var">elements</span> <span class="id" type="var">Red</span> [ <span class="id" type="var">Red</span> ; <span class="id" type="var">Green</span> ; <span class="id" type="var">Blue</span> ; <span class="id" type="var">Yellow</span> ].<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> <span class="id" type="var">genColor'</span>.<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;genColor'.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -421,7 +421,7 @@ Now, to generate a random color, we just need to pick one of the
 &nbsp;&nbsp;<span class="id" type="var">elems</span> [ <span class="id" type="var">Red</span> ; <span class="id" type="var">Green</span> ; <span class="id" type="var">Blue</span> ; <span class="id" type="var">Yellow</span> ].<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> <span class="id" type="var">genColor</span>.<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;genColor.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -549,7 +549,7 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">genTreeSized</span> 3 (<span class="id" type="var">choose</span>(0,3))).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(genTreeSized&nbsp;3&nbsp;(choose(0,3))).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -625,7 +625,7 @@ Now we come to the first <i>generator combinator</i>, called <span class="inline
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3))).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(genTreeSized'&nbsp;3&nbsp;(choose(0,3))).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -840,7 +840,7 @@ That is, the boolean value <span class="inlinecode"><span class="id" type="var">
 <span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground1</span>.<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">true</span>).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(CheckerPlayground1.checker&nbsp;true).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -853,7 +853,7 @@ That is, the boolean value <span class="inlinecode"><span class="id" type="var">
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">false</span>).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(CheckerPlayground1.checker&nbsp;false).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -916,7 +916,7 @@ The somewhat astononishing thing about the <span class="inlinecode"><span class=
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">CheckerPlayground2.c1</span>).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(CheckerPlayground1.checker&nbsp;CheckerPlayground2.c1).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -929,7 +929,7 @@ The somewhat astononishing thing about the <span class="inlinecode"><span class=
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground1.checker</span> <span class="id" type="var">CheckerPlayground2.c2</span>).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(CheckerPlayground1.checker&nbsp;CheckerPlayground2.c2).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -998,7 +998,7 @@ Since we can generate elements of <span class="inlinecode"><span class="id" type
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground3.forAll</span> <span class="id" type="var">genColor</span> <span class="id" type="var">isRed</span>).<br/>
+<span class="comment">(*&nbsp;Sample&nbsp;(CheckerPlayground3.forAll&nbsp;genColor&nbsp;isRed).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1017,9 +1017,11 @@ Since we can generate elements of <span class="inlinecode"><span class="id" type
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground3.forAll</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3)))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">mirrorP</span>).<br/>
+<span class="comment">(*<br/>
+Sample&nbsp;(CheckerPlayground3.forAll<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(genTreeSized'&nbsp;3&nbsp;(choose(0,3)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mirrorP).<br/>
+*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1043,9 +1045,11 @@ Since we can generate elements of <span class="inlinecode"><span class="id" type
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">faultyMirrorP</span> (<span class="id" type="var">t</span> : <span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>) := <span class="id" type="var">eq_tree</span> (<span class="id" type="var">mirror</span> <span class="id" type="var">t</span>) <span class="id" type="var">t</span>.<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground3.forAll</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3)))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">faultyMirrorP</span>).<br/>
+<span class="comment">(*<br/>
+Sample&nbsp;(CheckerPlayground3.forAll<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(genTreeSized'&nbsp;3&nbsp;(choose(0,3)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;faultyMirrorP).<br/>
+*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1154,9 +1158,11 @@ Note that, rather than just returning <span class="inlinecode"><span class="id" 
 <span class="id" type="keyword">End</span> <span class="id" type="var">CheckerPlayground4</span>.<br/>
 
 <br/>
-<span class="id" type="var">Sample</span> (<span class="id" type="var">CheckerPlayground4.forAll</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3)))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">faultyMirrorP</span>).<br/>
+<span class="comment">(*<br/>
+Sample&nbsp;(CheckerPlayground4.forAll<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(genTreeSized'&nbsp;3&nbsp;(choose(0,3)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;faultyMirrorP).<br/>
+*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1190,10 +1196,12 @@ Note that, rather than just returning <span class="inlinecode"><span class="id" 
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">QuickChick</span><br/>
-&nbsp;&nbsp;(<span class="id" type="var">forAll</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> 3 (<span class="id" type="var">choose</span>(0,3)))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">faultyMirrorP</span>).<br/>
+<span class="comment">(*<br/>
+QuickChick<br/>
+&nbsp;&nbsp;(forAll<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(genTreeSized'&nbsp;3&nbsp;(choose(0,3)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;faultyMirrorP).<br/>
+*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1354,11 +1362,11 @@ With <span class="inlinecode"><span class="id" type="var">shrinkTree</span></spa
 <div class="code code-tight">
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forAllShrink&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(genTreeSized'&nbsp;5&nbsp;(choose&nbsp;(0,5)))&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(shrinkTree&nbsp;shrink)&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;faultyMirrorP).&nbsp;*)</span><br/>
+<span class="id" type="var">QuickChick</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">forAllShrink</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">genTreeSized'</span> 5 (<span class="id" type="var">choose</span> (0,5))) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">shrink</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">faultyMirrorP</span>).<br/>
 </div>
 
 <div class="doc">
@@ -1601,7 +1609,7 @@ Putting it all together:
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">QuickChick</span> <span class="id" type="var">every_color_is_red</span>.<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;every_color_is_red.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -1700,13 +1708,13 @@ Finally, with the <span class="inlinecode"><span class="id" type="var">Arbitrary
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="var">QuickChick</span> <span class="id" type="var">faultyMirrorP</span>.<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;faultyMirrorP.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 <a name="lab65"></a><h4 class="section">Exercise: 2 stars (tern_tree_typeclasses)</h4>
  Add typeclass instances for <span class="inlinecode"><span class="id" type="var">GenSized</span></span> and <span class="inlinecode"><span class="id" type="var">Shrink</span></span> so that you
-    can <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> <span class="inlinecode"><span class="id" type="var">tern_mirror_spec</span></span> directly. 
+    can <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> <span class="inlinecode"><span class="id" type="var">tern_mirror_reverse</span></span> directly. 
 </div>
 <div class="code code-tight">
 
@@ -1714,7 +1722,7 @@ Finally, with the <span class="inlinecode"><span class="id" type="var">Arbitrary
 <span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span><br/>
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;tern_mirror_spec.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;tern_mirror_reverse.&nbsp;*)</span><br/>
 </div>
 
 <span class="proofbox">&#9744;</span> 
@@ -1774,17 +1782,21 @@ Finally, with the <span class="inlinecode"><span class="id" type="var">Arbitrary
 ===&gt;
 <pre>
      @collect
-       : forall A prop : Type, 
-           Show A -&gt; Checkable prop -&gt; A -&gt; prop -&gt; Checker
+       : forall A prop : Type, Show A -&gt; Checkable prop -&gt; 
+           A -&gt; prop -&gt; Checker
 </pre>
 
 <div class="paragraph"> </div>
 
  That is, <span class="inlinecode"><span class="id" type="var">collect</span></span> takes a checkable proposition and returns a new
-    <span class="inlinecode"><span class="id" type="var">Checker</span></span> (intuitively, for the same proposition).  On the side,
-    it takes a value from some <span class="inlinecode"><span class="id" type="keyword">Show</span></span>able type <span class="inlinecode"><span class="id" type="var">A</span></span>, which it remembers
-    internally (in an enriched variant of the <span class="inlinecode"><span class="id" type="var">Result</span></span> structure that
-    we saw above) so that it can be displayed at the end. 
+    <span class="inlinecode"><span class="id" type="var">Checker</span></span> (intuitively, for the same proposition).
+
+<div class="paragraph"> </div>
+
+    On the side, it takes a value from some <span class="inlinecode"><span class="id" type="keyword">Show</span></span>able type <span class="inlinecode"><span class="id" type="var">A</span></span>, which
+    it remembers internally (in an enriched variant of the <span class="inlinecode"><span class="id" type="var">Result</span></span>
+    structure that we saw above) so that it can be displayed at the
+    end. 
 <div class="paragraph"> </div>
 
  For example, suppose we measure the <span class="inlinecode"><span class="id" type="var">size</span></span> of <span class="inlinecode"><span class="id" type="var">Tree</span></span>s like this: 
@@ -1800,16 +1812,47 @@ Finally, with the <span class="inlinecode"><span class="id" type="var">Arbitrary
 </div>
 
 <div class="doc">
-If we were to write a dummy property to check our generators and
-    measure the size of generated trees, we could use <span class="inlinecode"><span class="id" type="var">treeProp</span></span>
-    below. 
-<div class="paragraph"> </div>
+Now we can write a dummy property <span class="inlinecode"><span class="id" type="var">treeProp</span></span> to check our
+    generators and measure the size of generated trees. 
+</div>
+<div class="code code-tight">
 
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">treeProp</span> (<span class="id" type="var">g</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> (<span class="id" type="var">Tree</span> <span class="id" type="var">nat</span>)) <span class="id" type="var">n</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">g</span> <span class="id" type="var">n</span> (<span class="id" type="var">choose</span> (0,<span class="id" type="var">n</span>))) (<span class="id" type="keyword">fun</span> <span class="id" type="var">t</span> ⇒ <span class="id" type="var">collect</span> (<span class="id" type="var">size</span> <span class="id" type="var">t</span>) <span class="id" type="var">true</span>).<br/>
+
+<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;(treeProp&nbsp;genTreeSized&nbsp;5).&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
 <pre>
-      ===&gt; 4947 : 0 1258 : 1 673 : 2 464 : 6 427 : 5 393 : 3 361 : 7
-       302 : 4 296 : 8 220 : 9 181 : 10 127 : 11 104 : 12 83 : 13 64 :
-       14 32 : 15 25 : 16 16 : 17 13 : 18 6 : 19 5 : 20 2 : 21 1 : 23
-       +++ OK, passed 10000 tests
+===&gt; 
+  4947 : 0
+  1258 : 1
+  673 : 2
+  464 : 6
+  427 : 5
+  393 : 3
+  361 : 7
+  302 : 4
+  296 : 8
+  220 : 9
+  181 : 10
+  127 : 11
+  104 : 12
+  83 : 13
+  64 : 14
+  32 : 15
+  25 : 16
+  16 : 17
+  13 : 18
+  6 : 19
+  5 : 20
+  2 : 21
+  1 : 23
+
+  +++ OK, passed 10000 tests
 </pre>
 
 <div class="paragraph"> </div>
@@ -1829,10 +1872,34 @@ If we were to write a dummy property to check our generators and
 <div class="doc">
 <pre>
 ===&gt; 
-   1624 : 0 571 : 10 564 : 12 562 : 11 559 : 9 545 : 8 539 :
-   14 534 : 13 487 : 7 487 : 15 437 : 16 413 : 6 390 : 17 337 : 5
-   334 : 1 332 : 18 286 : 19 185 : 4 179 : 20 179 : 2 138 : 21 132
-   : 3 87 : 22 62 : 23 19 : 24 10 : 25 6 : 26 2 : 27 
+   1624 : 0
+   571 : 10
+   564 : 12
+   562 : 11
+   559 : 9
+   545 : 8
+   539 : 14
+   534 : 13
+   487 : 7
+   487 : 15
+   437 : 16
+   413 : 6
+   390 : 17
+   337 : 5
+   334 : 1
+   332 : 18
+   286 : 19
+   185 : 4
+   179 : 20
+   179 : 2
+   138 : 21
+   132 : 3 
+   87 : 22
+   62 : 23
+   19 : 24
+   10 : 25
+   6 : 26
+   2 : 27
 
    +++ OK, passed 10000 tests
 </pre>
@@ -1917,9 +1984,18 @@ property:
 </div>
 
 <div class="doc">
-<pre>==&gt; QuickChecking insert_spec' 3447 : 0 3446 : 1 1929 : 2 788 :
-    3 271 : 4 96 : 5 19 : 6 4 : 7 +++ Passed 10000 tests (17263
-    discards)
+<pre>
+  ==&gt; 
+   QuickChecking insert_spec' 
+   3447 : 0 
+   3446 : 1 
+   1929 : 2 
+   788 : 3 
+   271 : 4 
+   96 : 5 
+   19 : 6 
+   4 : 7 
+   +++ Passed 10000 tests (17263 discards)
 </pre>
  
 <div class="paragraph"> </div>
@@ -1938,11 +2014,18 @@ property:
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">genSortedList</span> (<span class="id" type="var">low</span> <span class="id" type="var">high</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>) : <span class="id" type="var">G</span> (<span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span> | <span class="id" type="var">O</span> ⇒ <span class="id" type="var">returnGen</span> [] | <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">high</span> &lt;? <span class="id" type="var">low</span> <span class="id" type="keyword">then</span><br/>
-&nbsp;&nbsp;<span class="id" type="var">returnGen</span> [] <span class="id" type="keyword">else</span> <span class="id" type="var">freq</span> [ (1, <span class="id" type="var">returnGen</span> []) ; (<span class="id" type="var">size</span>, <span class="id" type="var">x</span> &lt;-<br/>
-&nbsp;&nbsp;<span class="id" type="var">choose</span> (<span class="id" type="var">low</span>, <span class="id" type="var">high</span>);; <span class="id" type="var">xs</span> &lt;- <span class="id" type="var">genSortedList</span> <span class="id" type="var">x</span> <span class="id" type="var">high</span> <span class="id" type="var">size'</span>;; <span class="id" type="var">returnGen</span> (<span class="id" type="var">x</span><br/>
-&nbsp;&nbsp;:: <span class="id" type="var">xs</span>)) ] <span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">genSortedList</span> (<span class="id" type="var">low</span> <span class="id" type="var">high</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">G</span> (<span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">returnGen</span> []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">high</span> &lt;? <span class="id" type="var">low</span> <span class="id" type="keyword">then</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">returnGen</span> []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">freq</span> [ (1, <span class="id" type="var">returnGen</span> []) ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">size</span>, <span class="id" type="var">x</span> &lt;- <span class="id" type="var">choose</span> (<span class="id" type="var">low</span>, <span class="id" type="var">high</span>);;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">xs</span> &lt;- <span class="id" type="var">genSortedList</span> <span class="id" type="var">x</span> <span class="id" type="var">high</span> <span class="id" type="var">size'</span>;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="var">x</span> :: <span class="id" type="var">xs</span>)) ] <span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
@@ -1968,15 +2051,30 @@ Collecting statistics about the length of lists generated using
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">insert_spec_sorted</span> (<span class="id" type="var">x</span> : <span class="id" type="var">nat</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">genSortedList</span> 0 10 10) <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">l</span> ⇒ <span class="id" type="var">insert_spec'</span> <span class="id" type="var">x</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">l</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">genSortedList</span> 0 10 10) <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">l</span> ⇒ <span class="id" type="var">insert_spec'</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>).<br/>
 
 <br/>
-<span class="comment">(*&nbsp;QuickChick&nbsp;insert_spec_sorted.&nbsp;*)</span><br/>
+<span class="id" type="var">QuickChick</span> <span class="id" type="var">insert_spec_sorted</span>.<br/>
 </div>
 
 <div class="doc">
-... is much better! 
+<pre>
+  ==&gt;
+    QuickChecking insert_spec_sorted
+    947 : 0
+    946 : 4
+    946 : 10
+    938 : 6
+    922 : 9
+    916 : 2
+    900 : 7
+    899 : 3
+    885 : 8
+    854 : 5
+    847 : 1
+    +++ Passed 10000 tests (0 discards) 
+</pre>
+  ... is much better! 
 <div class="paragraph"> </div>
 
  But are we done yet? 

@@ -30,6 +30,13 @@ Notation X := (fresh nil).
 Notation Y := (fresh (X :: nil)).
 Notation Z := (fresh (X :: Y :: nil)).
 
+Lemma YneX : Y <> X.
+Proof.
+  pose proof Atom.fresh_not_in (X :: nil) as H.
+  apply elim_not_In_cons in H.
+  auto.
+Qed.
+
 (*************************************************************)
 (** * A nominal representation of terms                      *)
 (*************************************************************)
@@ -62,10 +69,8 @@ Fixpoint fv_nom (n : n_exp) : atoms :=
 
 Example fv_nom_rep1 : fv_nom demo_rep1 [=] {{ Y }}.
 Proof.
+  pose proof YneX.
   simpl.
-  assert (~ In Y (X :: nil)).     (* assert that Y is not the same variable as X *)
-  apply Atom.fresh_not_in.
-  apply elim_not_In_cons in H.
   fsetdec.
 Qed.
 
@@ -190,14 +195,14 @@ Lemma fv_nom_swap : forall z y n,
 Proof.
   (* WORKED IN CLASS *)
   induction n; intros; simpl; unfold swap_var; default_simp.
-Qed. 
+Qed.
 Lemma shuffle_swap : forall w y n z,
     w <> z -> y <> z ->
     (swap w y (swap y z n)) = (swap w z (swap w y n)).
 Proof.
   (* WORKED IN CLASS *)
   induction n; intros; simpl; unfold swap_var; default_simp.
-Qed. 
+Qed.
 (*************************************************************)
 (** ** Exercises                                             *)
 (*************************************************************)
@@ -225,6 +230,7 @@ Proof.
     relations are preserved under swapping. (Hint:
     [default_simp] will be slow on some of these properties, and
     sometimes won't be able to do them automatically.)  *)
+
 Lemma swap_var_equivariance : forall v x y z w,
     swap_var x y (swap_var z w v) =
     swap_var (swap_var x y z) (swap_var x y w) (swap_var x y v).
@@ -471,4 +477,3 @@ Lemma subst_abs : forall u x y t1,
        else let (z,_) := atom_fresh (fv_nom u \u fv_nom (n_abs y t1)) in
        n_abs z (subst u x (swap y z t1)).
 Proof. (* FILL IN HERE *) Admitted.
-
