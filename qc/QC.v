@@ -1137,12 +1137,12 @@ QuickChick faultyMirrorP.
 
 (** **** Exercise: 2 stars (tern_tree_typeclasses)  *)
 (** Add typeclass instances for [GenSized] and [Shrink] so that you
-    can [QuickChick tern_mirror_spec] directly. *)
+    can [QuickChick tern_mirror_reverse] directly. *)
 
 (* FILL IN HERE *)
 
-(* QuickChick tern_mirror_spec. *)
 (** [] *)
+(* QuickChick tern_mirror_reverse. *)
 
 (* ################################################################# *)
 (** * Automation *)
