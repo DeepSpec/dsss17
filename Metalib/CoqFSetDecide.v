@@ -1,7 +1,4 @@
 (** Includes minor tweaks (mostly bug fixes?) by Brian Aydemir. *)
-(** SCW 06/06/17: updated to use Coq MSets instead of FSets.
-    This version is still more powerful than Coq.MSets.MSetDecide
-    fsetdec_rec / fsetdec_body are the big differences *)
 
 (***********************************************************************)
 (*  v      *   The Coq Proof Assistant  /  The Coq Development Team    *)
