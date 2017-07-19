@@ -925,7 +925,7 @@ Instance shrinkTree {A} `{Shrink A} : Shrink (Tree A) :=
 (* QuickChick 
      (forAllShrink 
         (genTreeSized' 5 (choose (0,5))) 
-        (shrinkTree shrink) 
+        shrink
         faultyMirrorP). *)
 (** 
 ===> 
