@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>VminusStatics</title>
+<title>VminusStatics: SSA, Preservation and Progress</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,9 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">VminusStatics</h1>
+<h1 class="libtitle">VminusStatics<span class="subtitle">SSA, Preservation and Progress</span></h1>
+
 
 <div class="code code-tight">
+
+<br/>
 
 <br/>
 <span class="id" type="keyword">Module</span> <span class="id" type="var">MakeStatics</span> (<span class="id" type="var">Cfg</span>: <span class="id" type="var">CFG</span>).<br/>
@@ -39,32 +42,29 @@
 </div>
 
 <div class="doc">
-<a name="lab76"></a><h1 class="section">SSA Invariants: Typing CFGs</h1>
+<a name="lab128"></a><h1 class="section">SSA Invariants: Typing CFGs</h1>
 
 <div class="paragraph"> </div>
 
- The only ways in which a Vminus program can "go wrong" are
-    by accessing a local variable that hasn't been defined or jumping
-    to a label that isn't in the CFG.  Therefore, its "typing"
-    constraints ensure that each instruction only mentions local
-    identifiers that are in scope according to the domination
-    structure of the control-flow graph and that all mentioned labels
-    are associated with blocks defined in the CFG.  
+ The only ways in which a Vminus program can "go wrong" are by
+    accessing a local variable that hasn't been defined or jumping to a label
+    that isn't in the CFG.  Therefore, its "typing" constraints ensure that each
+    instruction only mentions local identifiers that are in scope according to
+    the domination structure of the control-flow graph and that all mentioned
+    labels are associated with blocks defined in the CFG.
 
 <div class="paragraph"> </div>
 
-    These properties are partly enforced by the "syntactic"
-    well-formedness constraints imposed by the CFG interface (see
-    CFG.v), which ensure that labels and instruction identifiers are
-    unique.
+    These properties are partly enforced by the "syntactic" well-formedness
+    constraints imposed by the CFG interface (see CFG.v), which ensure that
+    labels and instruction identifiers are unique.
 
 <div class="paragraph"> </div>
 
-    To enforce the scoping property, we formalize the notion of
-    "dominance" in the control flow graph.  The module interface
-    <span class="inlinecode"><span class="id" type="var">Dom.Spec</span></span> defines dominance for arbitrary graphs.  Here, we
-    instantiate the general theory with a suitable graph instance for
-    our CFGs.
+    To enforce the scoping property, we formalize the notion of "dominance" in
+    the control flow graph.  The module interface <span class="inlinecode"><span class="id" type="var">Dom.Spec</span></span> defines dominance
+    for arbitrary graphs.  Here, we instantiate the general theory with a
+    suitable graph instance for our CFGs.
 
 <div class="paragraph"> </div>
 
@@ -78,12 +78,11 @@
 
 <div class="doc">
 <hr/>
- <a name="lab77"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
+ <a name="lab129"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
 
 <div class="paragraph"> </div>
 
- We need to define an graph instance that captures all the edges
-    of our CFGs.
+ We need to define an graph instance that captures all the edges of our CFGs.
 
 <div class="paragraph"> </div>
 
@@ -94,17 +93,18 @@
 
 
 </li>
-<li> program points <i>within</i> a single block have "fallthrough" edges determined by incrementing the program counter
+<li> program points <i>within</i> a single block have "fallthrough" edges determined
+      by incrementing the program counter
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> a block <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> terminated by a branch to <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> induces an edge from <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> to <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> in the CFG.  
+<li> a block <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> terminated by a branch to <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> induces an edge from <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> to
 
 </li>
 </ul>
-  
+  <span class="inlinecode"><span class="id" type="var">b<sub>2</sub></span></span> in the CFG.  
 <div class="paragraph"> </div>
 
  Graph edge relation 
@@ -123,7 +123,7 @@
 
 <div class="doc">
 <hr/>
- <a name="lab78"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
+ <a name="lab130"></a><h1 class="section">GRAPH instance for dominance calculation</h1>
 
 <div class="paragraph"> </div>
 
@@ -154,7 +154,7 @@ Instantiate the dominance spec for this graph
 
 <div class="doc">
 <hr/>
- <a name="lab79"></a><h1 class="section">Defining SSA scoping</h1>
+ <a name="lab131"></a><h1 class="section">Defining SSA scoping</h1>
 
 <div class="paragraph"> </div>
 
@@ -183,7 +183,7 @@ The <span class="inlinecode"><span class="id" type="var">uid</span></span> has a
 
 <div class="doc">
 <hr/>
- <a name="lab80"></a><h3 class="section">Uses are dominated by their definitions</h3>
+ <a name="lab132"></a><h3 class="section">Uses are dominated by their definitions</h3>
 
 <div class="paragraph"> </div>
 
@@ -224,7 +224,7 @@ The <span class="inlinecode"><span class="id" type="var">uid</span></span> has a
 
 <div class="doc">
 <hr/>
- <a name="lab81"></a><h3 class="section">Well-formed phi nodes</h3>
+ <a name="lab133"></a><h3 class="section">Well-formed phi nodes</h3>
 
 <div class="paragraph"> </div>
 
@@ -265,7 +265,7 @@ Moreover, we require that fore every labeled value appearing in the
 
 <div class="doc">
 <hr/>
- <a name="lab82"></a><h3 class="section">Well-formed terminators</h3>
+ <a name="lab134"></a><h3 class="section">Well-formed terminators</h3>
 
 <div class="paragraph"> </div>
 
@@ -276,6 +276,23 @@ Moreover, we require that fore every labeled value appearing in the
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_lbl</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">i</span>:<span class="id" type="var">insn</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∀ <span class="id" type="var">l</span>, <span class="id" type="var">In</span> <span class="id" type="var">l</span> (<span class="id" type="var">insn_lbls</span> <span class="id" type="var">i</span>) → <span class="id" type="var">wf_pc</span> <span class="id" type="var">g</span> (<span class="id" type="var">block_entry</span> <span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab135"></a><h3 class="section">Reachability</h3>
+
+<div class="paragraph"> </div>
+
+ We further require that all program points in a well-formed control-flow
+   graph be reachable from the entry point. Without this proviso, an program point  
+   that is not reachable is trivially dominated by <i>every</i> program point.  This 
+   requirement isn't strictly necessary, and might require us to remove dead blocks
+   that become unreachable due to program transformations, but it also simplifies
+   some pathological cases when reasoning about optimizations.
+  
+</div>
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">reachable</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
@@ -284,10 +301,15 @@ Moreover, we require that fore every labeled value appearing in the
 
 <div class="doc">
 <hr/>
- <a name="lab83"></a><h3 class="section">Well-formed instructions</h3>
+ <a name="lab136"></a><h3 class="section">Well-formed instructions</h3>
 
+<div class="paragraph"> </div>
+
+ We package all of the requirements into a single predicate that says when
+  an instruction is well formed at a particular program point &mdash; it is simply
+  the conjunction of all the above properties. 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_insn</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="var">insn</span> → <span class="id" type="var">pc</span> → <span class="id" type="keyword">Prop</span> :=<br/>
@@ -297,6 +319,37 @@ Moreover, we require that fore every labeled value appearing in the
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hphi</span>: <span class="id" type="var">wf_phi</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hreach</span>: <span class="id" type="var">reachable</span> <span class="id" type="var">g</span> <span class="id" type="var">p</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_insn</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab137"></a><h3 class="section">Well-formed programs</h3>
+
+<div class="paragraph"> </div>
+
+ Finally, we spell out the requirements for a full control-flow graph to 
+   meet the SSA invariants:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> the CFG is syntactically well formed (no duplicated labels or ids);
+
+</li>
+<li> every instruction is well-formed;
+
+</li>
+<li> every program point that claims to be a terminator does indeed have
+       a terminator instruction; and,
+
+</li>
+<li> there are no predecessors of the entry block
+
+</li>
+</ul>
+   
+</div>
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_prog</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
@@ -313,7 +366,7 @@ Moreover, we require that fore every labeled value appearing in the
 
 <div class="doc">
 <hr/>
- <a name="lab84"></a><h1 class="section">Type Safety</h1>
+ <a name="lab138"></a><h1 class="section">Type Safety</h1>
 
 <div class="paragraph"> </div>
 
@@ -331,11 +384,15 @@ Moreover, we require that fore every labeled value appearing in the
 </div>
 
 <div class="doc">
-<a name="lab85"></a><h3 class="section">Dominance relation</h3>
+<hr/>
+ <a name="lab139"></a><h3 class="section">Dominance relation</h3>
 
 <div class="paragraph"> </div>
 
- A more convenient form for typing rules 
+ First, we formulate a lemma that packages the dominance information into a
+   more convenient form: if <span class="inlinecode"><span class="id" type="var">pc<sub>1</sub></span></span> steps to <span class="inlinecode"><span class="id" type="var">pc<sub>2</sub></span></span>, then any <span class="inlinecode"><span class="id" type="var">uid'</span></span> that strictly
+   dominates <span class="inlinecode"><span class="id" type="var">pc<sub>2</sub></span></span> also dominates <span class="inlinecode"><span class="id" type="var">pc<sub>1</sub></span></span>.  (So long as <span class="inlinecode"><span class="id" type="var">uid'</span></span> doesn't reside
+   at <span class="inlinecode"><span class="id" type="var">pc<sub>1</sub></span></span>.) 
 </div>
 <div class="code code-tight">
 
@@ -365,22 +422,47 @@ Moreover, we require that fore every labeled value appearing in the
 </div>
 
 <div class="doc">
-<a name="lab86"></a><h2 class="section">Progress &amp; Preservation</h2>
+<hr/>
+ <a name="lab140"></a><h3 class="section">Well-formed states</h3>
 
 <div class="paragraph"> </div>
 
- Extend well-formedness definitions to include all components of 
-  the state. 
+ We have to extend well-formedness definitions to include all components of
+  the Vminus state. 
+<div class="paragraph"> </div>
+
+ The local environment is well-formed at a given program point <span class="inlinecode"><span class="id" type="var">p</span></span> when it
+  contains a binding for every <span class="inlinecode"><span class="id" type="var">uid</span></span> whose definition strictly dominates <span class="inlinecode"><span class="id" type="var">p</span></span>.
+  This is the property that ensures "scope safety" for the SSA program.
+  
 </div>
 <div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">wf_loc</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) (<span class="id" type="var">loc</span>:<span class="id" type="var">loc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;∀ <span class="id" type="var">uid</span>, <span class="id" type="var">uid_sdom_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">uid</span> <span class="id" type="var">p</span> → ∃ <span class="id" type="var">n</span>, <span class="id" type="var">loc</span> <span class="id" type="var">uid</span> = <span class="id" type="var">Some</span> <span class="id" type="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+We also need a predicate that indicates when the program counter is at 
+  the entry. 
+</div>
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">at_entry</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">p</span>:<span class="id" type="var">pc</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">entry_of_pc</span> <span class="id" type="var">p</span> = <span class="id" type="var">block_entry</span> (<span class="id" type="var">entry_block</span> <span class="id" type="var">g</span>).<br/>
+</div>
+
+<div class="doc">
+A Vminus state is well formed when all of its components are.  We need to 
+  maintain the invariant that the <span class="inlinecode"><span class="id" type="var">ppc</span></span> component does indeed correspond to
+  a predecessor block (unless the program is at the entry, which has no predecessors).
+  Similarly, the <span class="inlinecode"><span class="id" type="var">ploc</span></span> previous local environment must be well-formed with the 
+  program counter as it exited the predecessor block. 
+  
+</div>
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">wf_state</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) : <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
@@ -395,9 +477,11 @@ Moreover, we require that fore every labeled value appearing in the
 </div>
 
 <div class="doc">
-Initial state is well formed 
+<hr/>
+ <a name="lab141"></a><h3 class="section">Initial state is well formed</h3>
+
 </div>
-<div class="code code-tight">
+<div class="code code-space">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_init_state</span> : <br/>
@@ -422,7 +506,8 @@ Initial state is well formed
 </div>
 
 <div class="doc">
-<a name="lab87"></a><h3 class="section">Progress helper lemmas.</h3>
+<hr/>
+ <a name="lab142"></a><h3 class="section">Progress helper lemmas.</h3>
 
 <div class="paragraph"> </div>
 
@@ -457,8 +542,15 @@ Initial state is well formed
 </div>
 
 <div class="doc">
-In a well-formed program with well-formed locals, evaluating
-  the values used by a non-phi instruction is never undefined. 
+<hr/>
+ <a name="lab143"></a><h3 class="section">Progress helper lemmas.</h3>
+
+<div class="paragraph"> </div>
+
+ In a well-formed program with well-formed locals, evaluating the values
+       used by a non-phi instruction is never undefined. (This is basically 
+       the consequence of identifiers being "in scope".
+   
 </div>
 <div class="code code-tight">
 
@@ -489,14 +581,31 @@ In a well-formed program with well-formed locals, evaluating
 </div>
 
 <div class="doc">
-<a name="lab88"></a><h2 class="section">Progress</h2>
+<hr/>
+ <a name="lab144"></a><h2 class="section">Final State</h2>
 
+<div class="paragraph"> </div>
+
+ A Vminus program halts when the program reaches the <span class="inlinecode"><span class="id" type="var">tmn_ret</span></span> instruction. 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">FinalState</span> (<span class="id" type="var">g</span>:<span class="id" type="var">Cfg.t</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">state</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;∃ <span class="id" type="var">uid</span>, <span class="id" type="var">insn_at_pc</span> <span class="id" type="var">g</span> <span class="id" type="var">s</span>.(<span class="id" type="var">st_pc</span>) (<span class="id" type="var">uid</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">tmn_ret</span>).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab145"></a><h2 class="section">Progress</h2>
+
+<div class="paragraph"> </div>
+
+ The statement of progress is exactly as expected.  For any well-formed 
+  program in a well-formed state, either the program has finished, or the 
+  program can take a step. 
+</div>
+<div class="code code-tight">
 
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Lemma</span> <span class="id" type="tactic">progress</span> : ∀ <span class="id" type="var">g</span> <span class="id" type="var">s</span>,<br/>
@@ -576,7 +685,7 @@ In a well-formed program with well-formed locals, evaluating
 </div>
 
 <div class="doc">
-<a name="lab89"></a><h3 class="section">Some first steps towards preservation.</h3>
+<a name="lab146"></a><h3 class="section">Some first steps towards preservation.</h3>
 
 </div>
 <div class="code code-space">
@@ -619,7 +728,7 @@ In a well-formed program with well-formed locals, evaluating
 </div>
 
 <div class="doc">
-<a name="lab90"></a><h3 class="section">More preservation helpers</h3>
+<a name="lab147"></a><h3 class="section">More preservation helpers</h3>
 
 </div>
 <div class="code code-space">
@@ -637,7 +746,8 @@ In a well-formed program with well-formed locals, evaluating
 <div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
 &nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">i</span>; <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span> <span class="id" type="keyword">as</span> [? [[? [? <span class="id" type="var">Ht</span>]] ?]].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_sdom_step</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_sdom_step</span>; [ <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span> | <span class="id" type="var">idtac</span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>3</sub></span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span> | <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>4</sub></span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">contradict</span> <span class="id" type="var">Ht</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">t<sub>0</sub></span>. <span class="id" type="tactic">assert</span> (<span class="id" type="var">x</span> = <span class="id" type="var">p<sub>1</sub></span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">uid_at_pc_inj</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">red</span>; <span class="id" type="tactic">eauto</span>. <span class="id" type="tactic">subst</span> <span class="id" type="var">x</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">replace</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">x<sub>0</sub></span>) <span class="id" type="keyword">with</span> (<span class="id" type="var">uid</span>, <span class="id" type="var">c</span>); <span class="id" type="tactic">trivial</span>.<br/>
@@ -667,7 +777,7 @@ In a well-formed program with well-formed locals, evaluating
 </div>
 
 <div class="doc">
-<a name="lab91"></a><h2 class="section">Preservation</h2>
+<a name="lab148"></a><h2 class="section">Preservation</h2>
 
 </div>
 <div class="code code-space">

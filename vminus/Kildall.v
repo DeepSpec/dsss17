@@ -1,3 +1,5 @@
+(** * Kildall: Forward Dataflow Analysis *)
+
 (* *********************************************************************)
 (*                                                                     *)
 (*              The Compcert verified compiler                         *)
@@ -22,19 +24,24 @@
  *   3 of the License, or (at your option) any later version.                 *
  ---------------------------------------------------------------------------- *)
 
-(* Acknowledgements --------------------------------------------------------- *)
-(* 
+(* ################################################################# *)
+(** * Acknowledgements *)
+(** 
   This file is heavily based on:
+
       - lib/Lattice.v 
+
       - backend/Kildall.v 
+
   from the CompCert development,  modified to remove dependencies and 
   optimizations.
+
 *)
 
 Require Import Equalities Orders.
 Require Import FSets FMaps.
 
-Require Import Iteration Util.
+Require Import Vminus.Iteration Vminus.Util.
 
 Module Type FORWARD_SOLVER.
 

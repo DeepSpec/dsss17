@@ -4,13 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Util</title>
+<title>Util: Miscellaneous Utilities</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -29,9 +29,12 @@
 
 <div id="main">
 
-<h1 class="libtitle">Util</h1>
+<h1 class="libtitle">Util<span class="subtitle">Miscellaneous Utilities</span></h1>
+
 
 <div class="code code-tight">
+
+<br/>
 <span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vellvm&nbsp;-&nbsp;the&nbsp;Verified&nbsp;LLVM&nbsp;project&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
@@ -41,16 +44,15 @@
 &nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
 &nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab3"></a><h1 class="section">Utilities for the Vminus development</h1>
+
+</div>
+<div class="code code-space">
 
 <br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith</span> <span class="id" type="var">Equalities</span> <span class="id" type="var">EqualitiesFacts</span> <span class="id" type="var">Orders</span> <span class="id" type="var">List</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="var">Omega</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">functional</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">R</span>:<span class="id" type="var">A</span> → <span class="id" type="var">B</span> → <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>

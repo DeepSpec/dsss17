@@ -1,10 +1,9 @@
+(** * CFG: Control-flow Graphs *)
+
 Require Import Arith.
 Require Import Vminus.Util.
 Require Import Vminus.Classes.
 Require Import Vminus.Vminus.
-
-(* ################################################################# *)
-(** * CFG: Control-flow Graphs *)
 
 (** Vminus programs are structured into _control-flow graphs_
     (CFG), which, conceptually, are graphs whose _nodes_ are
@@ -32,7 +31,7 @@ Require Import Vminus.Vminus.
 
 Definition pc := (lbl * nat)%type.
 
-(** Each [pc] has a label *)
+(** Each [pc] has a label, corresponding to its block *)
 
 Definition lbl_of : pc -> lbl       := @fst _ _.
 

@@ -1,3 +1,5 @@
+(** * Classes: Typeclass Definitions *)
+
 (* -------------------------------------------------------------------------- *
  *                     Vellvm - the Verified LLVM project                     *
  *                                                                            *
@@ -8,6 +10,9 @@
  *   3 of the License, or (at your option) any later version.                 *
  ---------------------------------------------------------------------------- *)
 
+(* ################################################################# *)
+(** * Yet another library of typeclasses *)
+
 Set Implicit Arguments.
 Set Contextual Implicit.
 Global Generalizable All Variables.
@@ -16,8 +21,10 @@ From Coq Require Export Morphisms RelationClasses Setoid.
 Require Import List Bool String Utf8. 
 Export ListNotations.
 From Coq.Program Require Export Basics Syntax.
-
 Arguments String.append _ _ : simpl never.
+
+(* ################################################################# *)
+(** * General notations *)
 
 Notation "t $ r" := (t r)
   (at level 65, right associativity, only parsing).
@@ -38,7 +45,8 @@ Arguments const _ _ _ _ /.
 Typeclasses Transparent id compose flip const.
 
 
-(* Setoid Equivalence ------------------------------------------------------- *)
+(* ################################################################# *)
+(** * Setoid Equivalence *)
 
 Class Equiv A := equiv: relation A.
 Infix "≡" := equiv (at level 70, no associativity).
@@ -61,6 +69,7 @@ Class EquivProps A := {
 with Leibniz equality. We provide the tactic [fold_leibniz] to transform such
 setoid equalities into Leibniz equalities, and [unfold_leibniz] for the
 reverse. *)
+
 Class LeibnizEquiv A `{Equiv A} := leibniz_equiv x y : x ≡ y → x = y.
 Lemma leibniz_equiv_iff `{LeibnizEquiv A, !Reflexive (@equiv A _)} (x y : A) :
   x ≡ y ↔ x = y.
@@ -81,8 +90,10 @@ Ltac unfold_leibniz := repeat
     setoid_rewrite <-(leibniz_equiv_iff (A:=A))
   end.
 
-(** Equality ------------------------------------------------------------- *)
+(* ################################################################# *)
+(** * Equality *)
 (** Introduce some Haskell style like notations. *)
+
 Notation "(=)" := eq (only parsing).
 Notation "( x =)" := (eq x) (only parsing).
 Notation "(= x )" := (λ y, eq y x) (only parsing).
@@ -114,7 +125,7 @@ Hint Extern 0 (_ ≡ _) => symmetry; assumption.
 (** * Type classes *)
 
 (* ================================================================= *)
-(** ** Decidable propositions ---------------------------------------------- *)
+(** ** Decidable propositions *)
 (** This type class by (Spitters/van der Weegen, 2011) collects decidable
 propositions. For example to declare a parameter expressing decidable equality
 on a type [A] we write [`{∀ x y : A, Decidable (x = y)}] and use it by writing
@@ -162,7 +173,7 @@ Proof.
 Defined.
 
 (* ================================================================= *)
-(** ** Functors ----------------------------------------------------------------- *)
+(** ** Functors *)
 
 Class Functor (F:Type -> Type) := fmap : forall {A B}, (A -> B) -> F A -> F B.
 Infix "<$>" := fmap (at level 60, right associativity).
@@ -196,7 +207,7 @@ Proof.
 Defined. (* CHKoh: Originally Qed. *)    
 
 (* ================================================================= *)
-(** ** Monads ------------------------------------------------------------------- *)
+(** ** Monads *)
 Class Monad F `{Functor F} :=
 {
   mret : forall {A}, A -> F A ;
@@ -301,7 +312,8 @@ Next Obligation.
      rewrite IHa. reflexivity.
 Defined.
 
-(* Binary Sums (for informative error messages) *)
+(* ================================================================= *)
+(** ** Binary Sums (for informative error messages) *)
 
 Definition sum_map {X A B} (f : A -> B) (s:X + A) : X + B :=
   match s with
@@ -336,7 +348,8 @@ Next Obligation.
   destruct a; try reflexivity.
 Defined.  
 
-(* Continuations ------------------------------------------------------------ *)
+(* ================================================================= *)
+(** ** Continuations *)
 
 Definition cont (A:Type) := (A -> False) -> False.
 
@@ -415,7 +428,8 @@ Next Obligation.
   reflexivity.
 Defined.
 
-(* Monads with error -------------------------------------------------------- *)
+(* ================================================================= *)
+(** ** Monads with error *)
 
 Class ExceptionMonad E F `{Monad F} := raise : forall {A}, E -> F A.
 
@@ -445,7 +459,8 @@ Fixpoint monad_fold_right {A B} `{Monad M} (f : A -> B -> M A) (l:list B) (a:A) 
       f y x
   end.
 
-(* Show typeclasses --------------------------------------------------------- *)
+(* ================================================================= *)
+(** ** StringOf *)
 
 Class StringOf (T:Type) := string_of : T -> string.
 Open Scope string_scope.

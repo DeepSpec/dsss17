@@ -1,3 +1,4 @@
+(** * ImpProp: DEFUNCT? *)
 Require Import Equalities Arith.
 Require Import Vminus.Atom Vminus.Env.
 Require Import Vminus.Sequences.
@@ -6,6 +7,8 @@ Require Import Vminus.Imp.
 
 Local Open Scope imp_scope.
 
+(* ################################################################# *)
+(** * Old Stuff *)
 Lemma imp_step_star_seq_append:
   forall p1 p2, imp_step_star p1 p2 ->
            forall c1 c2 c st1 st2,

@@ -1,0 +1,7 @@
+This directory contains example LLVM IR code generated from factorial64.c.
+
+The Makefile works only on Mac OS X (where gcc is aliased to clang), and is
+provided only to show you which flags were given to the compiler.
+
+The factorial.ml file gives an example OCaml program that has a structure
+similar to the LLVM IR code.

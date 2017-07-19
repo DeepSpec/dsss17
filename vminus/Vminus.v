@@ -76,10 +76,8 @@ Instance eq_val : eq_dec val := eq_dec_val.
 Hint Resolve eq_dec_val.
 
 
-(** All Vminus operations are binary arithmetic forms.  There are no
-    unary operations, nor are there assembly-language-like [move]
-    instructions.
-*)
+(** All Vminus operations are binary arithmetic forms.  There are no unary
+    operations, nor are there assembly-language-like [move] instructions.  *)
 
 Inductive bop : Set := 
  | bop_add   (* addition *)
@@ -102,11 +100,10 @@ Hint Resolve eq_dec_bop.
 (* ################################################################# *)
 (** * Basic block terminators *)
 
-(** Each basic block is a sequence of commands (defined next) ending
-    in a _terminator_, which is just a control flow operation.  
-    Terminators cannot appear in the middle of a well-formed basic block.
-    (We will define well-formed Vminus programs later.)
-*)
+(** Each basic block is a sequence of commands (defined next) ending in a
+    _terminator_, which is just a control flow operation.  Terminators cannot
+    appear in the middle of a well-formed basic block.  (We will define
+    well-formed Vminus programs later.)  *)
 
 Inductive tmn : Set :=
 | tmn_jmp : lbl -> tmn                  (* unconditional jump *)

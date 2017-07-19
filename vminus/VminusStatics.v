@@ -1,3 +1,5 @@
+(** * VminusStatics: SSA, Preservation and Progress *)
+
 Require Import Arith.
 Require Import List.
 Import ListNotations.
@@ -16,24 +18,21 @@ Import Cfg.
 
 (** * SSA Invariants: Typing CFGs*)
 
-(** The only ways in which a Vminus program can "go wrong" are
-    by accessing a local variable that hasn't been defined or jumping
-    to a label that isn't in the CFG.  Therefore, its "typing"
-    constraints ensure that each instruction only mentions local
-    identifiers that are in scope according to the domination
-    structure of the control-flow graph and that all mentioned labels
-    are associated with blocks defined in the CFG.  
+(** The only ways in which a Vminus program can "go wrong" are by
+    accessing a local variable that hasn't been defined or jumping to a label
+    that isn't in the CFG.  Therefore, its "typing" constraints ensure that each
+    instruction only mentions local identifiers that are in scope according to
+    the domination structure of the control-flow graph and that all mentioned
+    labels are associated with blocks defined in the CFG.
 
-    These properties are partly enforced by the "syntactic"
-    well-formedness constraints imposed by the CFG interface (see
-    CFG.v), which ensure that labels and instruction identifiers are
-    unique.
+    These properties are partly enforced by the "syntactic" well-formedness
+    constraints imposed by the CFG interface (see CFG.v), which ensure that
+    labels and instruction identifiers are unique.
 
-    To enforce the scoping property, we formalize the notion of
-    "dominance" in the control flow graph.  The module interface
-    [Dom.Spec] defines dominance for arbitrary graphs.  Here, we
-    instantiate the general theory with a suitable graph instance for
-    our CFGs.
+    To enforce the scoping property, we formalize the notion of "dominance" in
+    the control flow graph.  The module interface [Dom.Spec] defines dominance
+    for arbitrary graphs.  Here, we instantiate the general theory with a
+    suitable graph instance for our CFGs.
 
 *)
 
@@ -42,15 +41,15 @@ Module Typing.
 (* ################################################################# *)
 (** * GRAPH instance for dominance calculation *)
 
-(** We need to define an graph instance that captures all the edges
-    of our CFGs.
+(** We need to define an graph instance that captures all the edges of our CFGs.
     
     - vertices in the graph are just program points
 
-    - program points _within_ a single block have "fallthrough" edges determined by incrementing the program counter
+    - program points _within_ a single block have "fallthrough" edges determined
+      by incrementing the program counter
     
-    - a block [b1] terminated by a branch to [b2] induces an edge from [b1] to [b2] in the CFG.  
-  *)
+    - a block [b1] terminated by a branch to [b2] induces an edge from [b1] to
+  [b2] in the CFG.  *)
 
   
   (** Graph edge relation *)
@@ -154,7 +153,7 @@ Module Typing.
              /\ wf_phi_pred g i p
              /\ insn_phis i <> [].
 
-(**  ------------------------------------------------------------------------- *)  
+  (**  ------------------------------------------------------------------------- *)  
   (** *** Well-formed terminators *)
 
   (** All jump targets must be legal block labels. *)  
@@ -163,13 +162,27 @@ Module Typing.
     forall l, In l (insn_lbls i) -> wf_pc g (block_entry l).
 
 
+  (**  ------------------------------------------------------------------------- *)  
+  (** *** Reachability *)
+
+  (** We further require that all program points in a well-formed control-flow
+   graph be reachable from the entry point. Without this proviso, an program point  
+   that is not reachable is trivially dominated by _every_ program point.  This 
+   requirement isn't strictly necessary, and might require us to remove dead blocks
+   that become unreachable due to program transformations, but it also simplifies
+   some pathological cases when reasoning about optimizations.
+  *)
+    
   Definition reachable (g:Cfg.t) (p:pc) : Prop :=
     exists path, Path g (block_entry (entry_block g)) p path.
   
-(**  ------------------------------------------------------------------------- *)  
-(* ----------------------------------------------------------------- *)
-(** *** Well-formed instructions *)
+  (**  ------------------------------------------------------------------------- *)  
+  (** *** Well-formed instructions *)
 
+  (** We package all of the requirements into a single predicate that says when
+  an instruction is well formed at a particular program point -- it is simply
+  the conjunction of all the above properties. *)
+  
   Inductive wf_insn (g:Cfg.t) : insn -> pc -> Prop :=
   | wf_insn_intro : forall i p
       (Huse: wf_use g i p)
@@ -178,6 +191,19 @@ Module Typing.
       (Hreach: reachable g p),
       wf_insn g i p.
 
+  (**  ------------------------------------------------------------------------- *)  
+  (** *** Well-formed programs *)
+
+  (** Finally, we spell out the requirements for a full control-flow graph to 
+   meet the SSA invariants:
+
+     - the CFG is syntactically well formed (no duplicated labels or ids);
+     - every instruction is well-formed;
+     - every program point that claims to be a terminator does indeed have
+       a terminator instruction; and,
+     - there are no predecessors of the entry block
+   *)
+  
   Inductive wf_prog (g:Cfg.t) : Prop :=
   | wf_prog_intro : forall
       (Hwfcfg : wf_cfg g)
@@ -201,10 +227,13 @@ Module OpsemCorrect.
 
   
 
-
+  (**  ------------------------------------------------------------------------- *)  
   (** *** Dominance relation *)
 
-  (** A more convenient form for typing rules *)
+  (** First, we formulate a lemma that packages the dominance information into a
+   more convenient form: if [pc1] steps to [pc2], then any [uid'] that strictly
+   dominates [pc2] also dominates [pc1].  (So long as [uid'] doesn't reside
+   at [pc1].) *)
 
   Lemma uid_sdom_step : forall g uid' uid pc1 pc2 c,
     wf_prog g ->
@@ -224,17 +253,33 @@ Module OpsemCorrect.
     inversion Hwff; eapply dom_step; eauto. 
   Qed.
 
-  (** ** Progress & Preservation *)
+  (**  ------------------------------------------------------------------------- *)  
+  (** *** Well-formed states *)
 
-  (** Extend well-formedness definitions to include all components of 
-  the state. *)
+  (** We have to extend well-formedness definitions to include all components of
+  the Vminus state. *)
 
+  (** The local environment is well-formed at a given program point [p] when it
+  contains a binding for every [uid] whose definition strictly dominates [p].
+  This is the property that ensures "scope safety" for the SSA program.
+  *)
+  
   Definition wf_loc (g:Cfg.t) (p:pc) (loc:loc) : Prop :=
   forall uid, uid_sdom_pc g uid p -> exists n, loc uid = Some n.
 
+  (** We also need a predicate that indicates when the program counter is at 
+  the entry. *)
+  
   Definition at_entry (g:Cfg.t) (p:pc) : Prop :=
     entry_of_pc p = block_entry (entry_block g).
 
+  (** A Vminus state is well formed when all of its components are.  We need to 
+  maintain the invariant that the [ppc] component does indeed correspond to
+  a predecessor block (unless the program is at the entry, which has no predecessors).
+  Similarly, the [ploc] previous local environment must be well-formed with the 
+  program counter as it exited the predecessor block. 
+  *)
+  
   Inductive wf_state (g:Cfg.t) : state -> Prop :=
   | wf_state_intro : forall st
       (Hwfpc: wf_pc g st.(st_pc))
@@ -245,7 +290,9 @@ Module OpsemCorrect.
                   wf_loc g st.(st_ppc) st.(st_ploc)),
       wf_state g st.
 
-  (** Initial state is well formed *)
+
+  (**  ------------------------------------------------------------------------- *)  
+  (** *** Initial state is well formed *)
 
   Lemma wf_init_state : 
     forall g m, wf_prog g ->
@@ -263,6 +310,7 @@ Module OpsemCorrect.
   Qed.
 
 
+  (**  ------------------------------------------------------------------------- *)  
   (** *** Progress helper lemmas. *)
 
   (** There are no phi nodes in the entry block. *)
@@ -285,8 +333,13 @@ Module OpsemCorrect.
      rewrite <- Hentry; auto.
    Qed.
 
-  (** In a well-formed program with well-formed locals, evaluating
-  the values used by a non-phi instruction is never undefined. *)
+   (**  ------------------------------------------------------------------------- *)  
+   (** *** Progress helper lemmas. *)
+
+   (** In a well-formed program with well-formed locals, evaluating the values
+       used by a non-phi instruction is never undefined. (This is basically 
+       the consequence of identifiers being "in scope".
+   *)
 
   Lemma eval_val__wf_loc : forall g pc loc i v,
     wf_prog g ->
@@ -307,10 +360,20 @@ Module OpsemCorrect.
     simpl; eauto.
   Qed.
 
-  (** ** Progress *)
+  (**  ------------------------------------------------------------------------- *)  
+  (** ** Final State *)
 
+  (** A Vminus program halts when the program reaches the [tmn_ret] instruction. *)
+  
   Definition FinalState (g:Cfg.t) (s:state) : Prop :=
     exists uid, insn_at_pc g s.(st_pc) (uid, cmd_tmn tmn_ret).
+
+  (**  ------------------------------------------------------------------------- *)  
+  (** ** Progress *)
+
+  (** The statement of progress is exactly as expected.  For any well-formed 
+  program in a well-formed state, either the program has finished, or the 
+  program can take a step. *)
   
   Lemma progress : forall g s,
     wf_prog g -> wf_state g s ->
@@ -411,7 +474,8 @@ Module OpsemCorrect.
     uid_sdom_pc g uid p1.
   Proof. 
     destruct i; intros. inversion H4 as [? [[? [? Ht]] ?]].
-    eapply uid_sdom_step; eauto. 
+    eapply uid_sdom_step; [ apply H | idtac | apply H0
+                            | apply H3 | apply H1 | apply H4].
     contradict Ht. subst t0. assert (x = p1). 
     inversion H; eapply uid_at_pc_inj; try red; eauto. subst x.
     replace (uid, x0) with (uid, c); trivial. 

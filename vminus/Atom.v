@@ -12,6 +12,7 @@ Require Import QuickChick.QuickChick.
       - a _decidable equality_ 
       - a way of generating _fresh_ atoms
 *)
+
 Module Type ATOM <: UsualDecidableType.
 
   Parameter t : Set.
@@ -29,7 +30,7 @@ End ATOM.
 
 (** Implements the [ATOM] signature. *)
 
-Module Atom : ATOM.
+Module Atom <: ATOM.
 
   Definition t := nat.
   Definition eq_dec := eq_nat_dec.
@@ -62,7 +63,7 @@ Module Atom : ATOM.
   Include HasUsualEq <+ UsualIsEq.
 
   Definition nat_of (a : nat) := a.
-  
+
 End Atom.
 
 (* Automatically unfold Atom.eq *)

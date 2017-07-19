@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Exercises</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Exercises</h1>
+
+<div class="code code-tight">
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Classes</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Util</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Atom</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Env</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Imp</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Vminus</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.CFG</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.ListCFG</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Dom</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.VminusOpSem</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.VminusStatics</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Compiler</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.VminusGen</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">V.Opsem</span>.<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Bullet</span> <span class="id" type="var">Behavior</span> "Strict Subproofs".<br/>
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">VS</span> := <span class="id" type="var">MakeStatics</span>(<span class="id" type="var">ListCFG</span>).<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">VS.Typing</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>0</sub></span> := (<span class="id" type="var">Atom.fresh</span> []).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">Y</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">Z</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>1</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>2</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>3</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>4</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>5</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>4</sub></span>;<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">X</span> : <span class="id" type="var">addr</span> := <span class="id" type="var">id<sub>0</sub></span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">id<sub>0</sub></span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick.QuickChick</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">imp_ex<sub>1</sub></span> := <span class="id" type="var">IFB</span> (<span class="id" type="var">BEq</span> (<span class="id" type="var">AId</span> <span class="id" type="var">Z</span>) (<span class="id" type="var">ANum</span> 0)) <span class="id" type="var">THEN</span> <span class="id" type="var">X</span> ::= (<span class="id" type="var">ANum</span> 1) ;; <span class="id" type="var">Y</span> ::= (<span class="id" type="var">ANum</span> 2) <span class="id" type="var">ELSE</span> <span class="id" type="var">SKIP</span> <span class="id" type="var">FI</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">compile</span> <span class="id" type="var">imp_ex<sub>1</sub></span>).<br/>
+
+<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">imp_ex<sub>2</sub></span> := <span class="id" type="var">WHILE</span> <span class="id" type="var">BTrue</span> <span class="id" type="var">DO</span> <span class="id" type="var">SKIP</span> <span class="id" type="var">END</span>.<br/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">compile</span> <span class="id" type="var">imp_ex<sub>2</sub></span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab169"></a><h4 class="section">Exercise: 2 stars (Example Compiler Output)</h4>
+   Define a ListCFG program that corresponds to the following Vminus code.
+Vminus code:
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+<span class="id" type="var">l<sub>0</sub></span>:<br/>
+&nbsp;&nbsp;%<span class="id" type="var">z</span>&nbsp;=&nbsp;<span class="id" type="var">load</span>&nbsp;<span class="id" type="var">Z</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">cbr</span>&nbsp;%<span class="id" type="var">z</span>&nbsp;<span class="id" type="var">l<sub>1</sub></span>&nbsp;<span class="id" type="var">l<sub>3</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>1</sub></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;<span class="id" type="var">block</span>&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">X</span>&nbsp;::=&nbsp;1<br/>
+&nbsp;&nbsp;<span class="id" type="var">store</span>&nbsp;<span class="id" type="var">X</span>&nbsp;1<br/>
+&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">l<sub>2</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>2</sub></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;<span class="id" type="var">block</span>&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">Y</span>&nbsp;::=&nbsp;2<br/>
+&nbsp;&nbsp;<span class="id" type="var">store</span>&nbsp;<span class="id" type="var">Y</span>&nbsp;2<br/>
+&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">l<sub>3</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>3</sub></span>:<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span>
+<div class="paragraph"> </div>
+
+</div>
+ 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">entry_lbl</span> := <span class="id" type="var">Atom.fresh</span> [].<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>0</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">entry_lbl</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">blk</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">entry_lbl</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">x</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">blk</span>; <span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">entry_lbl</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>1</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">x</span>;<span class="id" type="var">blk</span>;<span class="id" type="var">l<sub>0</sub></span>;<span class="id" type="var">entry_lbl</span>].<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">cyclic_phi</span> : <span class="id" type="var">ListCFG.t</span> :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">entry_lbl</span> ,<br/>
+&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">entry_lbl</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">l<sub>0</sub></span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">blk</span>))]) ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">blk</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">x</span>, <span class="id" type="var">cmd_phi</span> [(<span class="id" type="var">entry_lbl</span>, <span class="id" type="var">val_nat</span> 0); (<span class="id" type="var">x</span>, <span class="id" type="var">val_uid</span> <span class="id" type="var">x</span>)]) ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">blk</span>))])]<br/>
+&nbsp;&nbsp;).<br/>
+</div>
+
+<div class="doc">
+<a name="lab170"></a><h4 class="section">Exercise: 2 stars (cyclic_phi)</h4>
+
+<div class="paragraph"> </div>
+
+  Define a ListCFG program that corresponds to the following Vminus code.
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode">[</span> 
+<span class="inlinecode"><span class="id" type="var">entry</span>:</span>
+  <span class="inlinecode"><span class="id" type="var">br</span></span> <span class="inlinecode">%<span class="id" type="var">blk</span></span>
+
+<span class="inlinecode"><span class="id" type="var">blk</span>:</span>
+  <span class="inlinecode">%<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">phi</span></span> <span class="inlinecode">[%<span class="id" type="var">entry</span>:</span> <span class="inlinecode">0]</span> <span class="inlinecode">[%<span class="id" type="var">blk</span></span> <span class="inlinecode">:</span> <span class="inlinecode">%<span class="id" type="var">x</span>]</span>
+  <span class="inlinecode"><span class="id" type="var">br</span></span> <span class="inlinecode"><span class="id" type="var">blk</span></span>
+<span class="inlinecode">]</span>
+
+<div class="paragraph"> </div>
+
+ 
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">NoDup_fresh</span> : ∀ <span class="id" type="var">l</span>, <span class="id" type="var">NoDup</span> <span class="id" type="var">l</span> → <span class="id" type="var">NoDup</span> ((<span class="id" type="var">Atom.fresh</span> <span class="id" type="var">l</span>) :: <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_cons</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Atom.fresh_not_in</span>. <span class="id" type="tactic">exact</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nodups_names</span>: <span class="id" type="var">NoDup</span> [<span class="id" type="var">l<sub>1</sub></span>;<span class="id" type="var">x</span>;<span class="id" type="var">blk</span>;<span class="id" type="var">l<sub>0</sub></span>;<span class="id" type="var">entry_lbl</span>].<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_fresh</span>). <span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_nil</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab171"></a><h4 class="section">Exercise: 4 stars (cyclic_phi_wf)</h4>
+ Prove that your definition of <span class="inlinecode"><span class="id" type="var">cyclic_phi</span></span> is a well-formed CFG. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cyclic_phi_wf</span> : <span class="id" type="var">wf_prog</span> <span class="id" type="var">cyclic_phi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="var">Admitted</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>

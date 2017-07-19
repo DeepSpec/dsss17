@@ -1,3 +1,4 @@
+(** * DomKildall: Dominators via Kildall *)
 (* -------------------------------------------------------------------------- *
  *                     Vellvm - the Verified LLVM project                     *
  *                                                                            *
@@ -9,11 +10,13 @@
  ---------------------------------------------------------------------------- *)
 
 
+(* ################################################################# *)
+(** * Computing Dominators *)
 (** Implementation via fixpoint iteration. *)
 
 Require Import Coq.Program.Equality.
 Require Import Equalities.
-Require Import Dom Kildall Util.
+Require Import Vminus.Dom Vminus.Kildall Vminus.Util.
 Require Import FSets FMaps.
 
 

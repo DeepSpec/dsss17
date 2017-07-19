@@ -10,7 +10,7 @@
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
-<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
 
 <body>
 
@@ -32,82 +32,150 @@
 <h1 class="libtitle">Compiler</h1>
 
 <div class="code code-tight">
-<span class="comment">(*&nbsp;--------------------------------------------------------------------------&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vellvm&nbsp;-&nbsp;the&nbsp;Verified&nbsp;LLVM&nbsp;project&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copyright&nbsp;(c)&nbsp;2017&nbsp;Steve&nbsp;Zdancewic&nbsp;&lt;stevez@cis.upenn.edu&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;This&nbsp;file&nbsp;is&nbsp;distributed&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;License&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation,&nbsp;either&nbsp;version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;*&nbsp;&nbsp;&nbsp;3&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
-&nbsp;----------------------------------------------------------------------------&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;*&nbsp;Compiler:&nbsp;An&nbsp;Imp&nbsp;to&nbsp;Vminus&nbsp;Compiler&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab57"></a><h1 class="section">Imp to Vminus Compiler</h1>
+<a name="lab80"></a><h1 class="section">Imp to Vminus Compiler</h1>
 
 <div class="paragraph"> </div>
 
- Imports, instantiated with the list implementation of 
-    control-flow graphs. 
-</div>
-<div class="code code-tight">
-
-<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Classes</span> <span class="id" type="var">Vminus.Imp</span> <span class="id" type="var">Vminus.Vminus</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.CFG</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.ListCFG</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListCFG</span>.<br/>
-</div>
-
-<div class="doc">
-<a name="lab58"></a><h1 class="section">Compiling Expressions</h1>
+ This file implements a compiler from a (slight variant of) the Software
+Foundations Imp language (see <span class="inlinecode"><span class="id" type="var">Imp.v</span></span>) to Vminus.  Importantly, this variant of
+Imp and the Vminus language share the same notion of global, mutable memory
+states, so the compilation of Imp identifiers into Vminus addresses is trivial.
 
 <div class="paragraph"> </div>
 
- Compilation context for expressions.  The state monad keeps track
-    of the list of generated uids so that we can generate fresh names. 
+ The compiler and its correctness proof demonstrate the use of
+<i>monotonic state</i>-&mdash;essentially the idea that the compiler only "extends" the
+state, either by generating new fresh identifiers.
+
+<div class="paragraph"> </div>
+
+For the sake of simplicity, this compiler doesn't perform any optimizations.  It
+uses a straightforward strategy of translating each Imp assignment command to a
+separate Vminus block, which makes stating the correctness invariants easier, at
+the expense of generating poor straight-line code.
+
+<div class="paragraph"> </div>
+
+The compiler will also serve as a vehicle for exploring QuickChick testing.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab81"></a><h3 class="section">An example of translating Imp to Vminus:</h3>
+
+
+<div class="paragraph"> </div>
+
+An Imp program:
+
+<div class="paragraph"> </div>
+
+<span class="inlinecode"><span class="id" type="var">IFZ</span></span> <span class="inlinecode"><span class="id" type="var">Z</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">::=</span> <span class="inlinecode">1;;</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode">::=</span> <span class="inlinecode">2</span> <span class="inlinecode"><span class="id" type="var">ELSE</span></span> <span class="inlinecode"><span class="id" type="var">SKIP</span></span>
+
+<div class="paragraph"> </div>
+
+And one possible translation to Vminus:
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+<span class="id" type="var">l<sub>0</sub></span>:<br/>
+&nbsp;&nbsp;%<span class="id" type="var">z</span>&nbsp;=&nbsp;<span class="id" type="var">load</span>&nbsp;<span class="id" type="var">Z</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">cbr</span>&nbsp;%<span class="id" type="var">z</span>&nbsp;<span class="id" type="var">l<sub>1</sub></span>&nbsp;<span class="id" type="var">l<sub>3</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>1</sub></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;<span class="id" type="var">block</span>&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">X</span>&nbsp;::=&nbsp;1<br/>
+&nbsp;&nbsp;<span class="id" type="var">store</span>&nbsp;<span class="id" type="var">X</span>&nbsp;1<br/>
+&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">l<sub>2</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>2</sub></span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;<span class="id" type="var">block</span>&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">Y</span>&nbsp;::=&nbsp;2<br/>
+&nbsp;&nbsp;<span class="id" type="var">store</span>&nbsp;<span class="id" type="var">Y</span>&nbsp;2<br/>
+&nbsp;&nbsp;<span class="id" type="var">br</span>&nbsp;<span class="id" type="var">l<sub>3</sub></span><br/>
+<br/>
+<span class="id" type="var">l<sub>3</sub></span>:<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab82"></a><h1 class="section">The Compilation Monad</h1>
+
+<div class="paragraph"> </div>
+
+ One issue in building a compiler that targets an SSA language like
+Vminus is generating the identifiers used for labels and local variables.  A key
+part of the correctness proof will be establishing the freshness and uniqueness
+properties of these identifiers.
+  The <span class="inlinecode"><span class="id" type="var">FRESH</span></span> monad provides a compilation context for expressions and commands.
+    <span class="inlinecode"><span class="id" type="var">FRESH</span></span> is just a state monad in which the state keeps track of the list of
+    generated uids so that we can generate fresh names.  
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">ectmon</span> := (<span class="id" type="var">ST</span> (<span class="id" type="var">list</span> <span class="id" type="var">uid</span>)).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">FRESH</span> := (<span class="id" type="var">ST</span> (<span class="id" type="var">list</span> <span class="id" type="var">uid</span>)).<br/>
 </div>
 
 <div class="doc">
-Generate a fresh uid. 
+A monad operation that generates a unique identifer <span class="inlinecode"><span class="id" type="var">uid</span></span>. Note that the the
+<span class="inlinecode"><span class="id" type="var">Atom</span></span> library guarantees that <span class="inlinecode"><span class="id" type="var">uid</span></span> is distinct from any element of <span class="inlinecode"><span class="id" type="var">ids</span></span>. 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">fresh</span> : <span class="id" type="var">ectmon</span> <span class="id" type="var">uid</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">is</span> ⇒<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">i</span> := <span class="id" type="var">Uid.fresh</span> <span class="id" type="var">is</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;(<span class="id" type="var">i</span>::<span class="id" type="var">is</span>, <span class="id" type="var">i</span>).<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">fresh</span> : <span class="id" type="var">FRESH</span> <span class="id" type="var">uid</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">ids</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">uid</span> := <span class="id" type="var">Uid.fresh</span> <span class="id" type="var">ids</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;(<span class="id" type="var">uid</span>::<span class="id" type="var">ids</span>, <span class="id" type="var">uid</span>).<br/>
+</div>
+
+<div class="doc">
+We can <i>run</i> the monad computation starting from any initial list of uids
+that should be avoided. 
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">strun</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Set</span>} (<span class="id" type="var">m</span>:<span class="id" type="var">ectmon</span> <span class="id" type="var">A</span>) (<span class="id" type="var">l</span>:<span class="id" type="var">list</span> <span class="id" type="var">uid</span>) : <span class="id" type="var">A</span> :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">strun</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Set</span>} (<span class="id" type="var">m</span>:<span class="id" type="var">FRESH</span> <span class="id" type="var">A</span>) (<span class="id" type="var">l</span>:<span class="id" type="var">list</span> <span class="id" type="var">uid</span>) : <span class="id" type="var">A</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">snd</span> (<span class="id" type="var">m</span> <span class="id" type="var">l</span>).<br/>
 </div>
 
 <div class="doc">
-<a name="lab59"></a><h2 class="section">Compiling binops.</h2>
+<hr/>
+ <a name="lab83"></a><h1 class="section">Compiling binops.</h1>
 
 <div class="paragraph"> </div>
 
- Compile a general binary operation. 
+ The result of compiling an expression is a Vminus value that stores the
+result, plus a sequence of intructions (if any) needed to compute that value.  
+<div class="paragraph"> </div>
+
+ We can factor all of the shared code for compiling binary operations into a
+monadic combinator. It first compiles the left expression, then the right
+expression. Then it generates a fresh local identifier that will hold the
+computed result.  The instruction sequence concatenates the code for the two
+subexpressions and appends the instruction that performs the binary
+operation. 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="comment">(*!&nbsp;Section&nbsp;comp_bop&nbsp;*)</span><br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_bop</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bop</span>) (<span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>: <span class="id" type="var">ectmon</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>)) : <span class="id" type="var">ectmon</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_bop</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bop</span>) (<span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>: <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>)) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">v<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub></span>) &lt;- <span class="id" type="var">e<sub>1</sub></span>;<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">v<sub>2</sub></span>, <span class="id" type="var">c<sub>2</sub></span>) &lt;- <span class="id" type="var">e<sub>2</sub></span>;<br/>
 &nbsp;&nbsp;'<span class="id" type="var">r</span> &lt;- <span class="id" type="tactic">fresh</span>; <br/>
@@ -115,125 +183,262 @@ Generate a fresh uid.
 </div>
 
 <div class="doc">
-Compile an arithmetic expression. 
+<hr/>
+ <a name="lab84"></a><h1 class="section">Compiling arithmetic expressions.</h1>
+
+<div class="paragraph"> </div>
+
+ The translation of an Imp <span class="inlinecode"><span class="id" type="var">aexp</span></span> is mostly handled by <span class="inlinecode"><span class="id" type="var">comp_bop</span></span>.
+
+<div class="paragraph"> </div>
+
+The only interesting case is that for compiling Imp identifiers.  However, since
+the Imp global state and Vminus global state are the same, we simply translate
+a reference to an Imp identifier into a load from that identifier, treated as an
+address.
+
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="comment">(*!&nbsp;Section&nbsp;comp_aexp&nbsp;*)</span><br/>
-
-<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_aexp</span> (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>) : <span class="id" type="var">ectmon</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_aexp</span> (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">a</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> <span class="id" type="var">n</span>, [])<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AId</span> <span class="id" type="var">i</span> ⇒ '<span class="id" type="var">r</span> &lt;- <span class="id" type="tactic">fresh</span>; <span class="id" type="var">mret</span> (<span class="id" type="var">val_uid</span> <span class="id" type="var">r</span>, [(<span class="id" type="var">r</span>, <span class="id" type="var">cmd_load</span> <span class="id" type="var">i</span>)])<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="comment">(*!*)</span><span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_add</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_add&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="comment">(*!&nbsp;*)</span> <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_sub</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_sub&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="comment">(*!&nbsp;*)</span> <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_mul</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_mul&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_add</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_sub</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_mul</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab60"></a><h2 class="section">Compiling boolean expressions.</h2>
+<hr/>
+ <a name="lab85"></a><h1 class="section">Compiling boolean expressions.</h1>
+
+<div class="paragraph"> </div>
+
+ Vminus doesn't have booleans, it has only natural numbers, so we have
+to translate Imp values <span class="inlinecode"><span class="id" type="var">BTrue</span></span> and <span class="inlinecode"><span class="id" type="var">BFalse</span></span> to <span class="inlinecode"><span class="id" type="var">val_nat</span></span> <span class="inlinecode">1</span> and <span class="inlinecode"><span class="id" type="var">val_nat</span></span> <span class="inlinecode">0</span>
+respectively.
+
+<div class="paragraph"> </div>
+
+Vminus does not have any unary operations, so logical negation translates into a
+comparison with <span class="inlinecode">0</span>.
 
 </div>
-<div class="code code-space">
+<div class="code code-tight">
 
 <br/>
-<span class="comment">(*!&nbsp;Section&nbsp;comp_bexp&nbsp;*)</span><br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_bexp</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>) : <span class="id" type="var">ectmon</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_bexp</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BTrue</span> ⇒ <span class="comment">(*!&nbsp;*)</span> <span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> 1, []) <span class="comment">(*!&nbsp;ret&nbsp;(val_nat&nbsp;0,&nbsp;<span class="inlinecode"></span>)&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BTrue</span> ⇒ <span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> 1, [])<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BFalse</span> ⇒ <span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> 0, [])<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BEq</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_eq</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BLe</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="comment">(*!&nbsp;*)</span> <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_le</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_le&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;(comp_aexp&nbsp;a<sub>1</sub>)&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BAnd</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span> ⇒ <span class="comment">(*!*)</span> <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_and</span> (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>1</sub></span>) (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_and&nbsp;(comp_bexp&nbsp;b<sub>1</sub>)&nbsp;(comp_bexp&nbsp;b<sub>1</sub>)&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BNot</span> <span class="id" type="var">b<sub>1</sub></span> ⇒ <span class="comment">(*!*)</span> <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_eq</span> (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>1</sub></span>) (<span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> 0, []))<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;comp_bop&nbsp;bop_eq&nbsp;(comp_bexp&nbsp;b<sub>1</sub>)&nbsp;(ret&nbsp;(val_nat&nbsp;1,&nbsp;<span class="inlinecode"></span>))&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BLe</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_le</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BAnd</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_and</span> (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>1</sub></span>) (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">BNot</span> <span class="id" type="var">b<sub>1</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_eq</span> (<span class="id" type="var">comp_bexp</span> <span class="id" type="var">b<sub>1</sub></span>) (<span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> 0, []))<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab86"></a><h1 class="section">Command compilation strategy</h1>
+
+<div class="paragraph"> </div>
+
+ To compile Imp commands to Vminus, observe that a single Imp command
+such as <span class="inlinecode"><span class="id" type="var">IFZ</span></span> or <span class="inlinecode"><span class="id" type="var">WHILE</span></span> will translate into a collection of Vminus basic
+blocks.  Therefore the command compiler will need to produce that list of
+blocks, as well as have the infrastructure provide a mechanism for indicating
+how the blocks should be connected to form a control-flow graph.
+
+<div class="paragraph"> </div>
+
+For this compiler, we've chosen to follow the invariant that when translating an
+Imp command <span class="inlinecode"><span class="id" type="var">c</span></span>, the compiler receives the label of the <i>continuation block</i> to
+which control should pass after executing the code corresponding to <span class="inlinecode"><span class="id" type="var">c</span></span>.  The
+<i>output</i> of the command compiler is a label that designates the entry block of
+the command.  These choices inform the structure of the compiler, which
+traverses the Imp program from right-to-left, threading the control as required.
+
+<div class="paragraph"> </div>
+
+Another consequence of this decision is that the easiest way to compile
+assignment commands is to place each such command into its own basic block.
+This simplifies the compiler invariants (since we don't have to keep track of
+"partially completed" blocks, and (as we will see) makes relating the Imp
+operational semantics to the Vminus semantics of the compiler output.
+
+<div class="paragraph"> </div>
+
+There are alternatives that could produce "nicer" Vminus code (e.g. by placing
+sequences of assignment commands into the same basic block, or by traversing the
+Imp program left-to-right), but those alternatives would have a significant
+impact on the simulation relation between the source Imp and target Vminus code.
+
+<div class="paragraph"> </div>
+
+Note: This compilation strategy also does not introduce phi nodes into the
+generated code.  This design is in-line with the usual way of compiling an
+imperative language to a language like Vminus (or LLVM).  Introduction of phi
+nodes is done as a later phase in the compiler, sometimes called "register
+promotion".
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<hr/>
+ <a name="lab87"></a><h1 class="section">Compiling <span class="inlinecode"><span class="id" type="var">store</span></span> commands and conditional branches</h1>
+
+<div class="paragraph"> </div>
+
+ Before diving into the full compiler, it is useful to create two helper
+functions, each of which is responsible for generating code that corresponds to
+the last half of a basic block.
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">comp_store</span></span> emits code that computes an arithmetic expression <span class="inlinecode"><span class="id" type="var">a</span></span> and
+stores the result into the address <span class="inlinecode"><span class="id" type="var">v</span></span>.  The <span class="inlinecode"><span class="id" type="var">k</span></span> argument is the "continuation
+label" that is jumped to following the <span class="inlinecode"><span class="id" type="var">store</span></span>.  
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_store</span> (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>) (<span class="id" type="var">v</span>:<span class="id" type="var">addr</span>) (<span class="id" type="var">lr</span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">ectmon</span> (<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_store</span> (<span class="id" type="var">a</span>:<span class="id" type="var">aexp</span>) (<span class="id" type="var">v</span>:<span class="id" type="var">addr</span>) (<span class="id" type="var">k</span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
 &nbsp;&nbsp;'<span class="id" type="var">y</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">i</span>, <span class="id" type="var">is</span>) &lt;- <span class="id" type="var">comp_aexp</span> <span class="id" type="var">a</span>; <br/>
 &nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_store</span> <span class="id" type="var">v</span> <span class="id" type="var">i</span>); <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">y</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">lr</span>)) ]).<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_cond</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>) (<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">ectmon</span> (<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
-&nbsp;&nbsp;'(<span class="id" type="var">v</span>, <span class="id" type="var">is</span>) &lt;- <span class="id" type="var">comp_bexp</span> <span class="id" type="var">b</span>;<br/>
-&nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
-&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">v</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>)) ] ).<br/>
-
-<br/>
-<span class="comment">(*&nbsp;**&nbsp;Compiling&nbsp;Commands&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">y</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">k</span>)) ]).<br/>
 </div>
 
 <div class="doc">
-State:
+Similarly, <span class="inlinecode"><span class="id" type="var">comp_cond</span></span> generates the instructions leading up to a
+conditional branch.  It takes two continuation labels, one for each branch.  
+</div>
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_cond</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>) (<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+&nbsp;&nbsp;'(<span class="id" type="var">v</span>, <span class="id" type="var">is</span>) &lt;- <span class="id" type="var">comp_bexp</span> <span class="id" type="var">b</span>;<br/>
+&nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">v</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>)) ] ).<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab88"></a><h1 class="section">Compiling Imp Commands</h1>
+
+<div class="paragraph"> </div>
+
+ Just as we needed to thread the list of generated identifiers through the
+expression compiler, we also need to maintain some state when compiling
+commands.
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
 <li> list of used block labels
 
+<div class="paragraph"> </div>
+
+
 </li>
 <li> list of used uids
 
+<div class="paragraph"> </div>
+
+
 </li>
-<li> current cfg 
+<li> list of blocks making up the "current" control-flow graph, to which new
+    blocks will be added
+
 </li>
 </ul>
 
+<div class="paragraph"> </div>
+
+ 
+<div class="paragraph"> </div>
+
+ We define another monad, called <span class="inlinecode"><span class="id" type="var">CMD</span></span> that, in addition to letting us
+generate fresh local identifiers, also keeps track of block labels and generated
+blocks.  
 </div>
 <div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">cstate</span> := (<span class="id" type="var">list</span> <span class="id" type="var">lbl</span> * <span class="id" type="var">list</span> <span class="id" type="var">uid</span> * <span class="id" type="var">list</span> <span class="id" type="var">block</span>)%<span class="id" type="var">type</span>.<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">ctmon</span> := (<span class="id" type="var">ST</span> <span class="id" type="var">cstate</span>).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">CMD</span> := (<span class="id" type="var">ST</span> <span class="id" type="var">cstate</span>).<br/>
+</div>
+
+<div class="doc">
+Generate a fresh block label 
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">fresh_lbl</span> : <span class="id" type="var">ctmon</span> <span class="id" type="var">lbl</span> :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">fresh_lbl</span> : <span class="id" type="var">CMD</span> <span class="id" type="var">lbl</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">bs</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">l</span> := <span class="id" type="var">Lbl.fresh</span> <span class="id" type="var">ls</span> <span class="id" type="keyword">in</span> <br/>
 &nbsp;&nbsp;(<span class="id" type="var">l</span>::<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">update</span> <span class="id" type="var">bs</span> <span class="id" type="var">l</span> [], <span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+Lift a computation from the <span class="inlinecode"><span class="id" type="var">FRESH</span></span> monad into the <span class="inlinecode"><span class="id" type="var">CMD</span></span> monad. 
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">raise_ectmon</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">ec</span>:<span class="id" type="var">ectmon</span> <span class="id" type="var">T</span>) : <span class="id" type="var">ctmon</span> <span class="id" type="var">T</span> :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">liftF</span> {<span class="id" type="var">T</span>} (<span class="id" type="var">ec</span>:<span class="id" type="var">FRESH</span> <span class="id" type="var">T</span>) : <span class="id" type="var">CMD</span> <span class="id" type="var">T</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">cfg</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">is'</span>, <span class="id" type="var">r</span>) := <span class="id" type="var">ec</span> <span class="id" type="var">is</span> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;(<span class="id" type="var">ls</span>, <span class="id" type="var">is'</span>, <span class="id" type="var">cfg</span>, <span class="id" type="var">r</span>).<br/>
+</div>
+
+<div class="doc">
+Update the instructions at the block with lbl <span class="inlinecode"><span class="id" type="var">l</span></span> to have the list of instructions <span class="inlinecode"><span class="id" type="var">b</span></span> 
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">add_insns</span> (<span class="id" type="var">l</span>:<span class="id" type="var">lbl</span>) (<span class="id" type="var">b</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) : <span class="id" type="var">ctmon</span> <span class="id" type="var">unit</span> :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">add_insns</span> (<span class="id" type="var">l</span>:<span class="id" type="var">lbl</span>) (<span class="id" type="var">b</span>:<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) : <span class="id" type="var">CMD</span> <span class="id" type="var">unit</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">cs</span> ⇒<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">cfg</span>) := <span class="id" type="var">cs</span> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;(<span class="id" type="var">ls</span>, <span class="id" type="var">is</span>, <span class="id" type="var">update</span> <span class="id" type="var">cfg</span> <span class="id" type="var">l</span> <span class="id" type="var">b</span>, <span class="id" type="var">tt</span>).<br/>
 </div>
 
 <div class="doc">
-The input <span class="inlinecode"><span class="id" type="var">lr</span></span> is the label of the block to which
-    control should return after the command is done. 
-    The output is the label of the entry block for the
-    command. 
+<hr/>
+ <a name="lab89"></a><h1 class="section">Compiling Imp Commands</h1>
+
+<div class="paragraph"> </div>
+
+ The input <span class="inlinecode"><span class="id" type="var">lr</span></span> is the "continuation" label of the block to which control
+    should return after the command is done.  The output is the label of the
+    entry block for the command. 
+
+<div class="paragraph"> </div>
+
+    Note how compiling a sequence <span class="inlinecode">[<span class="id" type="var">c<sub>1</sub></span>;;<span class="id" type="var">c<sub>2</sub></span>]</span> threads the control through the 
+    commands in reverse order.
+
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_com</span> (<span class="id" type="var">c</span>:<span class="id" type="var">Imp.com</span>) (<span class="id" type="var">lr</span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">ctmon</span> <span class="id" type="var">lbl</span> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">comp_com</span> (<span class="id" type="var">c</span>:<span class="id" type="var">Imp.com</span>) (<span class="id" type="var">lr</span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">CMD</span> <span class="id" type="var">lbl</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSkip</span> ⇒ <span class="id" type="var">mret</span> <span class="id" type="var">lr</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CAss</span> <span class="id" type="var">i</span> <span class="id" type="var">a</span> ⇒ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">l</span> &lt;- <span class="id" type="var">fresh_lbl</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span> &lt;- <span class="id" type="var">raise_ectmon</span> (<span class="id" type="var">comp_store</span> <span class="id" type="var">a</span> <span class="id" type="var">i</span> <span class="id" type="var">lr</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span> &lt;- <span class="id" type="var">liftF</span> (<span class="id" type="var">comp_store</span> <span class="id" type="var">a</span> <span class="id" type="var">i</span> <span class="id" type="var">lr</span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">_</span> &lt;- <span class="id" type="var">add_insns</span> <span class="id" type="var">l</span> <span class="id" type="var">b</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">mret</span> <span class="id" type="var">l</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
@@ -242,27 +447,53 @@ The input <span class="inlinecode"><span class="id" type="var">lr</span></span> 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">l<sub>1</sub></span> &lt;- <span class="id" type="var">comp_com</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">lr</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">l<sub>2</sub></span> &lt;- <span class="id" type="var">comp_com</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">lr</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">lh</span> &lt;- <span class="id" type="var">fresh_lbl</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span>  &lt;- <span class="id" type="var">raise_ectmon</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">b</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span>  &lt;- <span class="id" type="var">liftF</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">b</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">_</span>  &lt;- <span class="id" type="var">add_insns</span> <span class="id" type="var">lh</span> <span class="id" type="var">b</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">mret</span> <span class="id" type="var">lh</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> ⇒ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">lh</span> &lt;- <span class="id" type="var">fresh_lbl</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">lb</span> &lt;- <span class="id" type="var">comp_com</span> <span class="id" type="var">c</span> <span class="id" type="var">lh</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span>  &lt;- <span class="id" type="var">raise_ectmon</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">b</span> <span class="id" type="var">lb</span> <span class="id" type="var">lr</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">b</span>  &lt;- <span class="id" type="var">liftF</span> (<span class="id" type="var">comp_cond</span> <span class="id" type="var">b</span> <span class="id" type="var">lb</span> <span class="id" type="var">lr</span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<span class="id" type="var">_</span>  &lt;- <span class="id" type="var">add_insns</span> <span class="id" type="var">lh</span> <span class="id" type="var">b</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">mret</span> <span class="id" type="var">lh</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<hr/>
+ <a name="lab90"></a><h1 class="section">Top-level Compiler</h1>
+
+<div class="paragraph"> </div>
+
+ To turn an Imp command into a full Vminus program, we need to provide the
+command compiler with the label of the "initial continuation", which is just the
+label of a block that immediately halts the program by executing the <span class="inlinecode"><span class="id" type="var">tmn_ret</span></span>
+instruction.  The result of the program is a pair of labels, <span class="inlinecode"><span class="id" type="var">e</span></span> for the entry
+point (obtained by compiling the command <span class="inlinecode"><span class="id" type="var">c</span></span>), and the exit label <span class="inlinecode"><span class="id" type="var">r</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_prog</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">ctmon</span> (<span class="id" type="var">lbl</span> * <span class="id" type="var">lbl</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_prog</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">CMD</span> (<span class="id" type="var">lbl</span> * <span class="id" type="var">lbl</span>) :=<br/>
 &nbsp;&nbsp;'<span class="id" type="var">r</span> &lt;- <span class="id" type="var">fresh_lbl</span>;<br/>
-&nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="var">raise_ectmon</span> <span class="id" type="tactic">fresh</span>;<br/>
+&nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="var">liftF</span> <span class="id" type="tactic">fresh</span>;<br/>
 &nbsp;&nbsp;'<span class="id" type="var">_</span> &lt;- <span class="id" type="var">add_insns</span> <span class="id" type="var">r</span> [(<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> <span class="id" type="var">tmn_ret</span>)];<br/>
 &nbsp;&nbsp;'<span class="id" type="var">e</span> &lt;- <span class="id" type="var">comp_com</span> <span class="id" type="var">c</span> <span class="id" type="var">r</span>;<br/>
 &nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">e</span>, <span class="id" type="var">r</span>).<br/>
+</div>
+
+<div class="doc">
+We can "run" a computation the <span class="inlinecode"><span class="id" type="var">CMD</span></span> monad by supplying it with empty lists
+of uids, labels, and blocks.  The result is easy to package up as ListCFG
+control-flow graph.  
+</div>
+<div class="code code-tight">
 
 <br/>
-<span class="comment">(*&nbsp;TODO:&nbsp;le&nbsp;is&nbsp;redundant&nbsp;...&nbsp;fix&nbsp;up&nbsp;match_config&nbsp;*)</span><br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">compile</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) : <span class="id" type="var">ListCFG.t</span> * <span class="id" type="var">lbl</span> * <span class="id" type="var">lbl</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">_</span>, <span class="id" type="var">_</span>, <span class="id" type="var">bs</span>, (<span class="id" type="var">le</span>, <span class="id" type="var">lr</span>)) := <span class="id" type="var">comp_prog</span> <span class="id" type="var">c</span> ([], [], []) <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;((<span class="id" type="var">le</span>, <span class="id" type="var">bs</span>), <span class="id" type="var">le</span>, <span class="id" type="var">lr</span>).<br/>

@@ -1,3 +1,8 @@
+(** * AtomGen: Generating Atoms *)
+
+(* ################################################################# *)
+(** * Generating atoms for QuickChick *)
+
 Require Import List.
 Import ListNotations.
 
