@@ -9,9 +9,8 @@
    - [phi] functions become arguments of the basic blocks
     
 
-  See Appel's paper: SSA is Functional Programming 
+  See Appel's paper: SSA _is_ Functional Programming 
 *)
-
 
 
 (* LLVM IR ------------------------------------------------------------------ *)
