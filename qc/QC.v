@@ -261,7 +261,7 @@ Definition genColor' : G color :=
 
      " 'elems' [ x ] " := elements x (cons x nil)
      " 'elems' [ x ; y ] " := elements x (cons x (cons y nil))
-     " 'elems' [ x ; y ; .. ; z ] " := elements x
+     " 'elems' [ x ; y ; .. ; z ] " := elements x (cons x (cons y (.. (cons z nil))))
      " 'elems' ( x ;; l ) " := elements x (cons x l)
 *)
 
