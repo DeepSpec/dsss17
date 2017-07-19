@@ -11,6 +11,9 @@ Import StlcNotations.
 Require Import Stlc.Lemmas.
 
 Require Import Stlc.Lec1.
+(* Lemmas from Lec1 that are useful for today's homework: *)
+Check subst_var.
+Check typing_to_lc_exp.
 
 (*************************************************************************)
 (** * Typing contexts *)
@@ -37,7 +40,7 @@ Require Import Stlc.Lec1.
 (** Context equality *)
 
 (** When reasoning about contexts, we often need to talk about
-    bindings in the "middle" of an context. Therefore, it is common
+    bindings in the "middle" of a context. Therefore, it is common
     for lemmas and definitions to use list append in their statements.
     Unfortunately, list append is associative, so two Coq expressions may
     denote the same context even though they are not equal.
@@ -84,7 +87,7 @@ Qed.
 (** Context operations. *)
 
 (** The ternary predicate [binds] holds when a given binding is
-    present somewhere in an context.
+    present somewhere in a context.
 *)
 
 Lemma binds_demo : forall (x:atom) (T:typ) (E F:ctx),
@@ -93,11 +96,10 @@ Proof.
   auto.
 Qed.
 
-(** The function [dom] computes the domain of an context,
-    returning a finite set of [atom]s. Note that we cannot use Coq's
-    equality for finite sets, we must instead use a defined relation
-    [=] for atom set equality.
- *)
+(** The function [dom] computes the domain of a context, returning a
+    finite set of [atom]s. Note that we cannot use Coq's equality for
+    finite sets, we must instead use a defined relation [=] for atom
+    set equality.  *)
 
 Lemma dom_demo : forall (x y : atom) (T : typ),
   dom [(x, T)] [=] singleton x.
@@ -106,7 +108,7 @@ Proof.
 Qed.
 
 (** The unary predicate [uniq] holds when each atom is bound at most
-    once in an context.
+    once in a context.
 *)
 
 Lemma uniq_demo : forall (x y : atom) (T : typ),
@@ -185,7 +187,7 @@ Lemma typing_weakening_0 : forall E F e T,
 Proof.
   intros E F e T H J.
   induction H; auto.
-  Case "typing_abs".
+  - Case "typing_abs".
     apply (typing_e_abs x).
     (* ... stuck here ... *)
 Abort.
@@ -221,7 +223,7 @@ Proof.
     (* The [typing_abs] case still does not have a strong enough IH. *)
 Abort.
 
-(** The hypotheses in the [typing_var] case include an context
+(** The hypotheses in the [typing_var] case include a context
     [G0] that that has no relation to what we need to prove.  The
     missing fact we need is that [G0 = (G ++ E)].
 
@@ -337,7 +339,8 @@ Proof.
   remember (G ++ E) as E'.
   generalize dependent G.
   induction H; intros G0 Eq Uniq; subst.
- (* FILL IN HERE *) Admitted.
+ (* FILL IN HERE *)
+ Admitted.
 
 
 (** *** Demo [typing_weakening]
@@ -434,7 +437,7 @@ Proof.
           -- In order to use the induction hypothesis, use [subst_var]
              to push the substitution under the opening operation.
 
-          -- Recall the lemma [typing_to_lc_c] and the [rewrite_env]
+          -- Recall the lemma [typing_to_lc_exp] and the [rewrite_env]
              and [simpl_env] tactics.
 
       - The [typing_app] case follows from the induction hypotheses.
@@ -508,7 +511,8 @@ Proof.
 
           -- Use [subst_exp_intro] to rewrite the [open] operation
              into an [open] followed by a [subst].  You'll need to
-             pick a fresh variable first.
+             pick a fresh variable first using the
+             [pick fresh x for S] tactic.
 
   *)
 
@@ -552,7 +556,7 @@ Proof.
 
        - Use [inversion] to rule out impossible cases.
 
-       - The lemma [typing_to_lc] will be useful for reasoning
+       - The lemma [typing_to_lc_exp] will be useful for reasoning
          about local closure.
 
        - In the [typing_app] case:
