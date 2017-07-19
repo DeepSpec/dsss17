@@ -393,11 +393,11 @@ One possible confusion should be addressed here: Why should we
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">showPair</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">B</span>} : <span class="id" type="keyword">Show</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>) :=<br/>
-&nbsp;&nbsp;{|<br/>
+&nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">p</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>) := (<span class="id" type="var">p</span> : <span class="id" type="var">A</span> * <span class="id" type="var">B</span>) <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>) := <span class="id" type="var">p</span> <span class="id" type="keyword">in</span> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(" ++ <span class="id" type="var">show</span> <span class="id" type="var">a</span> ++ "," ++  <span class="id" type="var">show</span> <span class="id" type="var">b</span> ++ ")"<br/>
-&nbsp;&nbsp;|}.<br/>
+&nbsp;&nbsp;}.<br/>
 
 <br/>
 <span class="id" type="var">Compute</span> (<span class="id" type="var">show</span> (<span class="id" type="var">true</span>,42)).<br/>
@@ -410,12 +410,12 @@ Similarly, here is an <span class="inlinecode"><span class="id" type="var">Eq</s
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">eqPair</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Eq</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Eq</span> <span class="id" type="var">B</span>} : <span class="id" type="var">Eq</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>) :=<br/>
-&nbsp;&nbsp;{|<br/>
+&nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eqb</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">p<sub>2</sub></span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">p1a</span>,<span class="id" type="var">p1b</span>) := <span class="id" type="var">p<sub>1</sub></span> : <span class="id" type="var">A</span> * <span class="id" type="var">B</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">p2a</span>,<span class="id" type="var">p2b</span>) := <span class="id" type="var">p<sub>2</sub></span> : <span class="id" type="var">A</span> * <span class="id" type="var">B</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">p1a</span>,<span class="id" type="var">p1b</span>) := <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">p2a</span>,<span class="id" type="var">p2b</span>) := <span class="id" type="var">p<sub>2</sub></span> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">andb</span> (<span class="id" type="var">eqb</span> <span class="id" type="var">p1a</span> <span class="id" type="var">p2a</span>) (<span class="id" type="var">eqb</span> <span class="id" type="var">p1b</span> <span class="id" type="var">p2b</span>)<br/>
-&nbsp;&nbsp;|}.<br/>
+&nbsp;&nbsp;}.<br/>
 </div>
 
 <div class="doc">
@@ -433,9 +433,9 @@ Similarly, here is an <span class="inlinecode"><span class="id" type="var">Eq</s
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">showList</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} : <span class="id" type="keyword">Show</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>) :=<br/>
-&nbsp;&nbsp;{|<br/>
+&nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">l</span> := <span class="id" type="var">append</span> "[" (append (showListAux show l) "]")<br/>
-&nbsp;&nbsp;|}.<br/>
+&nbsp;&nbsp;}.<br/>
 </div>
 
 <div class="doc">
