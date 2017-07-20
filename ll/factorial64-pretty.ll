@@ -1,6 +1,8 @@
 ; ModuleID = 'factorial64.c'
 @.str = private unnamed_addr constant [21 x i8] c"factorial(6) = %llu\0A\00"
 
+
+
 ; Function Attrs: nounwind ssp
 define i64 @factorial(i64 %n) #0 {
   %1 = alloca i64
@@ -28,6 +30,13 @@ post:
   %12 = load i64* %acc
   ret i64 %12
 }
+
+
+
+
+
+
+
 
 ; Function Attrs: nounwind ssp
 define i32 @main(i32 %argc, i8** %argv) {

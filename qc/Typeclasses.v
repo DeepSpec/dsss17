@@ -250,23 +250,23 @@ Instance eqNat : Eq nat :=
     constrain both of these types to be instances of [Show]. *)
 
 Instance showPair {A B : Type} `{Show A} `{Show B} : Show (A * B) :=
-  {|
+  {
     show p :=
-      let (a,b) := (p : A * B) in 
+      let (a,b) := p in 
         "(" ++ show a ++ "," ++  show b ++ ")"
-  |}.
+  }.
 
 Compute (show (true,42)).
 
 (** Similarly, here is an [Eq] instance for pairs... *)
 
 Instance eqPair {A B : Type} `{Eq A} `{Eq B} : Eq (A * B) :=
-  {|
+  {
     eqb p1 p2 :=
-      let (p1a,p1b) := p1 : A * B in
-      let (p2a,p2b) := p2 : A * B in
+      let (p1a,p1b) := p1 in
+      let (p2a,p2b) := p2 in
       andb (eqb p1a p2a) (eqb p1b p2b)
-  |}.
+  }.
 
 (** ...and here is [Show] for lists: *)
 
@@ -278,9 +278,9 @@ Fixpoint showListAux {A : Type} (s : A -> string) (l : list A) : string :=
   end.
 
 Instance showList {A : Type} `{Show A} : Show (list A) :=
-  {|
+  {
     show l := append "[" (append (showListAux show l) "]")
-  |}.
+  }.
 
 (** **** Exercise: 3 stars (eqEx)  *)
 (** Write an [Eq] instance for lists and [Show] and [Eq] instances for

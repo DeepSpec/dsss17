@@ -405,7 +405,7 @@ Now, to generate a random color, we just need to pick one of the
 <pre>
      " 'elems' [ x ] " := elements x (cons x nil)
      " 'elems' [ x ; y ] " := elements x (cons x (cons y nil))
-     " 'elems' [ x ; y ; .. ; z ] " := elements x
+     " 'elems' [ x ; y ; .. ; z ] " := elements x (cons x (cons y (.. (cons z nil))))
      " 'elems' ( x ;; l ) " := elements x (cons x l)
 </pre>
 
@@ -1929,19 +1929,26 @@ Consider inserting natural numbers in a sorted list (in ascending
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span> | [] ⇒ [<span class="id" type="var">x</span>] | <span class="id" type="var">y</span>::<span class="id" type="var">ys</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">x</span> &lt;=? <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">x</span> :: <span class="id" type="var">l</span> <span class="id" type="keyword">else</span> <span class="id" type="var">y</span> ::<br/>
-&nbsp;&nbsp;<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">ys</span> <span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sorted</span> (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| [] ⇒ <span class="id" type="var">true</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">x</span>::<span class="id" type="var">xs</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">xs</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| [] ⇒ <span class="id" type="var">true</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">y</span> :: <span class="id" type="var">ys</span> ⇒ (<span class="id" type="var">x</span> &lt;=? <span class="id" type="var">y</span>) &amp;&amp; (<span class="id" type="var">sorted</span> <span class="id" type="var">xs</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sorted</span> (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span> | [] ⇒ <span class="id" type="var">true</span> | <span class="id" type="var">x</span>::<span class="id" type="var">xs</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">xs</span> <span class="id" type="keyword">with</span> | [] ⇒ <span class="id" type="var">true</span> | <span class="id" type="var">y</span><br/>
-&nbsp;&nbsp;:: <span class="id" type="var">ys</span> ⇒ (<span class="id" type="var">x</span> &lt;=? <span class="id" type="var">y</span>) &amp;&amp; (<span class="id" type="var">sorted</span> <span class="id" type="var">xs</span>) <span class="id" type="keyword">end</span> <span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| [] ⇒ [<span class="id" type="var">x</span>] <br/>
+&nbsp;&nbsp;| <span class="id" type="var">y</span>::<span class="id" type="var">ys</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">x</span> &lt;=? <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">x</span> :: <span class="id" type="var">l</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">y</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">ys</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-We could test <span class="inlinecode"><span class="id" type="var">insert</span></span> using the following <i>conditional</i>
-property: 
+We could test <span class="inlinecode"><span class="id" type="var">insert</span></span> using the following <i>conditional</i> property: 
 </div>
 <div class="code code-tight">
 
@@ -1955,7 +1962,9 @@ property:
 
 <div class="doc">
 <pre>
-===&gt; QuickChecking insert_spec +++ Passed 10000 tests (17325 discards)
+===&gt; 
+  QuickChecking insert_spec 
+  +++ Passed 10000 tests (17325 discards)
 </pre>
 
 <div class="paragraph"> </div>
