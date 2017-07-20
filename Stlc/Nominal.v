@@ -173,6 +173,11 @@ Proof.
   simpl; unfold swap_var; default_simp.
 Qed.
 
+Lemma aeq_refl : forall n, aeq n n.
+Proof.
+  induction n; auto.
+Qed.
+
 (*************************************************************)
 (** ** Properties about swapping                             *)
 (*************************************************************)
@@ -421,11 +426,17 @@ Fixpoint subst_rec (n:nat) (t:n_exp) (u :n_exp) (x:atom)  : n_exp :=
   match n with
   | 0 => t
   | S m => match t with
-          | n_var y => if (x == y) then u else t
-          | n_abs y t1 => if (x == y) then t
-                        else let (z,_) := atom_fresh (fv_nom u \u fv_nom t) in
-                             n_abs z (subst_rec m (swap y z t1) u x)
-          | n_app t1 t2 => n_app (subst_rec m t1 u x) (subst_rec m t2 u x)
+          | n_var y =>
+            if (x == y) then u else t
+          | n_abs y t1 =>
+            if (x == y) then t
+            else
+              (* rename to avoid capture *)
+              let (z,_) :=
+                  atom_fresh (fv_nom u `union` fv_nom t `union` {{x}}) in
+                 n_abs z (subst_rec m (swap y z t1) u x)
+          | n_app t1 t2 =>
+            n_app (subst_rec m t1 u x) (subst_rec m t2 u x)
           end
   end.
 
@@ -479,7 +490,37 @@ Proof. (* FILL IN HERE *) Admitted.
 Lemma subst_abs : forall u x y t1,
     subst u x (n_abs y t1) =
        if (x == y) then (n_abs y t1)
-       else let (z,_) := atom_fresh (fv_nom u \u fv_nom (n_abs y t1)) in
+       else let (z,_) := atom_fresh (fv_nom u `union` fv_nom (n_abs y t1) `union` {{x}}) in
        n_abs z (subst u x (swap y z t1)).
 Proof. (* FILL IN HERE *) Admitted.
+
+
+(** ** Challenge Exercise [subst properties]
+
+    Now show the following property by induction on the size of terms. *)
+
+Lemma subst_same_aux : forall n, forall t y, size t <= n -> aeq (subst (n_var y) y t)  t.
+Proof.
+  intro n. induction n.
+  intros t y SZ. destruct t; simpl in SZ; omega.
+  intros t y SZ. destruct t; simpl in SZ.
+(* FILL IN HERE *) Admitted.
+
+Lemma subst_same : forall t y, aeq (subst (n_var y) y t)  t.
+Proof.
+  intros.
+  apply subst_same_aux with (n := size t). auto.
+Qed.
+
+
+Lemma subst_fresh_eq_aux : forall n, forall (x : atom) t u, size t <= n ->
+  x `notin` fv_nom t -> aeq (subst u x t) t.
+Proof. (* FILL IN HERE *) Admitted.
+
+Lemma subst_fresh_eq : forall (x : atom) t u,  x `notin` fv_nom t -> aeq (subst u x t) t.
+Proof.
+  intros. apply subst_fresh_eq_aux with (n := size t). omega. auto.
+Qed.
+
+
 
