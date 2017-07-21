@@ -81,7 +81,6 @@ Module Type ATOM <: UsualDecidableType.
   Include UsualIsEq.
 End ATOM.
 
-
 Module Atom : ATOM.
 
 (** Internally, an [Atom] is just a natural number... *)
@@ -105,7 +104,9 @@ Module Atom : ATOM.
 
   Definition fresh (al:list t) : t :=
     S (max_elt al).
+
   Include HasUsualEq <+ UsualIsEq.
+
 (** We also need a way of printing atoms. To support that, we include a 
     [nat_of] function that exposes the internal natural number. *)
   
@@ -263,9 +264,9 @@ Inductive bound_to {A} : @AtomMap.t A -> Atom.t -> A -> Prop :=
 
 Instance dec_bound_to {A : Type} Gamma x (T : A) 
          `{D : forall (x y : A), Dec (x = y)} 
-          : Dec (bound_to Gamma x T) := {}.
+          : Dec (bound_to Gamma x T).
 Proof. 
-  unfold ssrbool.decidable. 
+  constructor. unfold ssrbool.decidable. 
   destruct (AtomMap.get Gamma x) eqn:Get.
       
 (** After unfolding [decidable] and destructing [AtomMap.get Gamma x], we are
@@ -314,9 +315,9 @@ Ltac solve_sum := solve_left; solve_right.
 
 Instance dec_bound_to {A : Type} Gamma x (T : A) 
          `{D : forall (x y : A), Dec (x = y)}
-  : Dec (bound_to Gamma x T) := {}.
+  : Dec (bound_to Gamma x T).
 Proof. 
-  unfold ssrbool.decidable. 
+  constructor. unfold ssrbool.decidable. 
   destruct (AtomMap.get Gamma x) eqn:Get; solve_sum.
   destruct (D a T) as [[Eq | NEq]]; subst; solve_sum.
 Defined.
@@ -463,9 +464,9 @@ Ltac solve_inductives Gamma :=
     and a type [T], we can decide whether [has_type Gamma e T] holds. *)
 
 Instance dec_has_type (e : exp) (Gamma : context) (T : ty) 
-  : Dec (Gamma ||- e \IN T)
-  := { dec := _ }.
+  : Dec (Gamma ||- e \IN T).
 Proof with solve_sum.
+  constructor.
   generalize dependent Gamma.
   generalize dependent T.
   induction e; intros T Gamma; unfold ssrbool.decidable;
@@ -856,7 +857,7 @@ Definition expression_soundness_exec :=
   forAll (gen_exp_typed_sized 3 Gamma T) (fun me => 
   match me with  
   | Some e => negb (isNone (eval st e))
-  | _ => false
+  | _ => true
   end)))).   
 
 (* QuickChick expression_soundness_exec. *)
@@ -889,11 +890,10 @@ Definition expression_soundness_exec_firstshrink :=
   forAllShrink (gen_exp_typed_sized 3 Gamma T) shrink (fun me => 
   match me with  
   | Some e => negb (isNone (eval st e))
-  | _ => false
+  | _ => true
   end)))).   
 
 (* QuickChick expression_soundness_exec_firstshrink. *)
-
 (** 
 << 
 ===> 
@@ -901,17 +901,16 @@ Definition expression_soundness_exec_firstshrink :=
   [(1,TBool), (2,TNat), (3,TBool), (4,TBool)]
   [(1,VBool false), (2,VNat 0), (3,VBool true), (4,VBool false)]
   TBool
-  None
-  *** Failed after 4 tests and 5 shrinks. (0 discards)
+  Some EAnd (ENum 0) ETrue
+  *** Failed after 28 tests and 7 shrinks. (0 discards)
 *)
 
-(** The expression shrank to [None]! The default  shrinker for [option] 
-    tries to shrink [Some x] to [None]. Since [None] causes the 
-    property to fail, QuickChick views this as a succesfull shrink
-    even if [None] could not actually be produced by our generator 
-    and doesn't satisfy our preconditions! One solution would be to 
-    check the preconditions in the Checker, filtering out shrinks.
-    But that would be inefficient... *)
+(** The expression shrank to something ill-typed! Since it causes the
+    checker to fail, QuickChick views this as a succesfull shrink, even 
+    though this could not actually be produced by our generator and 
+    doesn't satisfy our preconditions!  One solution would be to check 
+    the preconditions in the Checker, filtering out shrinks.  But that 
+    would be inefficient. *)
 
 (** We not only need to shrink expressions, we need to shrink them so
     that their type is preserved! To accomplish this, we need to
@@ -1042,7 +1041,7 @@ Definition shrink_typed_has_type :=
 (* ================================================================= *)
 (** ** Back to Soundness *)
 (** To lift the shrinker to optional expressions, QuickChick provides
-    a [lift] function. *)
+    the following function. *)
 
 Definition lift_shrink {A}
               (shr : A -> list A) (m : option A) 
@@ -1066,7 +1065,7 @@ Definition expression_soundness_exec' :=
                (fun me =>  
   match me with  
   | Some e => negb (isNone (eval st e))
-  | _ => false
+  | _ => true
   end)))).   
 
 (* QuickChick expression_soundness_exec'. *)
@@ -1167,9 +1166,9 @@ Ltac solve_det :=
     relation (which amounts to a simple typechecker). *) 
 
 Instance dec_well_typed_com (Gamma : context) (c : com) 
-  : Dec (well_typed_com Gamma c) := {}.
+  : Dec (well_typed_com Gamma c).
 Proof with eauto.
-  unfold ssrbool.decidable.
+  constructor. unfold ssrbool.decidable.
   induction c; solve_sum.
   - destruct (dec_bound_to Gamma t TNat); destruct dec;
     destruct (dec_has_type e Gamma TNat); destruct dec; 
@@ -1260,9 +1259,12 @@ Conjecture well_typed_state_never_stuck :
 
 (** QuickChick is under very active development.  Our vision is that
     it should automate most of the tedious parts of testing, while
-    retaining full customizability. *)
+    retaining full customizability.
 
-(** Recall the [has_type_value] and its corresponding generator:
+    We close this case study with a brief demo of some things it can
+    do now. *)
+
+(** Recall the [has_type_value] property and its corresponding generator:
 
   Inductive has_type_value : value -> ty -> Prop :=
     | TyVNat  : forall n, has_type_value (VNat  n) TNat
@@ -1274,50 +1276,50 @@ Conjecture well_typed_state_never_stuck :
     | TBool => b <- arbitrary;; ret (VBool b)
     end.
 
-
-    QuickChick provides a derivation mechanism that produces
-    generators for data satisfying invariants!
-*)
+    QuickChick includes a derivation mechanism that can _automatically_
+    produces such generators -- i.e., generators for data structures 
+    satisfying inductively defined properties! *)
 
 Derive ArbitrarySizedSuchThat for (fun v => has_type_value v T).
 (** ==> GenSizedSuchThathas_type_value is defined. *)
 
-(** Let's take a closer look at what is being generated. *)
+(** Let's take a closer look at what is being generated (after 
+    doing some renaming and reformatting). *)
 
 Print GenSizedSuchThathas_type_value.
 (** 
 ===>
-  GenSizedSuchThathas_type_value = fun input0_ : ty =>
+  GenSizedSuchThathas_type_value = fun T : ty =>
   {| arbitrarySizeST := 
-     let fix aux_arb (size0 : nat) (input0_0 : ty) {struct size0} 
+     let fix aux_arb (size0 : nat) (T : ty) {struct size0} 
            : G (option value) :=
        match size0 with
-       | 0 => backtrack [(1, match input0_0 with
+       | 0 => backtrack [(1, match T with
                              | TBool => ret None
                              | TNat => n <- arbitrary;;
                                        ret (Some (VNat n))
                              end)
-                        ;(1, match input0_0 with
+                        ;(1, match T with
                              | TBool => b <- arbitrary;;
                                         ret (Some (VBool b)))
                              | TNat => ret None
                              end)]
-       | S _ => backtrack [(1, match input0_0 with
+       | S _ => backtrack [(1, match T with
                                | TBool => ret None
                                | TNat => n <- arbitrary;;
                                          ret (Some (VNat n))
                                end)
-                          ;(1, match input0_0 with
+                          ;(1, match T with
                                | TBool => b <- arbitrary;;
                                           ret (Some (VBool b)))
                                | TNat => ret None
                                end)]
        end in
-       fun size0 : nat => aux_arb size0 input0_ |}
+       fun size0 : nat => aux_arb size0 T |}
 
-  : forall input0_ : ty,
+  : forall T : ty,
       GenSizedSuchThat value 
-          (fun _forGen => has_type_value _forGen input0_)
+          (fun v => has_type_value v T)
 *)
 
 (* ================================================================= *)
@@ -1360,7 +1362,7 @@ End GenSTPlayground.
 Conjecture conditional_prop_example : 
   forall (x y : nat), x = y -> x = y.
 
-QuickChick conditional_prop_example.
+(* QuickChick conditional_prop_example. *)
 (** 
   ==>
     QuickChecking conditional_prop_example

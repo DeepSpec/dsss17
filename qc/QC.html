@@ -1972,10 +1972,13 @@ We could test <span class="inlinecode"><span class="id" type="var">insert</span>
  To test this property, QuickChick will try to generate random
     integers <span class="inlinecode"><span class="id" type="var">x</span></span> and lists <span class="inlinecode"><span class="id" type="var">l</span></span>, <i>check</i> whether the generated <span class="inlinecode"><span class="id" type="var">l</span></span> is
     sorted, and, if it is, proceed to check the conclusion. If it is
-    not, it will discard the generated inputs and try again. As we can
-    see, this can lead to many discarded tests (here, almost twice as
-    many as successful ones!) which waste a lot of CPU time and leads
-    to inefficient testing. 
+    not, it will discard the generated inputs and try again.
+
+<div class="paragraph"> </div>
+
+    As we can see, this can lead to many discarded tests (here, almost
+    twice as many as successful ones!), which wastes a lot of CPU and
+    leads to inefficient testing. 
 <div class="paragraph"> </div>
 
  But the wasted effort is the least of our problems! Let's take a
@@ -2026,20 +2029,23 @@ We could test <span class="inlinecode"><span class="id" type="var">insert</span>
 <span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">genSortedList</span> (<span class="id" type="var">low</span> <span class="id" type="var">high</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">G</span> (<span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">returnGen</span> []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">ret</span> []<br/>
 &nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">high</span> &lt;? <span class="id" type="var">low</span> <span class="id" type="keyword">then</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">returnGen</span> []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> []<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">freq</span> [ (1, <span class="id" type="var">returnGen</span> []) ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">freq</span> [ (1, <span class="id" type="var">ret</span> []) ;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">size</span>, <span class="id" type="var">x</span> &lt;- <span class="id" type="var">choose</span> (<span class="id" type="var">low</span>, <span class="id" type="var">high</span>);;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">xs</span> &lt;- <span class="id" type="var">genSortedList</span> <span class="id" type="var">x</span> <span class="id" type="var">high</span> <span class="id" type="var">size'</span>;; <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="var">x</span> :: <span class="id" type="var">xs</span>)) ] <span class="id" type="keyword">end</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">x</span> :: <span class="id" type="var">xs</span>)) ] <span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-We use a <span class="inlinecode"><span class="id" type="var">size</span></span> parameter to control the length of generated
-    lists.  If <span class="inlinecode"><span class="id" type="var">size</span></span> is zero, we can only return the empty list which
+We use a <span class="inlinecode"><span class="id" type="var">size</span></span> parameter as usual to control the length of generated
+    lists. 
+<div class="paragraph"> </div>
+
+ If <span class="inlinecode"><span class="id" type="var">size</span></span> is zero, we can only return the empty list which
     is always sorted. If <span class="inlinecode"><span class="id" type="var">size</span></span> is nonzero, we need to perform an
     additional check if <span class="inlinecode"><span class="id" type="var">high</span></span> is less than <span class="inlinecode"><span class="id" type="var">low</span></span> (where we also
     return the empty list).  If it is not, we can proceed to choose to
@@ -2053,14 +2059,20 @@ We use a <span class="inlinecode"><span class="id" type="var">size</span></span>
 </div>
 
 <div class="doc">
-Collecting statistics about the length of lists generated using
-    our new generator... 
+Use <span class="inlinecode"><span class="id" type="var">forAllShrink</span></span> to define a property using the new generator: 
 </div>
 <div class="code code-tight">
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">insert_spec_sorted</span> (<span class="id" type="var">x</span> : <span class="id" type="var">nat</span>) :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">genSortedList</span> 0 10 10) <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">l</span> ⇒ <span class="id" type="var">insert_spec'</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+Now the distribution of lengths looks much better, and we don't
+    discard any tests! 
+</div>
+<div class="code code-tight">
 
 <br/>
 <span class="id" type="var">QuickChick</span> <span class="id" type="var">insert_spec_sorted</span>.<br/>
@@ -2083,22 +2095,22 @@ Collecting statistics about the length of lists generated using
     847 : 1
     +++ Passed 10000 tests (0 discards) 
 </pre>
-  ... is much better! 
+ 
 <div class="paragraph"> </div>
 
- But are we done yet? 
+ Does this mean we are happy? 
 <div class="paragraph"> </div>
 
 <a name="lab69"></a><h4 class="section">Exercise: 5 stars (uniform_sorted)</h4>
- Using "collect", figure out whether generating a sorted list of
-    numbers between 0 and 5 is uniform in the frequencies of the
-    numbers generated.
+ Using "collect", find out whether generating a sorted list of
+    numbers between 0 and 5 is uniform in the frequencies with which
+    <i>each number</i> is found in the generated lists.
 
 <div class="paragraph"> </div>
 
-    Why? Write a different generator genSortedList' that achieves a
-    more uniform distribution, preserving the uniformity in the
-    lengths. 
+    If not, figure out why.  Then write a different generator that
+    achieves a more uniform distribution (preserving uniformity in
+    the lengths). 
 </div>
 <div class="code code-tight">
 

@@ -9,6 +9,7 @@ Require Import List ZArith.
 From QuickChick Require Import QuickChick.
 Import QcDefaultNotation. Import QcNotation. Open Scope qc_scope.
 Import GenLow GenHigh.
+(* Suppress some annoying warnings: *)
 Set Warnings "-extraction-opaque-accessed,-extraction".
 
 Require Export ExtLib.Structures.Monads.
@@ -1337,10 +1338,11 @@ Definition insert_spec (x : nat) (l : list nat) :=
 (** To test this property, QuickChick will try to generate random
     integers [x] and lists [l], _check_ whether the generated [l] is
     sorted, and, if it is, proceed to check the conclusion. If it is
-    not, it will discard the generated inputs and try again. As we can
-    see, this can lead to many discarded tests (here, almost twice as
-    many as successful ones!) which waste a lot of CPU time and leads
-    to inefficient testing. *)
+    not, it will discard the generated inputs and try again.
+
+    As we can see, this can lead to many discarded tests (here, almost
+    twice as many as successful ones!), which wastes a lot of CPU and
+    leads to inefficient testing. *)
 
 (** But the wasted effort is the least of our problems! Let's take a
     peek at the distribution of the lengths of generated lists using
@@ -1376,18 +1378,20 @@ Definition insert_spec' (x : nat) (l : list nat) :=
 Fixpoint genSortedList (low high : nat) (size : nat)
              : G (list nat) :=
   match size with
-  | O => returnGen []
+  | O => ret []
   | S size' =>
     if high <? low then
-      returnGen []
+      ret []
     else
-      freq [ (1, returnGen []) ;
+      freq [ (1, ret []) ;
              (size, x <- choose (low, high);;
                     xs <- genSortedList x high size';; 
-                    returnGen (x :: xs)) ] end.
+                    ret (x :: xs)) ] end.
 
-(** We use a [size] parameter to control the length of generated
-    lists.  If [size] is zero, we can only return the empty list which
+(** We use a [size] parameter as usual to control the length of generated
+    lists. *)
+
+(** If [size] is zero, we can only return the empty list which
     is always sorted. If [size] is nonzero, we need to perform an
     additional check if [high] is less than [low] (where we also
     return the empty list).  If it is not, we can proceed to choose to
@@ -1396,11 +1400,13 @@ Fixpoint genSortedList (low high : nat) (size : nat)
 
 (* Sample (genSortedList 0 10 10). *)
 
-(** Collecting statistics about the length of lists generated using
-    our new generator... *)
+(** Use [forAllShrink] to define a property using the new generator: *)
 
 Definition insert_spec_sorted (x : nat) :=
   forAllShrink (genSortedList 0 10 10) shrink (fun l => insert_spec' x l).
+
+(** Now the distribution of lengths looks much better, and we don't
+    discard any tests! *)
 
 QuickChick insert_spec_sorted.
 (**  
@@ -1419,18 +1425,17 @@ QuickChick insert_spec_sorted.
     847 : 1
     +++ Passed 10000 tests (0 discards) 
 >> *)
-(** ... is much better! *)
 
-(** But are we done yet? *)
+(** Does this mean we are happy? *)
 
 (** **** Exercise: 5 stars (uniform_sorted)  *)
-(** Using "collect", figure out whether generating a sorted list of
-    numbers between 0 and 5 is uniform in the frequencies of the
-    numbers generated.
+(** Using "collect", find out whether generating a sorted list of
+    numbers between 0 and 5 is uniform in the frequencies with which
+    _each number_ is found in the generated lists.
 
-    Why? Write a different generator genSortedList' that achieves a
-    more uniform distribution, preserving the uniformity in the
-    lengths. *)
+    If not, figure out why.  Then write a different generator that
+    achieves a more uniform distribution (preserving uniformity in
+    the lengths). *)
 
 (* FILL IN HERE *)
 (** [] *)

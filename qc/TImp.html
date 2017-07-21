@@ -148,6 +148,9 @@ To compute a fresh natural number given a list of natural numbers,
 <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">fresh</span> (<span class="id" type="var">al</span>:<span class="id" type="var">list</span> <span class="id" type="var">t</span>) : <span class="id" type="var">t</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S</span> (<span class="id" type="var">max_elt</span> <span class="id" type="var">al</span>).<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Include</span> <span class="id" type="var">HasUsualEq</span> &lt;+ <span class="id" type="var">UsualIsEq</span>.<br/>
 </div>
 
 <div class="doc">
@@ -398,9 +401,9 @@ We can now decide whether <span class="inlinecode"><span class="id" type="var">b
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bound_to</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" type="var">D</span> : ∀ (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)} <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>) := {}.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">AtomMap.get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Get</span>.<br/>
 </div>
 
@@ -489,11 +492,11 @@ We can now prove the <span class="inlinecode"><span class="id" type="var">Dec</s
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bound_to</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" type="var">D</span> : ∀ (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)}<br/>
-&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>) := {}.<br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>).<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">AtomMap.get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Get</span>; <span class="id" type="var">solve_sum</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">D</span> <span class="id" type="var">a</span> <span class="id" type="var">T</span>) <span class="id" type="keyword">as</span> [[<span class="id" type="var">Eq</span> | <span class="id" type="var">NEq</span>]]; <span class="id" type="tactic">subst</span>; <span class="id" type="var">solve_sum</span>.<br/>
 <span class="id" type="keyword">Defined</span>.<br/>
@@ -706,11 +709,11 @@ Typing in TImp is decidable: given an expression <span class="inlinecode"><span 
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_has_type</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) <br/>
-&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span>)<br/>
-&nbsp;&nbsp;:= { <span class="id" type="var">dec</span> := <span class="id" type="var">_</span> }.<br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span>).<br/>
 <div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
 <div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">T</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">e</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>;<br/>
@@ -1247,7 +1250,7 @@ To test this property, we construct an appropriate checker:
 &nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒ <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
 &nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
-&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/>
 
 <br/>
@@ -1292,7 +1295,7 @@ To test this property, we construct an appropriate checker:
 &nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒ <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
 &nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
-&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/>
 
 <br/>
@@ -1309,19 +1312,18 @@ To test this property, we construct an appropriate checker:
   [(1,TBool), (2,TNat), (3,TBool), (4,TBool)]
   [(1,VBool false), (2,VNat 0), (3,VBool true), (4,VBool false)]
   TBool
-  None
-  *** Failed after 4 tests and 5 shrinks. (0 discards)
+  Some EAnd (ENum 0) ETrue
+  *** Failed after 28 tests and 7 shrinks. (0 discards)
 </pre>
 
 <div class="paragraph"> </div>
 
- The expression shrank to <span class="inlinecode"><span class="id" type="var">None</span></span>! The default  shrinker for <span class="inlinecode"><span class="id" type="var">option</span></span> 
-    tries to shrink <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> to <span class="inlinecode"><span class="id" type="var">None</span></span>. Since <span class="inlinecode"><span class="id" type="var">None</span></span> causes the 
-    property to fail, QuickChick views this as a succesfull shrink
-    even if <span class="inlinecode"><span class="id" type="var">None</span></span> could not actually be produced by our generator 
-    and doesn't satisfy our preconditions! One solution would be to 
-    check the preconditions in the Checker, filtering out shrinks.
-    But that would be inefficient... 
+ The expression shrank to something ill-typed! Since it causes the
+    checker to fail, QuickChick views this as a succesfull shrink, even 
+    though this could not actually be produced by our generator and 
+    doesn't satisfy our preconditions!  One solution would be to check 
+    the preconditions in the Checker, filtering out shrinks.  But that 
+    would be inefficient. 
 <div class="paragraph"> </div>
 
  We not only need to shrink expressions, we need to shrink them so
@@ -1509,7 +1511,7 @@ As we saw for generators, we can also perform sanity checks on our
 <div class="doc">
 <a name="lab87"></a><h2 class="section">Back to Soundness</h2>
  To lift the shrinker to optional expressions, QuickChick provides
-    a <span class="inlinecode"><span class="id" type="var">lift</span></span> function. 
+    the following function. 
 </div>
 <div class="code code-tight">
 
@@ -1541,7 +1543,7 @@ Armed with shrinking, we can pinpoint the bug in the <span class="inlinecode"><s
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒  <br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
 &nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
-&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/>
 
 <br/>
@@ -1681,11 +1683,11 @@ Now, here is a brute-force decision procedure for the typing
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_well_typed_com</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) <br/>
-&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span>) := {}.<br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span>).<br/>
 <div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
 <div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="var">solve_sum</span>.<br/>
 &nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">TNat</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <br/>
@@ -1804,10 +1806,15 @@ To complete the tour of testing for TImp, here is a (buggy??)
 
  QuickChick is under very active development.  Our vision is that
     it should automate most of the tedious parts of testing, while
-    retaining full customizability. 
+    retaining full customizability.
+
 <div class="paragraph"> </div>
 
- Recall the <span class="inlinecode"><span class="id" type="var">has_type_value</span></span> and its corresponding generator:
+    We close this case study with a brief demo of some things it can
+    do now. 
+<div class="paragraph"> </div>
+
+ Recall the <span class="inlinecode"><span class="id" type="var">has_type_value</span></span> property and its corresponding generator:
 
 <div class="paragraph"> </div>
 
@@ -1824,12 +1831,9 @@ To complete the tour of testing for TImp, here is a (buggy??)
 <div class="paragraph"> </div>
 
 </div>
-
-<div class="paragraph"> </div>
-
-    QuickChick provides a derivation mechanism that produces
-    generators for data satisfying invariants!
-
+    QuickChick includes a derivation mechanism that can <i>automatically</i>
+    produces such generators &mdash; i.e., generators for data structures 
+    satisfying inductively defined properties! 
 </div>
 <div class="code code-tight">
 
@@ -1841,7 +1845,8 @@ To complete the tour of testing for TImp, here is a (buggy??)
 ==&gt; GenSizedSuchThathas_type_value is defined. 
 <div class="paragraph"> </div>
 
- Let's take a closer look at what is being generated. 
+ Let's take a closer look at what is being generated (after 
+    doing some renaming and reformatting). 
 </div>
 <div class="code code-tight">
 
@@ -1852,37 +1857,37 @@ To complete the tour of testing for TImp, here is a (buggy??)
 <div class="doc">
 <pre>
 ===&gt;
-  GenSizedSuchThathas_type_value = fun input0_ : ty =&gt;
+  GenSizedSuchThathas_type_value = fun T : ty =&gt;
   {| arbitrarySizeST := 
-     let fix aux_arb (size0 : nat) (input0_0 : ty) {struct size0} 
+     let fix aux_arb (size0 : nat) (T : ty) {struct size0} 
            : G (option value) :=
        match size0 with
-       | 0 =&gt; backtrack [(1, match input0_0 with
+       | 0 =&gt; backtrack [(1, match T with
                              | TBool =&gt; ret None
                              | TNat =&gt; n &lt;- arbitrary;;
                                        ret (Some (VNat n))
                              end)
-                        ;(1, match input0_0 with
+                        ;(1, match T with
                              | TBool =&gt; b &lt;- arbitrary;;
                                         ret (Some (VBool b)))
                              | TNat =&gt; ret None
                              end)]
-       | S _ =&gt; backtrack [(1, match input0_0 with
+       | S _ =&gt; backtrack [(1, match T with
                                | TBool =&gt; ret None
                                | TNat =&gt; n &lt;- arbitrary;;
                                          ret (Some (VNat n))
                                end)
-                          ;(1, match input0_0 with
+                          ;(1, match T with
                                | TBool =&gt; b &lt;- arbitrary;;
                                           ret (Some (VBool b)))
                                | TNat =&gt; ret None
                                end)]
        end in
-       fun size0 : nat =&gt; aux_arb size0 input0_ |}
+       fun size0 : nat =&gt; aux_arb size0 T |}
 
-  : forall input0_ : ty,
+  : forall T : ty,
       GenSizedSuchThat value 
-          (fun _forGen =&gt; has_type_value _forGen input0_)
+          (fun v =&gt; has_type_value v T)
 </pre>
 
 <div class="paragraph"> </div>
@@ -1959,7 +1964,7 @@ And a coercion between the two.
 &nbsp;&nbsp;∀ (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">nat</span>), <span class="id" type="var">x</span> = <span class="id" type="var">y</span> → <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
 
 <br/>
-<span class="id" type="var">QuickChick</span> <span class="id" type="var">conditional_prop_example</span>.<br/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;conditional_prop_example.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
