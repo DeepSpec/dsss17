@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>QC: QuickChick Utilities</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+<ul id='menu'>
+   <a href='index.html'><li class='section_name'>VMinus Development</li></a>
+   <a href='toc.html'><li>Table of Contents</li></a>
+   <a href='coqindex.html'><li>Index</li></a>
+   <a href='deps.html'><li>Roadmap</li></a>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">QC<span class="subtitle">QuickChick Utilities</span></h1>
+
+
+<div class="code code-tight">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">ExtLib.Structures.Monads</span>.<br/>
+<span class="id" type="keyword">Export</span> <span class="id" type="var">MonadNotation</span>.<br/>
+<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">monad_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick.QuickChick</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">QcDefaultNotation</span>. <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">qc_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">gMonad</span> : `{<span class="id" type="var">Monad</span> <span class="id" type="var">G</span>} | 3 :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> := @<span class="id" type="var">returnGen</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bind</span> := @<span class="id" type="var">bindGen</span><br/>
+&nbsp;&nbsp;}.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a></div>
+
+</div>
+
+</body>
+</html>
