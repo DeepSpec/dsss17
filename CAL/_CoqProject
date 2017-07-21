@@ -1,0 +1,18 @@
+-R compcert/common compcert.common
+-R compcert/cfrontend compcert.cfrontend
+-R compcert/lib compcert.lib
+-R compcert/backend compcert.backend
+-R compcert/cparser compcert.cparser
+-R compcert/flocq compcert.flocq
+-R compcert/driver compcert.driver
+-R compcert/x86_64 compcert.x86_64
+-R compcert/x86 compcert.x86
+-R compcertx/common compcertx.common
+-R compcertx/cfrontend compcertx.cfrontend
+-R compcertx/backend compcertx.backend
+-R compcertx/driver compcertx.driver
+-R compcertx/x86 compcertx.x86
+-R coqrel coqrel
+-R liblayers liblayers
+
+-R tutorial tutorial

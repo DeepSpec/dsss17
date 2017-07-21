@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+# Make sure the coqrel submodule is here
+if [ -e .git ] && ! [ -e coqrel/configure ]; then
+cat >&2 << EOM
+The coqrel submodule is missing. Please use:
+
+    % git submodule init
+    % git submodule update
+
+to retreive it.
+EOM
+exit 1
+fi
+
+# Configure the coqrel library
+(cd coqrel && ./configure)
+
+# Configure Compcert
+(cd compcert && ./configure "$@")
