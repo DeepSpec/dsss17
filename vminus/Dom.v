@@ -12,7 +12,7 @@
 Require Import List Equalities Orders RelationClasses.
 Require Import FSets FMaps.
 Import ListNotations.
-Require Import Util.
+From Vminus Require Import Util.
 
 (* ################################################################# *)
 (** * GRAPH *)

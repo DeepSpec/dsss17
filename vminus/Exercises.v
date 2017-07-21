@@ -23,18 +23,16 @@ Import VS.Typing.
 
 Open Scope imp_scope.
 
-Notation id0 := (Atom.fresh []).
-Notation Y := (Atom.fresh [id0]).
-Notation Z := (Atom.fresh [Y;id0]).
-Notation id1 := (Atom.fresh [Z;Y;id0]).
-Notation id2 := (Atom.fresh [id1;Z;Y;id0]).
-Notation id3 := (Atom.fresh [id2;id1;Z;Y;id0]).
-Notation id4 := (Atom.fresh [id3;id2;id1;Z;Y;id0]).
-Notation id5 := (Atom.fresh [id4;id3;id2;id1;Z;Y;id0]).
+Notation X := (Atom.fresh []).
+Notation Y := (Atom.fresh [X]).
+Notation Z := (Atom.fresh [Y;X]).
+Notation id1 := (Atom.fresh [Z;Y;X]).
+Notation id2 := (Atom.fresh [id1;Z;Y;X]).
+Notation id3 := (Atom.fresh [id2;id1;Z;Y;X]).
+Notation id4 := (Atom.fresh [id3;id2;id1;Z;Y;X]).
+Notation id5 := (Atom.fresh [id4;id3;id2;id1;Z;Y;X]).
 
-Definition X : addr := id0.
-
-Eval compute in (Atom.nat_of id0).
+Eval compute in (Atom.nat_of X).
 
 Require Import QuickChick.QuickChick.
 
@@ -66,52 +64,94 @@ l2:           // block for Y ::= 2
 l3:
   ret
 *)
-Definition entry_lbl := Atom.fresh [].
 
-Definition l0 := Atom.fresh [entry_lbl].
-Definition blk := Atom.fresh [l0; entry_lbl].
-Definition x := Atom.fresh [blk; l0; entry_lbl].
-Definition l1 := Atom.fresh [x;blk;l0;entry_lbl].
+Definition l0 := Atom.fresh [].
+Definition l1 := Atom.fresh [l0].
+Definition l2 := Atom.fresh [l0; l1].
+Definition l3 := Atom.fresh [l0; l1; l2].
+Definition z := Atom.fresh [l0; l1; l2; l3].
+Definition Z' := Atom.fresh [l0; l1; l2; l3; z].
+Definition X' := Atom.fresh [l0; l1; l2; l3; z; Z'].
+Definition Y' := Atom.fresh [l0; l1; l2; l3; z; Z'; X'].
+Definition temp1 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'].
+Definition temp2 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'; temp1].
+Definition temp3 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'; temp1;
+                                  temp2].
+Definition temp4 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'; temp1;
+                                  temp2; temp3].
+Definition temp5 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'; temp1;
+                                  temp2; temp3; temp4].
+Definition temp6 := Atom.fresh [l0; l1; l2; l3; z; Z'; X'; Y'; temp1;
+                                  temp2; temp3; temp4; temp5].
 
+(** Replace the [ ] in the definition below to create the Vminus representation
+of the CFG above: *)
 
-Definition cyclic_phi : ListCFG.t :=
-  (entry_lbl ,
-   [(entry_lbl,
-     [(l0, cmd_tmn (tmn_jmp blk))]) ;
-    (blk,
-     [(x, cmd_phi [(entry_lbl, val_nat 0); (x, val_uid x)]) ;
-      (l1, cmd_tmn (tmn_jmp blk))])]
-  ).
+Definition vm_code : ListCFG.t :=
+(* FILL IN HERE *)
+(l0, []).
 
-(** **** Exercise: 2 stars (cyclic_phi)  *)
-(**
-  Define a ListCFG program that corresponds to the following Vminus code.
+(** **** Exercise: 4 stars (vm_code_wf)  *)
+(** Prove the following lemmas to show that your definition 
+    of [vm_code] is a well-formed Program. *)
 
-[[ 
-entry:
-  br %blk
-
-blk:
-  %x = phi [%entry: 0] [%blk : %x]
-  br blk
-
-
- *)
-
-Lemma NoDup_fresh : forall l, NoDup l -> NoDup ((Atom.fresh l) :: l).
+(** Prove that the code is a well formed CFG. *)
+Lemma vm_code_wf_cfg : ListCFG.wf_cfg vm_code.
 Proof.
-  intros. apply NoDup_cons. apply Atom.fresh_not_in. exact H.
-Qed.
+  (* FILL IN HERE *) Admitted.
+      
 
-Lemma nodups_names: NoDup [l1;x;blk;l0;entry_lbl].
+(** Prove that the instructions are well formed. *)
+Lemma vm_code_wf_insn : forall (p : pc) (i : insn),
+    ListCFG.insn_at_pc vm_code p i -> wf_insn vm_code i p.
 Proof.
-  repeat (apply NoDup_fresh). apply NoDup_nil.
-Qed.  
+  (* FILL IN HERE *) Admitted.
 
 
-
-(** **** Exercise: 4 stars (cyclic_phi_wf)  *)
-(** Prove that your definition of [cyclic_phi] is a well-formed CFG. *)
-Lemma cyclic_phi_wf : wf_prog cyclic_phi.
+(** Prove that the terminators are well formed. *)
+Lemma vm_code_wf_tmn : forall (p' : pc) (i : insn),
+    ListCFG.tmn_pc vm_code p' -> ListCFG.insn_at_pc vm_code p' i -> is_tmn i.
 Proof.
-Admitted.
+  (* FILL IN HERE *) Admitted.
+
+
+(** Prove that the entry block is well formed. *)
+Lemma vm_code_wf_entry : forall (p :pc),
+    ~ succ_pc vm_code p (block_entry (ListCFG.entry_block vm_code)).
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+Print ListCFG.
+
+Lemma wf_insn_induct :
+  forall l1 bls i p a,
+  wf_insn (l1, bls) i p -> wf_insn (l1, a) i p -> wf_insn (l1, bls ++ a) i p.
+Proof.
+  Admitted.
+    
+Lemma wf_prog_induct :
+  forall l1 bls a
+    (Hwfl: wf_prog (l1, bls))
+    (Hwfcfg: ListCFG.wf_cfg (l1, bls++a)) 
+    (Hwfins: forall (p : pc) (i : insn), ListCFG.insn_at_pc (l1, a) p i -> wf_insn (l1, a) i p)
+    (Hwftmn: forall (p' : pc) (i : insn),
+        ListCFG.tmn_pc (l1, a) p' -> ListCFG.insn_at_pc (l1, a) p' i -> is_tmn i),
+    wf_prog (l1, bls++a).
+Proof.
+  intros l1 bls a Hwfl Hwfcfg Hwfins Hwftmn.
+  inversion Hwfl.
+  constructor; auto; admit.
+Admitted.      
+
+(** Given the lemmas above, we can prove the program is well formed. *)
+Lemma vm_code_wf_prog : wf_prog vm_code.
+Proof.
+  constructor.
+  - apply vm_code_wf_cfg.
+  - apply vm_code_wf_insn.
+  - apply vm_code_wf_tmn.
+  - apply vm_code_wf_entry.
+Qed. 
+
+
+

@@ -36,7 +36,7 @@
 
 <div class="paragraph"> </div>
 
-<a name="lab157"></a><h1 class="section">Placeholder</h1>
+<a name="lab155"></a><h1 class="section">Placeholder</h1>
 
 </div>
 <div class="code code-space">
@@ -49,6 +49,9 @@
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick.QuickChick</span>.<br/>
 <span class="id" type="keyword">Import</span> <span class="id" type="var">QcDefaultNotation</span>. <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">qc_scope</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.QC</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Atom</span>.<br/>
@@ -82,107 +85,46 @@
 Opsem 
 </div>
 <div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">locals_store</span> := <span class="id" type="var">get_fresh_atoms</span> 10 [].<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_memory</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_memory_on_domain</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">mem</span>: <span class="id" type="var">mem</span>) (<span class="id" type="var">dom</span>: <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>) : <span class="id" type="var">string</span> :=<br/>
 &nbsp;&nbsp;"mem: " ++ (<span class="id" type="var">show_image_given_domain</span> <span class="id" type="var">mem</span> <span class="id" type="var">dom</span> "addr").<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_locals</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_locals_on_domain</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">loc</span>: <span class="id" type="var">loc</span>) (<span class="id" type="var">dom</span>: <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>): <span class="id" type="var">string</span> :=<br/>
 &nbsp;&nbsp;"locals: " ++ (<span class="id" type="var">show_image_given_domain</span> <span class="id" type="var">loc</span> <span class="id" type="var">dom</span> "uid").<br/>
 
 <br/>
-<span class="comment">(*<br/>
-Record&nbsp;vminus_state&nbsp;:&nbsp;Type&nbsp;:=<br/>
-&nbsp;&nbsp;mk_vminus_state&nbsp;{<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_mem:&nbsp;mem;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_mem_dom:&nbsp;list&nbsp;Atom.t;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_pc:&nbsp;pc;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_loc:&nbsp;loc;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_loc_dom:&nbsp;list&nbsp;Atom.t;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_ppc:&nbsp;pc;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_ploc:&nbsp;loc;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;vst_ploc_dom:&nbsp;list&nbsp;Atom.t<br/>
-&nbsp;&nbsp;}.<br/>
-*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_locals</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">loc</span>: <span class="id" type="var">loc</span>): <span class="id" type="var">string</span> := <span class="id" type="var">show_locals_on_domain</span> <span class="id" type="var">loc</span> <span class="id" type="var">locals_store</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_loc_from_atom_list</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_loc_with_domain</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">atom_list</span> : <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>) : <span class="id" type="var">G</span> <span class="id" type="var">loc</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">bindGen</span> (<span class="id" type="var">vectorOf</span> (<span class="id" type="var">List.length</span> <span class="id" type="var">atom_list</span>) <span class="id" type="var">arbitrary</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">nat_list</span> ⇒ <br/>
-&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">a</span> : <span class="id" type="var">Atom.t</span>) ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">index_of_atom_in_list</span> <span class="id" type="var">a</span> <span class="id" type="var">atom_list</span>) <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.nth_error</span> <span class="id" type="var">nat_list</span> <span class="id" type="var">i</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)).<br/>
+&nbsp;&nbsp;<span class="id" type="var">nat_list</span> &lt;- <span class="id" type="var">vectorOf</span> (<span class="id" type="var">List.length</span> <span class="id" type="var">atom_list</span>) <span class="id" type="var">arbitrary</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">a</span> : <span class="id" type="var">Atom.t</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">index_of_atom_in_list</span> <span class="id" type="var">a</span> <span class="id" type="var">atom_list</span>) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.nth_error</span> <span class="id" type="var">nat_list</span> <span class="id" type="var">i</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>).<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_mem_from_atom_list</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_loc</span> := <span class="id" type="var">gen_loc_with_domain</span> <span class="id" type="var">locals_store</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_mem_with_domain</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">atom_list</span> : <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>) : <span class="id" type="var">G</span> <span class="id" type="var">mem</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">bindGen</span> (<span class="id" type="var">vectorOf</span> (<span class="id" type="var">List.length</span> <span class="id" type="var">atom_list</span>) <span class="id" type="var">arbitrary</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">nat_list</span> ⇒ <br/>
-&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">a</span> : <span class="id" type="var">Atom.t</span>) ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">index_of_atom_in_list</span> <span class="id" type="var">a</span> <span class="id" type="var">atom_list</span>) <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ 0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.nth</span> <span class="id" type="var">i</span> <span class="id" type="var">nat_list</span> 0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)).<br/>
-
-<br/>
-<span class="comment">(*<br/>
-Definition&nbsp;gen_opsem_vminus_state:&nbsp;GenSized&nbsp;vminus_state&nbsp;:=<br/>
-&nbsp;&nbsp;{|&nbsp;arbitrarySized&nbsp;n&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;mem_dom&nbsp;:=&nbsp;get_fresh_atoms&nbsp;n&nbsp;<span class="inlinecode"></span>&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;loc_dom&nbsp;:=&nbsp;get_fresh_atoms&nbsp;n&nbsp;<span class="inlinecode"></span>&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;gmem&nbsp;:=&nbsp;gen_mem_from_atom_list&nbsp;mem_dom&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;gloc&nbsp;:=&nbsp;gen_loc_from_atom_list&nbsp;mem_dom&nbsp;in<br/>
-<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bindGen&nbsp;gmem&nbsp;(fun&nbsp;mem&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bindGen&nbsp;arbitrary&nbsp;(fun&nbsp;pc&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bindGen&nbsp;gloc&nbsp;(fun&nbsp;loc&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bindGen&nbsp;arbitrary&nbsp;(fun&nbsp;ppc&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bindGen&nbsp;gloc&nbsp;(fun&nbsp;prev_loc&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnGen<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(mk_vminus_state&nbsp;mem&nbsp;mem_dom<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pc<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;loc_dom<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ppc<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prev_loc&nbsp;loc_dom))))))<br/>
-&nbsp;&nbsp;|}.<br/>
-<br/>
-Instance&nbsp;show_vminus_state&nbsp;`{Show&nbsp;pc}&nbsp;:&nbsp;Show&nbsp;vminus_state&nbsp;:=<br/>
-&nbsp;&nbsp;{|&nbsp;show&nbsp;st&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;'mk_vminus_state&nbsp;mem&nbsp;mem_dom<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pc<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;loc_dom<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ppc<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prev_loc&nbsp;prev_loc_dom&nbsp;:=&nbsp;st&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(show_memory&nbsp;mem&nbsp;mem_dom&nbsp;++&nbsp;",&nbsp;"&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"pc:&nbsp;"&nbsp;++&nbsp;show&nbsp;pc&nbsp;++&nbsp;",&nbsp;"&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;show_locals&nbsp;loc&nbsp;loc_dom&nbsp;++&nbsp;",&nbsp;"&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ppc:&nbsp;"&nbsp;++&nbsp;show&nbsp;ppc&nbsp;++&nbsp;",&nbsp;"&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"prev_loc:&nbsp;"&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;show_locals&nbsp;prev_loc&nbsp;prev_loc_dom)%string<br/>
-&nbsp;&nbsp;|}.<br/>
-<br/>
-Definition&nbsp;vst_to_state&nbsp;(vst:&nbsp;vminus_state)&nbsp;:=<br/>
-&nbsp;&nbsp;mkst&nbsp;(vst_mem&nbsp;vst)&nbsp;(vst_pc&nbsp;vst)&nbsp;(vst_loc&nbsp;vst)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(vst_ppc&nbsp;vst)&nbsp;(vst_ploc&nbsp;vst).<br/>
-*)</span><br/>
-
-<br/>
-<span class="comment">(*<br/>
-Fixpoint&nbsp;generate_dummy_insns&nbsp;(n&nbsp;:&nbsp;nat)&nbsp;:&nbsp;list&nbsp;insn&nbsp;:=<br/>
-&nbsp;&nbsp;let&nbsp;fixed_addr&nbsp;:=&nbsp;Atom.fresh&nbsp;<span class="inlinecode"></span>&nbsp;in<br/>
-&nbsp;&nbsp;let&nbsp;fixed_uid&nbsp;:=&nbsp;Atom.fresh&nbsp;<span class="inlinecode"></span>&nbsp;in<br/>
-&nbsp;&nbsp;match&nbsp;n&nbsp;with<br/>
-&nbsp;&nbsp;|&nbsp;0&nbsp;=&gt;&nbsp;<span class="inlinecode"></span><br/>
-&nbsp;&nbsp;|&nbsp;S&nbsp;n'&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(fixed_uid,&nbsp;cmd_load&nbsp;fixed_addr)&nbsp;::&nbsp;generate_dummy_insns&nbsp;n'<br/>
-&nbsp;&nbsp;end.<br/>
-&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">nat_list</span> &lt;- <span class="id" type="var">vectorOf</span> (<span class="id" type="var">List.length</span> <span class="id" type="var">atom_list</span>) <span class="id" type="var">arbitrary</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">a</span> : <span class="id" type="var">Atom.t</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">index_of_atom_in_list</span> <span class="id" type="var">a</span> <span class="id" type="var">atom_list</span>) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.nth</span> <span class="id" type="var">i</span> <span class="id" type="var">nat_list</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>).<br/>
 
 <br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">generate_dummy_insns</span> <span class="id" type="var">n</span>: <span class="id" type="var">list</span> <span class="id" type="var">insn</span> :=<br/>
@@ -197,7 +139,6 @@ Fixpoint&nbsp;generate_dummy_insns&nbsp;(n&nbsp;:&nbsp;nat)&nbsp;:&nbsp;list&nbs
 &nbsp;&nbsp;<span class="id" type="keyword">in</span> <span class="id" type="var">List.rev</span> (<span class="id" type="var">helper</span> <span class="id" type="var">n</span>).<br/>
 
 <br/>
-<span class="comment">(*&nbsp;TODO:&nbsp;proper&nbsp;generator&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;Returns&nbsp;a&nbsp;CFG&nbsp;with&nbsp;a&nbsp;single&nbsp;block&nbsp;containing&nbsp;instrs&nbsp;++&nbsp;instrs_after,&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;the&nbsp;pc&nbsp;in&nbsp;that&nbsp;block&nbsp;that&nbsp;begins&nbsp;at&nbsp;instrs_after&nbsp;*)</span><br/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">wrap_code_in_cfg</span> (<span class="id" type="var">p</span>: <span class="id" type="var">pc</span>) (<span class="id" type="var">instrs</span> <span class="id" type="var">instrs_after</span>: <span class="id" type="var">list</span> <span class="id" type="var">insn</span>)<br/>

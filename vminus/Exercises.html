@@ -61,20 +61,17 @@
 <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>0</sub></span> := (<span class="id" type="var">Atom.fresh</span> []).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">Y</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">Z</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>1</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>2</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>3</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>4</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
-<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>5</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>4</sub></span>;<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">id<sub>0</sub></span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">X</span> := (<span class="id" type="var">Atom.fresh</span> []).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">Y</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">Z</span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>1</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>2</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>3</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>4</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">id<sub>5</sub></span> := (<span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">id<sub>4</sub></span>;<span class="id" type="var">id<sub>3</sub></span>;<span class="id" type="var">id<sub>2</sub></span>;<span class="id" type="var">id<sub>1</sub></span>;<span class="id" type="var">Z</span>;<span class="id" type="var">Y</span>;<span class="id" type="var">X</span>]).<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">X</span> : <span class="id" type="var">addr</span> := <span class="id" type="var">id<sub>0</sub></span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">id<sub>0</sub></span>).<br/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">X</span>).<br/>
 
 <br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick.QuickChick</span>.<br/>
@@ -91,7 +88,7 @@
 </div>
 
 <div class="doc">
-<a name="lab169"></a><h4 class="section">Exercise: 2 stars (Example Compiler Output)</h4>
+<a name="lab171"></a><h4 class="section">Exercise: 2 stars (Example Compiler Output)</h4>
    Define a ListCFG program that corresponds to the following Vminus code.
 Vminus code:
 
@@ -121,70 +118,121 @@ Vminus code:
  
 </div>
 <div class="code code-tight">
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">entry_lbl</span> := <span class="id" type="var">Atom.fresh</span> [].<br/>
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>0</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">entry_lbl</span>].<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">blk</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">entry_lbl</span>].<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">x</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">blk</span>; <span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">entry_lbl</span>].<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>1</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">x</span>;<span class="id" type="var">blk</span>;<span class="id" type="var">l<sub>0</sub></span>;<span class="id" type="var">entry_lbl</span>].<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">cyclic_phi</span> : <span class="id" type="var">ListCFG.t</span> :=<br/>
-&nbsp;&nbsp;(<span class="id" type="var">entry_lbl</span> ,<br/>
-&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">entry_lbl</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">l<sub>0</sub></span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">blk</span>))]) ;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">blk</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[(<span class="id" type="var">x</span>, <span class="id" type="var">cmd_phi</span> [(<span class="id" type="var">entry_lbl</span>, <span class="id" type="var">val_nat</span> 0); (<span class="id" type="var">x</span>, <span class="id" type="var">val_uid</span> <span class="id" type="var">x</span>)]) ;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">blk</span>))])]<br/>
-&nbsp;&nbsp;).<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>0</sub></span> := <span class="id" type="var">Atom.fresh</span> [].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>1</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>2</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">l<sub>3</sub></span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">z</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Z'</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">X'</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Y'</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp1</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp2</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>; <span class="id" type="var">temp1</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp3</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>; <span class="id" type="var">temp1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">temp2</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp4</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>; <span class="id" type="var">temp1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">temp2</span>; <span class="id" type="var">temp3</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp5</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>; <span class="id" type="var">temp1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">temp2</span>; <span class="id" type="var">temp3</span>; <span class="id" type="var">temp4</span>].<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">temp6</span> := <span class="id" type="var">Atom.fresh</span> [<span class="id" type="var">l<sub>0</sub></span>; <span class="id" type="var">l<sub>1</sub></span>; <span class="id" type="var">l<sub>2</sub></span>; <span class="id" type="var">l<sub>3</sub></span>; <span class="id" type="var">z</span>; <span class="id" type="var">Z'</span>; <span class="id" type="var">X'</span>; <span class="id" type="var">Y'</span>; <span class="id" type="var">temp1</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">temp2</span>; <span class="id" type="var">temp3</span>; <span class="id" type="var">temp4</span>; <span class="id" type="var">temp5</span>].<br/>
 </div>
 
 <div class="doc">
-<a name="lab170"></a><h4 class="section">Exercise: 2 stars (cyclic_phi)</h4>
-
-<div class="paragraph"> </div>
-
-  Define a ListCFG program that corresponds to the following Vminus code.
-
-<div class="paragraph"> </div>
-
-<span class="inlinecode">[</span> 
-<span class="inlinecode"><span class="id" type="var">entry</span>:</span>
-  <span class="inlinecode"><span class="id" type="var">br</span></span> <span class="inlinecode">%<span class="id" type="var">blk</span></span>
-
-<span class="inlinecode"><span class="id" type="var">blk</span>:</span>
-  <span class="inlinecode">%<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">phi</span></span> <span class="inlinecode">[%<span class="id" type="var">entry</span>:</span> <span class="inlinecode">0]</span> <span class="inlinecode">[%<span class="id" type="var">blk</span></span> <span class="inlinecode">:</span> <span class="inlinecode">%<span class="id" type="var">x</span>]</span>
-  <span class="inlinecode"><span class="id" type="var">br</span></span> <span class="inlinecode"><span class="id" type="var">blk</span></span>
-<span class="inlinecode">]</span>
-
-<div class="paragraph"> </div>
-
- 
+Replace the <span class="inlinecode"></span> <span class="inlinecode"></span> in the definition below to create the Vminus representation
+of the CFG above: 
 </div>
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">NoDup_fresh</span> : ∀ <span class="id" type="var">l</span>, <span class="id" type="var">NoDup</span> <span class="id" type="var">l</span> → <span class="id" type="var">NoDup</span> ((<span class="id" type="var">Atom.fresh</span> <span class="id" type="var">l</span>) :: <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_cons</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Atom.fresh_not_in</span>. <span class="id" type="tactic">exact</span> <span class="id" type="var">H</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nodups_names</span>: <span class="id" type="var">NoDup</span> [<span class="id" type="var">l<sub>1</sub></span>;<span class="id" type="var">x</span>;<span class="id" type="var">blk</span>;<span class="id" type="var">l<sub>0</sub></span>;<span class="id" type="var">entry_lbl</span>].<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_fresh</span>). <span class="id" type="tactic">apply</span> <span class="id" type="var">NoDup_nil</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">vm_code</span> : <span class="id" type="var">ListCFG.t</span> :=<br/>
+<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span><br/>
+(<span class="id" type="var">l<sub>0</sub></span>, []).<br/>
 </div>
 
 <div class="doc">
-<a name="lab171"></a><h4 class="section">Exercise: 4 stars (cyclic_phi_wf)</h4>
- Prove that your definition of <span class="inlinecode"><span class="id" type="var">cyclic_phi</span></span> is a well-formed CFG. 
+<a name="lab172"></a><h4 class="section">Exercise: 4 stars (vm_code_wf)</h4>
+ Prove the following lemmas to show that your definition 
+    of <span class="inlinecode"><span class="id" type="var">vm_code</span></span> is a well-formed Program. 
+<div class="paragraph"> </div>
+
+ Prove that the code is a well formed CFG. 
 </div>
 <div class="code code-tight">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cyclic_phi_wf</span> : <span class="id" type="var">wf_prog</span> <span class="id" type="var">cyclic_phi</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">vm_code_wf_cfg</span> : <span class="id" type="var">ListCFG.wf_cfg</span> <span class="id" type="var">vm_code</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Prove that the instructions are well formed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">vm_code_wf_insn</span> : ∀ (<span class="id" type="var">p</span> : <span class="id" type="var">pc</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">insn</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ListCFG.insn_at_pc</span> <span class="id" type="var">vm_code</span> <span class="id" type="var">p</span> <span class="id" type="var">i</span> → <span class="id" type="var">wf_insn</span> <span class="id" type="var">vm_code</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Prove that the terminators are well formed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">vm_code_wf_tmn</span> : ∀ (<span class="id" type="var">p'</span> : <span class="id" type="var">pc</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">insn</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ListCFG.tmn_pc</span> <span class="id" type="var">vm_code</span> <span class="id" type="var">p'</span> → <span class="id" type="var">ListCFG.insn_at_pc</span> <span class="id" type="var">vm_code</span> <span class="id" type="var">p'</span> <span class="id" type="var">i</span> → <span class="id" type="var">is_tmn</span> <span class="id" type="var">i</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Prove that the entry block is well formed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">vm_code_wf_entry</span> : ∀ (<span class="id" type="var">p</span> :<span class="id" type="var">pc</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;¬ <span class="id" type="var">succ_pc</span> <span class="id" type="var">vm_code</span> <span class="id" type="var">p</span> (<span class="id" type="var">block_entry</span> (<span class="id" type="var">ListCFG.entry_block</span> <span class="id" type="var">vm_code</span>)).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ListCFG</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_insn_induct</span> :<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">bls</span> <span class="id" type="var">i</span> <span class="id" type="var">p</span> <span class="id" type="var">a</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">wf_insn</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">bls</span>) <span class="id" type="var">i</span> <span class="id" type="var">p</span> → <span class="id" type="var">wf_insn</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">a</span>) <span class="id" type="var">i</span> <span class="id" type="var">p</span> → <span class="id" type="var">wf_insn</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">bls</span> ++ <span class="id" type="var">a</span>) <span class="id" type="var">i</span> <span class="id" type="var">p</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">Admitted</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_prog_induct</span> :<br/>
+&nbsp;&nbsp;∀ <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">bls</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfl</span>: <span class="id" type="var">wf_prog</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">bls</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfcfg</span>: <span class="id" type="var">ListCFG.wf_cfg</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">bls</span>++<span class="id" type="var">a</span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwfins</span>: ∀ (<span class="id" type="var">p</span> : <span class="id" type="var">pc</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">insn</span>), <span class="id" type="var">ListCFG.insn_at_pc</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">a</span>) <span class="id" type="var">p</span> <span class="id" type="var">i</span> → <span class="id" type="var">wf_insn</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">a</span>) <span class="id" type="var">i</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">Hwftmn</span>: ∀ (<span class="id" type="var">p'</span> : <span class="id" type="var">pc</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">insn</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ListCFG.tmn_pc</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">a</span>) <span class="id" type="var">p'</span> → <span class="id" type="var">ListCFG.insn_at_pc</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">a</span>) <span class="id" type="var">p'</span> <span class="id" type="var">i</span> → <span class="id" type="var">is_tmn</span> <span class="id" type="var">i</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">wf_prog</span> (<span class="id" type="var">l<sub>1</sub></span>, <span class="id" type="var">bls</span>++<span class="id" type="var">a</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">bls</span> <span class="id" type="var">a</span> <span class="id" type="var">Hwfl</span> <span class="id" type="var">Hwfcfg</span> <span class="id" type="var">Hwfins</span> <span class="id" type="var">Hwftmn</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hwfl</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>; <span class="id" type="var">admit</span>.<br/>
 <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Given the lemmas above, we can prove the program is well formed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">vm_code_wf_prog</span> : <span class="id" type="var">wf_prog</span> <span class="id" type="var">vm_code</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">vm_code_wf_cfg</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">vm_code_wf_insn</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">vm_code_wf_tmn</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">vm_code_wf_entry</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
 </div>
 </div>
 

@@ -117,11 +117,18 @@ subexpressions and appends the instruction that performs the binary
 operation. *)
 
 
-Definition comp_bop (b:bop) (e1 e2: FRESH (val * list insn)) : FRESH (val * list insn) :=
+Definition comp_bop
+             (b:bop) (e1 e2: FRESH (val * list insn))
+           : FRESH (val * list insn) :=
   '(v1, c1) <- e1;
   '(v2, c2) <- e2;
-  'r <- fresh; 
-  mret (val_uid r, (c1 ++ c2 ++ [(r, cmd_bop b v1 v2)])).
+  'r <- fresh;
+(*!*)
+  mret (val_uid r, (c1 ++ c2 ++ [(r, cmd_bop b v1 v2)])) 
+(*!
+  mret (val_uid r, (c2 ++ c1 ++ [(r, cmd_bop b v2 v1)])) 
+*)
+.
 
 (**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)
@@ -129,19 +136,21 @@ Definition comp_bop (b:bop) (e1 e2: FRESH (val * list insn)) : FRESH (val * list
 
 (** The translation of an Imp [aexp] is mostly handled by [comp_bop].
 
-The only interesting case is that for compiling Imp identifiers.  However, since
-the Imp global state and Vminus global state are the same, we simply translate
-a reference to an Imp identifier into a load from that identifier, treated as an
-address.
-*)
-
+The only interesting case is that for compiling Imp identifiers.
+However, since the Imp global state and Vminus global state are the
+same, we simply translate a reference to an Imp identifier into a load
+from that identifier, treated as an address. *)
 
 Fixpoint comp_aexp (a:aexp) : FRESH (val * list insn) :=
   match a with
     | ANum n => mret (val_nat n, [])
     | AId i => 'r <- fresh; mret (val_uid r, [(r, cmd_load i)])
+(*!*)
     | APlus a1 a2 => comp_bop bop_add (comp_aexp a1) (comp_aexp a2)
-    | AMinus a1 a2 => comp_bop bop_sub (comp_aexp a1) (comp_aexp a2)
+    (*! | APlus a1 a2 => comp_bop bop_sub (comp_aexp a1) (comp_aexp a2) *)
+(*!*)
+    | AMinus a1 a2 => comp_bop bop_sub (comp_aexp a1) (comp_aexp a2) 
+    (*! | AMinus a1 a2 => comp_bop bop_sub (comp_aexp a1) (comp_aexp a1) *)
     | AMult a1 a2 => comp_bop bop_mul (comp_aexp a1) (comp_aexp a2)
   end.
 
@@ -165,7 +174,11 @@ Fixpoint comp_bexp (b:bexp) : FRESH (val * list insn) :=
     | BEq a1 a2 => comp_bop bop_eq (comp_aexp a1) (comp_aexp a2)
     | BLe a1 a2 => comp_bop bop_le (comp_aexp a1) (comp_aexp a2)
     | BAnd b1 b2 => comp_bop bop_and (comp_bexp b1) (comp_bexp b2)
+(*!*)
     | BNot b1 => comp_bop bop_eq (comp_bexp b1) (mret (val_nat 0, []))
+
+    (*! | BNot b1 => comp_bop bop_eq (comp_bexp b1) (mret (val_nat 1, [])) *)
+
   end.
 
 (**  ------------------------------------------------------------------------- *)
@@ -221,9 +234,12 @@ Definition comp_store (a:aexp) (v:addr) (k:lbl) : FRESH (list insn) :=
   'x <- fresh;
   'y <- fresh;
   '(i, is) <- comp_aexp a; 
+(*!*)
   mret (is ++ [ (x, cmd_store v i); 
-               (y, cmd_tmn (tmn_jmp k)) ]).
-
+                  (y, cmd_tmn (tmn_jmp k)) ])
+(*! mret (is ++ [ (x, cmd_store v i); 
+                (y, cmd_tmn (tmn_jmp x)) ]) *)
+.
 
 (** Similarly, [comp_cond] generates the instructions leading up to a
 conditional branch.  It takes two continuation labels, one for each branch.  *)
@@ -231,7 +247,10 @@ conditional branch.  It takes two continuation labels, one for each branch.  *)
 Definition comp_cond (b:bexp) (l1 l2:lbl) : FRESH (list insn) :=
   '(v, is) <- comp_bexp b;
   'x <- fresh;
-  mret (is ++ [ (x, cmd_tmn (tmn_cbr v l1 l2)) ] ).
+(*!*)
+  mret (is ++ [ (x, cmd_tmn (tmn_cbr v l1 l2)) ] )
+(*!  mret (is ++ [ (x, cmd_tmn (tmn_cbr v l2 l1)) ] ) *)
+.
 
 (**  ------------------------------------------------------------------------- *)
 (* ################################################################# *)

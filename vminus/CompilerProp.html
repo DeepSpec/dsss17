@@ -34,7 +34,7 @@
 
 
 <div class="doc">
-<a name="lab91"></a><h1 class="section">Imp to Vminus Compiler Correctness</h1>
+<a name="lab90"></a><h1 class="section">Imp to Vminus Compiler Correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -80,7 +80,7 @@ There are a few challenges in proving that this compiler is correct:
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab92"></a><h1 class="section">Sequences</h1>
+ <a name="lab91"></a><h1 class="section">Sequences</h1>
 
 <div class="paragraph"> </div>
 
@@ -115,7 +115,7 @@ compiler.  For our purposes, we need:
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab93"></a><h1 class="section">Expression Compilation Properties</h1>
+ <a name="lab92"></a><h1 class="section">Expression Compilation Properties</h1>
 
 <div class="paragraph"> </div>
 
@@ -203,7 +203,7 @@ monotonically.
 
 <div class="doc">
 <hr/>
- <a name="lab94"></a><h1 class="section">General expression compilation correctness</h1>
+ <a name="lab93"></a><h1 class="section">General expression compilation correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -236,13 +236,13 @@ evaluating.
 
 <div class="doc">
 <hr/>
- <a name="lab95"></a><h1 class="section">Star vs. Plus</h1>
-<a name="lab96"></a><h4 class="section">Exercise: 1 star, recommended (why star?)</h4>
+ <a name="lab94"></a><h1 class="section">Star vs. Plus</h1>
+<a name="lab95"></a><h4 class="section">Exercise: 1 star, recommended (why star?)</h4>
  Why do we use <span class="inlinecode"><span class="id" type="var">star</span></span> in the definition of correctness? Would <span class="inlinecode"><span class="id" type="var">plus</span></span> work? 
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab97"></a><h1 class="section">Binop Compilation Correctness</h1>
+ <a name="lab96"></a><h1 class="section">Binop Compilation Correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -376,7 +376,7 @@ executions of the two sub expressions.
 
 <div class="doc">
 <hr/>
- <a name="lab98"></a><h1 class="section">Aexp Compilation Correctness</h1>
+ <a name="lab97"></a><h1 class="section">Aexp Compilation Correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -384,7 +384,7 @@ executions of the two sub expressions.
 <span class="inlinecode"><span class="id" type="var">comp_bop</span></span> to correctly compile a binary operation. 
 <div class="paragraph"> </div>
 
-<a name="lab99"></a><h4 class="section">Exercise: 3 stars: (comp_aexp_correct)</h4>
+<a name="lab98"></a><h4 class="section">Exercise: 3 stars: (comp_aexp_correct)</h4>
 
 <div class="paragraph"> </div>
 
@@ -422,7 +422,7 @@ proof below.
 
 <div class="doc">
 <hr/>
- <a name="lab100"></a><h1 class="section">Bexp Compilation Correctness</h1>
+ <a name="lab99"></a><h1 class="section">Bexp Compilation Correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -481,7 +481,7 @@ analogously to that of aexps.
 
 <div class="doc">
 <hr/>
- <a name="lab101"></a><h1 class="section">Tactic Support</h1>
+ <a name="lab100"></a><h1 class="section">Tactic Support</h1>
 
 <div class="paragraph"> </div>
 
@@ -516,7 +516,7 @@ the cases of our proofs and noticing the common pattern of destruction.
 
 <div class="doc">
 <hr/>
- <a name="lab102"></a><h1 class="section">Store Command Correctness</h1>
+ <a name="lab101"></a><h1 class="section">Store Command Correctness</h1>
 
 <div class="paragraph"> </div>
 
@@ -594,11 +594,11 @@ semantics.
 
 <div class="doc">
 <hr/>
- <a name="lab103"></a><h1 class="section">Conditionals</h1>
+ <a name="lab102"></a><h1 class="section">Conditionals</h1>
 
 <div class="paragraph"> </div>
 
-<a name="lab104"></a><h4 class="section">Exercise: 3 stars: (comp_cond_correct)</h4>
+<a name="lab103"></a><h4 class="section">Exercise: 3 stars: (comp_cond_correct)</h4>
 
 <div class="paragraph"> </div>
 
@@ -629,7 +629,7 @@ complete the proof below.
 
 <div class="doc">
 <hr/>
- <a name="lab105"></a><h1 class="section">Correctness of the Compiler</h1>
+ <a name="lab104"></a><h1 class="section">Correctness of the Compiler</h1>
 
 <div class="paragraph"> </div>
 
@@ -646,7 +646,7 @@ help line up the Vminus code.
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab106"></a><h2 class="section">Simulation relation.</h2>
+ <a name="lab105"></a><h2 class="section">Simulation relation.</h2>
 
 <div class="paragraph"> </div>
 
@@ -690,7 +690,7 @@ help line up the Vminus code.
 
 <div class="doc">
 <hr/>
- <a name="lab107"></a><h3 class="section">Lift the relation to whole states</h3>
+ <a name="lab106"></a><h3 class="section">Lift the relation to whole states</h3>
 
 <div class="paragraph"> </div>
 
@@ -730,7 +730,7 @@ help line up the Vminus code.
 
 <div class="doc">
 <hr/>
- <a name="lab108"></a><h2 class="section">Translation simulation: First try.</h2>
+ <a name="lab107"></a><h2 class="section">Translation simulation: First try.</h2>
 
 <div class="paragraph"> </div>
 
@@ -819,7 +819,7 @@ Imp small-step semantics can be simulated by (zero or more) steps of the Vminus 
 
 <div class="doc">
 <hr/>
- <a name="lab109"></a><h1 class="section">Stuttering</h1>
+ <a name="lab108"></a><h1 class="section">Stuttering</h1>
 
 <div class="paragraph"> </div>
 
@@ -835,7 +835,7 @@ Imp small-step semantics can be simulated by (zero or more) steps of the Vminus 
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab110"></a><h2 class="section">Eliminating Stuttering</h2>
+ <a name="lab109"></a><h2 class="section">Eliminating Stuttering</h2>
 
 <div class="paragraph"> </div>
 
@@ -878,7 +878,7 @@ Lift to Imp states
 
 <div class="doc">
 <hr/>
- <a name="lab111"></a><h2 class="section">Lemmas about the measure.</h2>
+ <a name="lab110"></a><h2 class="section">Lemmas about the measure.</h2>
 
 </div>
 <div class="code code-space">
@@ -925,7 +925,7 @@ Lift to Imp states
 
 <div class="doc">
 <hr/>
- <a name="lab112"></a><h2 class="section">Refining the simulation proof.</h2>
+ <a name="lab111"></a><h2 class="section">Refining the simulation proof.</h2>
 
 <div class="paragraph"> </div>
 
@@ -996,7 +996,7 @@ instructions are <span class="inlinecode"><span class="id" type="var">SKIP</span
 
 <div class="doc">
 <hr/>
- <a name="lab113"></a><h2 class="section">Relating the initial states</h2>
+ <a name="lab112"></a><h2 class="section">Relating the initial states</h2>
 
 <div class="paragraph"> </div>
 
@@ -1046,7 +1046,7 @@ is never "trivial" &mdash; we always get some Vminus code.
 
 <div class="doc">
 <hr/>
- <a name="lab114"></a><h2 class="section">Monotonicity of Compiler State</h2>
+ <a name="lab113"></a><h2 class="section">Monotonicity of Compiler State</h2>
 
 <div class="paragraph"> </div>
 
@@ -1110,7 +1110,7 @@ is never "trivial" &mdash; we always get some Vminus code.
 
 <div class="doc">
 <hr/>
- <a name="lab115"></a><h3 class="section">Strong increasing state</h3>
+ <a name="lab114"></a><h3 class="section">Strong increasing state</h3>
 
 <div class="paragraph"> </div>
 
@@ -1151,7 +1151,7 @@ that their "reserved status" is unaffected.
 
 <div class="doc">
 <hr/>
- <a name="lab116"></a><h2 class="section">Monotonicity of Compiler State</h2>
+ <a name="lab115"></a><h2 class="section">Monotonicity of Compiler State</h2>
 
 <div class="paragraph"> </div>
 
@@ -1204,7 +1204,7 @@ never adds blocks, so its state increases "strongly".
 
 <div class="doc">
 <hr/>
- <a name="lab117"></a><h3 class="section">Filling in reserved blocks</h3>
+ <a name="lab116"></a><h3 class="section">Filling in reserved blocks</h3>
  If we create a fresh label (and thereby reserve a block) and then do some
 compilation that doesn't fill in any reserved blocks, we can then add
 instructions to the reserved block.  The end-to-end behavior of this sequence
@@ -1244,7 +1244,7 @@ increases "strongly".
 
 <div class="doc">
 <hr/>
- <a name="lab118"></a><h3 class="section">The command compiler</h3>
+ <a name="lab117"></a><h3 class="section">The command compiler</h3>
 
 <div class="paragraph"> </div>
 
@@ -1296,7 +1296,7 @@ affects the state under the stronger monotonicity requirements.
 
 <div class="doc">
 <hr/>
- <a name="lab119"></a><h3 class="section">Weakening</h3>
+ <a name="lab118"></a><h3 class="section">Weakening</h3>
 
 <div class="paragraph"> </div>
 
@@ -1341,7 +1341,7 @@ And so the whole command compiler is also monotonic according to the
 
 <div class="doc">
 <hr/>
- <a name="lab120"></a><h2 class="section">Relating Initial Compilation</h2>
+ <a name="lab119"></a><h2 class="section">Relating Initial Compilation</h2>
 
 <div class="paragraph"> </div>
 
@@ -1483,7 +1483,7 @@ compiling the Imp command.  The key lemma is:
 
 <div class="doc">
 <hr/>
- <a name="lab121"></a><h1 class="section">Simulation Diagram</h1>
+ <a name="lab120"></a><h1 class="section">Simulation Diagram</h1>
 
 <div class="paragraph"> </div>
 
@@ -1591,7 +1591,7 @@ compiling the Imp command.  The key lemma is:
 
 <div class="doc">
 <hr/>
- <a name="lab122"></a><h1 class="section">Vminus Instance</h1>
+ <a name="lab121"></a><h1 class="section">Vminus Instance</h1>
 
 <div class="paragraph"> </div>
 
@@ -1635,7 +1635,7 @@ compiler.
 
 <div class="doc">
 <hr/>
- <a name="lab123"></a><h1 class="section">Correct When Terminating</h1>
+ <a name="lab122"></a><h1 class="section">Correct When Terminating</h1>
 
 </div>
 <div class="code code-space">
@@ -1668,7 +1668,7 @@ compiler.
 
 <div class="doc">
 <hr/>
- <a name="lab124"></a><h1 class="section">Correct When Diverging</h1>
+ <a name="lab123"></a><h1 class="section">Correct When Diverging</h1>
 
 </div>
 <div class="code code-space">

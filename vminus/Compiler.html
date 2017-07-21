@@ -36,7 +36,7 @@
 </div>
 
 <div class="doc">
-<a name="lab80"></a><h1 class="section">Imp to Vminus Compiler</h1>
+<a name="lab79"></a><h1 class="section">Imp to Vminus Compiler</h1>
 
 <div class="paragraph"> </div>
 
@@ -68,7 +68,7 @@ The compiler will also serve as a vehicle for exploring QuickChick testing.
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab81"></a><h3 class="section">An example of translating Imp to Vminus:</h3>
+ <a name="lab80"></a><h3 class="section">An example of translating Imp to Vminus:</h3>
 
 
 <div class="paragraph"> </div>
@@ -113,7 +113,7 @@ And one possible translation to Vminus:
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab82"></a><h1 class="section">The Compilation Monad</h1>
+ <a name="lab81"></a><h1 class="section">The Compilation Monad</h1>
 
 <div class="paragraph"> </div>
 
@@ -157,7 +157,7 @@ that should be avoided.
 
 <div class="doc">
 <hr/>
- <a name="lab83"></a><h1 class="section">Compiling binops.</h1>
+ <a name="lab82"></a><h1 class="section">Compiling binops.</h1>
 
 <div class="paragraph"> </div>
 
@@ -175,16 +175,19 @@ operation.
 <div class="code code-tight">
 
 <br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_bop</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bop</span>) (<span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>: <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>)) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_bop</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">b</span>:<span class="id" type="var">bop</span>) (<span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>: <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">FRESH</span> (<span class="id" type="var">val</span> * <span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">v<sub>1</sub></span>, <span class="id" type="var">c<sub>1</sub></span>) &lt;- <span class="id" type="var">e<sub>1</sub></span>;<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">v<sub>2</sub></span>, <span class="id" type="var">c<sub>2</sub></span>) &lt;- <span class="id" type="var">e<sub>2</sub></span>;<br/>
-&nbsp;&nbsp;'<span class="id" type="var">r</span> &lt;- <span class="id" type="tactic">fresh</span>; <br/>
-&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">val_uid</span> <span class="id" type="var">r</span>, (<span class="id" type="var">c<sub>1</sub></span> ++ <span class="id" type="var">c<sub>2</sub></span> ++ [(<span class="id" type="var">r</span>, <span class="id" type="var">cmd_bop</span> <span class="id" type="var">b</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>)])).<br/>
+&nbsp;&nbsp;'<span class="id" type="var">r</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">val_uid</span> <span class="id" type="var">r</span>, (<span class="id" type="var">c<sub>1</sub></span> ++ <span class="id" type="var">c<sub>2</sub></span> ++ [(<span class="id" type="var">r</span>, <span class="id" type="var">cmd_bop</span> <span class="id" type="var">b</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>)])) <br/>
+.<br/>
 </div>
 
 <div class="doc">
 <hr/>
- <a name="lab84"></a><h1 class="section">Compiling arithmetic expressions.</h1>
+ <a name="lab83"></a><h1 class="section">Compiling arithmetic expressions.</h1>
 
 <div class="paragraph"> </div>
 
@@ -192,11 +195,10 @@ operation.
 
 <div class="paragraph"> </div>
 
-The only interesting case is that for compiling Imp identifiers.  However, since
-the Imp global state and Vminus global state are the same, we simply translate
-a reference to an Imp identifier into a load from that identifier, treated as an
-address.
-
+The only interesting case is that for compiling Imp identifiers.
+However, since the Imp global state and Vminus global state are the
+same, we simply translate a reference to an Imp identifier into a load
+from that identifier, treated as an address. 
 </div>
 <div class="code code-tight">
 
@@ -206,14 +208,14 @@ address.
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">mret</span> (<span class="id" type="var">val_nat</span> <span class="id" type="var">n</span>, [])<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AId</span> <span class="id" type="var">i</span> ⇒ '<span class="id" type="var">r</span> &lt;- <span class="id" type="tactic">fresh</span>; <span class="id" type="var">mret</span> (<span class="id" type="var">val_uid</span> <span class="id" type="var">r</span>, [(<span class="id" type="var">r</span>, <span class="id" type="var">cmd_load</span> <span class="id" type="var">i</span>)])<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_add</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_sub</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_sub</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ <span class="id" type="var">comp_bop</span> <span class="id" type="var">bop_mul</span> (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">comp_aexp</span> <span class="id" type="var">a<sub>2</sub></span>)<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
 <hr/>
- <a name="lab85"></a><h1 class="section">Compiling boolean expressions.</h1>
+ <a name="lab84"></a><h1 class="section">Compiling boolean expressions.</h1>
 
 <div class="paragraph"> </div>
 
@@ -243,7 +245,7 @@ comparison with <span class="inlinecode">0</span>.
 
 <div class="doc">
 <hr/>
- <a name="lab86"></a><h1 class="section">Command compilation strategy</h1>
+ <a name="lab85"></a><h1 class="section">Command compilation strategy</h1>
 
 <div class="paragraph"> </div>
 
@@ -291,7 +293,7 @@ promotion".
 <div class="paragraph"> </div>
 
 <hr/>
- <a name="lab87"></a><h1 class="section">Compiling <span class="inlinecode"><span class="id" type="var">store</span></span> commands and conditional branches</h1>
+ <a name="lab86"></a><h1 class="section">Compiling <span class="inlinecode"><span class="id" type="var">store</span></span> commands and conditional branches</h1>
 
 <div class="paragraph"> </div>
 
@@ -313,7 +315,8 @@ label" that is jumped to following the <span class="inlinecode"><span class="id"
 &nbsp;&nbsp;'<span class="id" type="var">y</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">i</span>, <span class="id" type="var">is</span>) &lt;- <span class="id" type="var">comp_aexp</span> <span class="id" type="var">a</span>; <br/>
 &nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_store</span> <span class="id" type="var">v</span> <span class="id" type="var">i</span>); <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">y</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">k</span>)) ]).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">y</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_jmp</span> <span class="id" type="var">k</span>)) ])<br/>
+.<br/>
 </div>
 
 <div class="doc">
@@ -326,12 +329,13 @@ conditional branch.  It takes two continuation labels, one for each branch.
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">comp_cond</span> (<span class="id" type="var">b</span>:<span class="id" type="var">bexp</span>) (<span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>:<span class="id" type="var">lbl</span>) : <span class="id" type="var">FRESH</span> (<span class="id" type="var">list</span> <span class="id" type="var">insn</span>) :=<br/>
 &nbsp;&nbsp;'(<span class="id" type="var">v</span>, <span class="id" type="var">is</span>) &lt;- <span class="id" type="var">comp_bexp</span> <span class="id" type="var">b</span>;<br/>
 &nbsp;&nbsp;'<span class="id" type="var">x</span> &lt;- <span class="id" type="tactic">fresh</span>;<br/>
-&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">v</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>)) ] ).<br/>
+&nbsp;&nbsp;<span class="id" type="var">mret</span> (<span class="id" type="var">is</span> ++ [ (<span class="id" type="var">x</span>, <span class="id" type="var">cmd_tmn</span> (<span class="id" type="var">tmn_cbr</span> <span class="id" type="var">v</span> <span class="id" type="var">l<sub>1</sub></span> <span class="id" type="var">l<sub>2</sub></span>)) ] )<br/>
+.<br/>
 </div>
 
 <div class="doc">
 <hr/>
- <a name="lab88"></a><h1 class="section">Compiling Imp Commands</h1>
+ <a name="lab87"></a><h1 class="section">Compiling Imp Commands</h1>
 
 <div class="paragraph"> </div>
 
@@ -416,7 +420,7 @@ Update the instructions at the block with lbl <span class="inlinecode"><span cla
 
 <div class="doc">
 <hr/>
- <a name="lab89"></a><h1 class="section">Compiling Imp Commands</h1>
+ <a name="lab88"></a><h1 class="section">Compiling Imp Commands</h1>
 
 <div class="paragraph"> </div>
 
@@ -461,7 +465,7 @@ Update the instructions at the block with lbl <span class="inlinecode"><span cla
 
 <div class="doc">
 <hr/>
- <a name="lab90"></a><h1 class="section">Top-level Compiler</h1>
+ <a name="lab89"></a><h1 class="section">Top-level Compiler</h1>
 
 <div class="paragraph"> </div>
 

@@ -33,7 +33,7 @@
 
 
 <div class="doc">
-<a name="lab156"></a><h2 class="section">QuickChick infrastructure for Vminus</h2>
+<a name="lab154"></a><h2 class="section">QuickChick infrastructure for Vminus</h2>
 
 </div>
 <div class="code code-space">
@@ -67,16 +67,23 @@ lbl, uid, addr
 <div class="code code-tight">
 
 <br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_lbl_func</span> <span class="id" type="var">x</span> :=<br/>
+&nbsp;&nbsp;("lbl "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>) ++ "")%<span class="id" type="var">string</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_uid_func</span> <span class="id" type="var">x</span> := <br/>
+&nbsp;&nbsp;("uid "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>) ++ "")%<span class="id" type="var">string</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_addr_func</span> <span class="id" type="var">x</span> :=<br/>
+&nbsp;&nbsp;("addr "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>) ++ "")%<span class="id" type="var">string</span>.<br/>
+
+<br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_lbl</span> : <span class="id" type="var">Gen</span> <span class="id" type="var">lbl</span> :=<br/>
 &nbsp;&nbsp;{| <span class="id" type="var">arbitrary</span> := <span class="id" type="var">gen_fresh</span> <span class="id" type="var">fresh_store</span> |}.<br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrink_lbl</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">lbl</span> := {| <span class="id" type="var">shrink</span> <span class="id" type="var">x</span> := [] |}.<br/>
-
-<br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">show_lbl</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">lbl</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">x</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("lbl "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> <span class="id" type="var">x</span> ++ "")%<span class="id" type="var">string</span> |}.<br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_uid</span> : <span class="id" type="var">Gen</span> <span class="id" type="var">uid</span> :=<br/>
@@ -86,21 +93,11 @@ lbl, uid, addr
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrink_uid</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">uid</span> := {| <span class="id" type="var">shrink</span> <span class="id" type="var">x</span> := [] |}.<br/>
 
 <br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">show_uid</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">uid</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">x</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("uid "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> <span class="id" type="var">x</span> ++ "")%<span class="id" type="var">string</span> |}.<br/>
-
-<br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_addr</span> : <span class="id" type="var">Gen</span> <span class="id" type="var">addr</span> :=<br/>
 &nbsp;&nbsp;{| <span class="id" type="var">arbitrary</span> := <span class="id" type="var">gen_fresh</span> <span class="id" type="var">fresh_store</span> |}.<br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrink_addr</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">addr</span> := {| <span class="id" type="var">shrink</span> <span class="id" type="var">x</span> := [] |}.<br/>
-
-<br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">show_addr</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">addr</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">x</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("addr "%<span class="id" type="var">string</span> ++ <span class="id" type="var">show</span> <span class="id" type="var">x</span> ++ "")%<span class="id" type="var">string</span> |}.<br/>
 </div>
 
 <div class="doc">
@@ -160,7 +157,7 @@ Values and commands
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">show_insn</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">insn</span> :=<br/>
 &nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">instr</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">uid</span>, <span class="id" type="var">cmd</span>) := <span class="id" type="var">instr</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(uid " ++ <span class="id" type="var">show</span> <span class="id" type="var">uid</span> ++ ", " ++ <span class="id" type="var">show</span> <span class="id" type="var">cmd</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(" ++ <span class="id" type="var">show_uid_func</span> <span class="id" type="var">uid</span> ++ ", " ++ <span class="id" type="var">show</span> <span class="id" type="var">cmd</span> ++ ")"<br/>
 &nbsp;&nbsp;|}.<br/>
 </div>
 
@@ -182,7 +179,7 @@ Program counters and CFG
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">show_pc</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">pc</span> :=<br/>
 &nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">p</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">lbl</span>, <span class="id" type="var">offset</span>) := <span class="id" type="var">p</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(blk " ++ (<span class="id" type="var">show</span> <span class="id" type="var">lbl</span>) ++ ", ofs " <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"(blk " ++ (<span class="id" type="var">show_lbl_func</span> <span class="id" type="var">lbl</span>) ++ ", ofs " <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ <span class="id" type="var">show_nat</span> <span class="id" type="var">offset</span> ++ ")"<br/>
 &nbsp;&nbsp;|}.<br/>
 
@@ -214,8 +211,7 @@ Program counters and CFG
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.fold_left</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">accum</span> <span class="id" type="var">blk</span> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> '(<span class="id" type="var">lbl</span>, <span class="id" type="var">insns</span>) := <span class="id" type="var">blk</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"lbl " ++ <span class="id" type="var">show</span> <span class="id" type="var">lbl</span> ++ ": " ++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">show</span> <span class="id" type="var">insns</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show_lbl_func</span> <span class="id" type="var">lbl</span> ++ ": " ++ (<span class="id" type="var">show</span> <span class="id" type="var">insns</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">blks</span> "")<br/>
 &nbsp;&nbsp;|}.<br/>
 

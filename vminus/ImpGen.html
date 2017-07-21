@@ -36,7 +36,7 @@
 
 <div class="paragraph"> </div>
 
-<a name="lab150"></a><h1 class="section">In Progress</h1>
+<a name="lab149"></a><h1 class="section">In Progress</h1>
 
 </div>
 <div class="code code-space">
@@ -52,6 +52,7 @@
 <span class="id" type="keyword">Import</span> <span class="id" type="var">QcDefaultNotation</span>. <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">qc_scope</span>.<br/>
 
 <br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.QC</span>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Atom</span>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Vminus.Imp</span>.<br/>
 
@@ -63,19 +64,14 @@
 </div>
 
 <div class="doc">
-<a name="lab151"></a><h2 class="section">id</h2>
+<a name="lab150"></a><h2 class="section">id</h2>
 
 </div>
 <div class="code code-space">
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">id_store</span> := <span class="id" type="var">get_fresh_atoms</span> 5 [].<br/>
 
 <br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_id</span>: <span class="id" type="var">Gen</span> <span class="id" type="var">id</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">arbitrary</span> := <span class="id" type="var">gen_fresh</span> <span class="id" type="var">id_store</span> |}.<br/>
-
-<br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_ids</span>: <span class="id" type="var">GenSized</span> (<span class="id" type="var">list</span> <span class="id" type="var">id</span>) :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">arbitrarySized</span> <span class="id" type="var">n</span> := <span class="id" type="var">returnGen</span> (<span class="id" type="var">get_fresh_atoms</span> <span class="id" type="var">n</span> []) |}.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_id</span> := <span class="id" type="var">gen_fresh</span> <span class="id" type="var">id_store</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrink_id</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">id</span> := {| <span class="id" type="var">shrink</span> <span class="id" type="var">x</span> := [] |}.<br/>
@@ -83,14 +79,14 @@
 <br/>
 <span class="id" type="keyword">Instance</span> <span class="id" type="var">show_id</span>: <span class="id" type="keyword">Show</span> <span class="id" type="var">id</span> :=<br/>
 &nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">x</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("Id "%<span class="id" type="var">string</span> ++ (<span class="id" type="var">show</span> <span class="id" type="var">x</span>) ++ "")%<span class="id" type="var">string</span> |}.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("Id "%<span class="id" type="var">string</span> ++ (<span class="id" type="var">show</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>)) ++ "")%<span class="id" type="var">string</span> |}.<br/>
 
 <br/>
 <span class="comment">(*&nbsp;Sample&nbsp;(@arbitrary&nbsp;id&nbsp;_).&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab152"></a><h2 class="section">aexp</h2>
+<a name="lab151"></a><h2 class="section">aexp</h2>
 
 </div>
 <div class="code code-space">
@@ -100,8 +96,8 @@
 &nbsp;&nbsp;{| <span class="id" type="var">show</span> := (<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fix</span> <span class="id" type="var">show_aexp_func</span> <span class="id" type="var">a</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">a</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ "ANum " ++ (<span class="id" type="var">show</span> <span class="id" type="var">n</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AId</span> <span class="id" type="var">ident</span> ⇒ <span class="id" type="var">show</span> <span class="id" type="var">ident</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ "ANum " ++ (<span class="id" type="var">show_nat</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AId</span> <span class="id" type="var">ident</span> ⇒ "Id " ++ <span class="id" type="var">show_nat</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">ident</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ "(" ++ (<span class="id" type="var">show_aexp_func</span> <span class="id" type="var">a<sub>1</sub></span>) ++ " + " ++<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">show_aexp_func</span> <span class="id" type="var">a<sub>2</sub></span>) ++ ")"<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">a<sub>2</sub></span> ⇒ "(" ++ (<span class="id" type="var">show_aexp_func</span> <span class="id" type="var">a<sub>1</sub></span>) ++ " - " ++<br/>
@@ -110,10 +106,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">show_aexp_func</span> <span class="id" type="var">a<sub>2</sub></span>) ++ ")"<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)%<span class="id" type="var">string</span><br/>
 &nbsp;&nbsp;|}.<br/>
+
+<br/>
+<span class="id" type="var">Derive</span> <span class="id" type="var">Arbitrary</span> <span class="id" type="keyword">for</span> <span class="id" type="var">aexp</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab153"></a><h2 class="section">bexp</h2>
+<a name="lab152"></a><h2 class="section">bexp</h2>
 
 </div>
 <div class="code code-space">
@@ -136,26 +135,11 @@
 &nbsp;&nbsp;|}.<br/>
 
 <br/>
-<span class="comment">(*<br/>
-Instance&nbsp;gen_bexp_with_small_aexp&nbsp;`{GenSized&nbsp;aexp}&nbsp;:&nbsp;GenSized&nbsp;bexp&nbsp;:=<br/>
-&nbsp;&nbsp;{|&nbsp;arbitrarySized&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fix&nbsp;gen_bexp_func&nbsp;n&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;match&nbsp;n&nbsp;with<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;0&nbsp;=&gt;&nbsp;elems&nbsp;<span class="inlinecode"><span class="id" type="var">BTrue</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><span class="id" type="var">BFalse</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;S&nbsp;n'&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;beq_gen&nbsp;:=&nbsp;liftGen2&nbsp;BEq&nbsp;(arbitrarySized&nbsp;1)&nbsp;(arbitrarySized&nbsp;1)&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;ble_gen&nbsp;:=&nbsp;liftGen2&nbsp;BLe&nbsp;(arbitrarySized&nbsp;1)&nbsp;(arbitrarySized&nbsp;1)&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;bnot_gen&nbsp;:=&nbsp;liftGen&nbsp;BNot&nbsp;(gen_bexp_func&nbsp;n')&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;band_gen&nbsp;:=&nbsp;liftGen2&nbsp;BAnd&nbsp;(gen_bexp_func&nbsp;n')&nbsp;(gen_bexp_func&nbsp;n')<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oneOf&nbsp;<span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">beq_gen</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><span class="id" type="var">ble_gen</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><span class="id" type="var">bnot_gen</span></span> <span class="inlinecode">;</span> <span class="inlinecode"><span class="id" type="var">band_gen</span></span> <span class="inlinecode"></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end<br/>
-&nbsp;&nbsp;|}.<br/>
-*)</span><br/>
+<span class="id" type="var">Derive</span> <span class="id" type="var">Arbitrary</span> <span class="id" type="keyword">for</span> <span class="id" type="var">bexp</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab154"></a><h2 class="section">com</h2>
+<a name="lab153"></a><h2 class="section">com</h2>
 
 </div>
 <div class="code code-space">
@@ -166,102 +150,21 @@ Instance&nbsp;gen_bexp_with_small_aexp&nbsp;`{GenSized&nbsp;aexp}&nbsp;:&nbsp;Ge
 &nbsp;&nbsp;{| <span class="id" type="var">show</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fix</span> <span class="id" type="var">show_com_func</span> <span class="id" type="var">c</span> := (<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSkip</span> ⇒ "Skip"<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">x</span> ::= <span class="id" type="var">a</span> ⇒ <span class="id" type="var">show_nat</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>) ++ " := " ++ (<span class="id" type="var">show</span> <span class="id" type="var">a</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>1</sub></span>) ++ ";" ++ <span class="id" type="var">newline</span> ++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒ "If (" ++ (<span class="id" type="var">show</span> <span class="id" type="var">b</span>) ++ ") then "<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>1</sub></span>) ++ " else "<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>2</sub></span>) ++ " endIf"<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> ⇒ "While (" ++ (<span class="id" type="var">show</span> <span class="id" type="var">b</span>) ++ ") do "<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c</span>) ++ " endWhile"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSkip</span> ⇒ "SKIP"<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">x</span> ::= <span class="id" type="var">a</span> ⇒ "Id " ++ <span class="id" type="var">show_nat</span> (<span class="id" type="var">Atom.nat_of</span> <span class="id" type="var">x</span>) ++ " := " ++ (<span class="id" type="var">show</span> <span class="id" type="var">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>1</sub></span>) ++ "; " ++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> ⇒ "IFB " ++ (<span class="id" type="var">show</span> <span class="id" type="var">b</span>) ++ " THEN "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>1</sub></span>) ++ " ELSE "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c<sub>2</sub></span>) ++ " FI "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> ⇒ "WHILE " ++ (<span class="id" type="var">show</span> <span class="id" type="var">b</span>) ++ " DO "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">show_com_func</span> <span class="id" type="var">c</span>) ++ " END"<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)%<span class="id" type="var">string</span><br/>
 &nbsp;&nbsp;|}.<br/>
 
 <br/>
-<span class="comment">(*<br/>
-Instance&nbsp;gen_seq_and_assgn_com&nbsp;`{Gen&nbsp;id}&nbsp;`{Gen&nbsp;aexp}&nbsp;`{Gen&nbsp;bexp}&nbsp;:&nbsp;GenSized&nbsp;com&nbsp;:=<br/>
-&nbsp;&nbsp;{|&nbsp;arbitrarySized&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fix&nbsp;com_gen_func&nbsp;n&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;match&nbsp;n&nbsp;with<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;0&nbsp;=&gt;&nbsp;liftGen2&nbsp;CAss&nbsp;arbitrary&nbsp;arbitrary<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;S&nbsp;n'&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;gen&nbsp;:=&nbsp;com_gen_func&nbsp;n'&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;liftGen2&nbsp;CSeq&nbsp;gen&nbsp;gen<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end<br/>
-&nbsp;&nbsp;|}.<br/>
-*)</span><br/>
-
-<br/>
-<span class="comment">(*<br/>
-Instance&nbsp;gen_if_com&nbsp;`{Gen&nbsp;id}&nbsp;`{Gen&nbsp;aexp}&nbsp;`{Gen&nbsp;bexp}&nbsp;:&nbsp;GenSized&nbsp;com&nbsp;:=<br/>
-&nbsp;&nbsp;{|&nbsp;arbitrarySized&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fix&nbsp;com_gen_func&nbsp;n&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;match&nbsp;n&nbsp;with<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;0&nbsp;=&gt;&nbsp;freq&nbsp;<span class="inlinecode">(2,</span> <span class="inlinecode"><span class="id" type="var">returnGen</span></span> <span class="inlinecode"><span class="id" type="var">CSkip</span>)</span> <span class="inlinecode">;</span>
-                       <span class="inlinecode">(6,</span> <span class="inlinecode"><span class="id" type="var">liftGen2</span></span> <span class="inlinecode"><span class="id" type="var">CAss</span></span> <span class="inlinecode"><span class="id" type="var">arbitrary</span></span> <span class="inlinecode"><span class="id" type="var">arbitrary</span>)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;S&nbsp;n'&nbsp;=&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let&nbsp;gen&nbsp;:=&nbsp;com_gen_func&nbsp;n'&nbsp;in<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oneOf&nbsp;<span class="inlinecode"><span class="id" type="var">liftGen3</span></span> <span class="inlinecode"><span class="id" type="var">CIf</span></span> <span class="inlinecode"><span class="id" type="var">arbitrary</span></span> <span class="inlinecode"><span class="id" type="var">gen</span></span> <span class="inlinecode"><span class="id" type="var">gen</span>;</span> <span class="inlinecode"><span class="id" type="var">liftGen2</span></span> <span class="inlinecode"><span class="id" type="var">CSeq</span></span> <span class="inlinecode"><span class="id" type="var">gen</span></span> <span class="inlinecode"><span class="id" type="var">gen</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end<br/>
-&nbsp;&nbsp;|}.<br/>
-&nbsp;*)</span><br/>
-</div>
-
-<div class="doc">
-EX: Write a generator that generates only IF-THEN-ELSE ... 
-</div>
-<div class="code code-tight">
-
-<br/>
-<span class="comment">(*&nbsp;Sample&nbsp;(@arbitrarySized&nbsp;com&nbsp;gen_if_com&nbsp;2).&nbsp;*)</span><br/>
-</div>
-
-<div class="doc">
-<a name="lab155"></a><h2 class="section">imp_state</h2>
-
-</div>
-<div class="code code-space">
-
-<br/>
-<span class="id" type="keyword">Record</span> <span class="id" type="var">imp_state</span> : <span class="id" type="keyword">Type</span> := <span class="id" type="var">mk_imp_state</span> { <span class="id" type="var">imp_st</span>: <span class="id" type="var">state</span>; <span class="id" type="var">imp_dom</span>: <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span> }.<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_state_from_atom_list</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" type="var">Gen</span> <span class="id" type="var">nat</span>}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">atom_list</span> : <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>) : <span class="id" type="var">G</span> <span class="id" type="var">state</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">bindGen</span> (<span class="id" type="var">vectorOf</span> (<span class="id" type="var">List.length</span> <span class="id" type="var">atom_list</span>) <span class="id" type="var">arbitrary</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">nat_list</span> ⇒ <br/>
-&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="keyword">fun</span> (<span class="id" type="var">a</span> : <span class="id" type="var">Atom.t</span>) ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">index_of_atom_in_list</span> <span class="id" type="var">a</span> <span class="id" type="var">atom_list</span>) <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ 0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">i</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.nth</span> <span class="id" type="var">i</span> <span class="id" type="var">nat_list</span> 0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)).<br/>
-
-<br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">gen_imp_state</span> : <span class="id" type="var">GenSized</span> <span class="id" type="var">imp_state</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">arbitrarySized</span> <span class="id" type="var">n</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">mem_dom</span> := <span class="id" type="var">get_fresh_atoms</span> <span class="id" type="var">n</span> [] <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">gmem</span> := <span class="id" type="var">gen_state_from_atom_list</span> <span class="id" type="var">mem_dom</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bindGen</span> <span class="id" type="var">gmem</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">mem</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">returnGen</span> (<span class="id" type="var">mk_imp_state</span> <span class="id" type="var">mem</span> <span class="id" type="var">mem_dom</span>))<br/>
-&nbsp;&nbsp;|}.<br/>
-
-<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">show_image_given_domain</span> `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">f</span>: <span class="id" type="var">Atom.t</span> → <span class="id" type="var">A</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">Atom.t</span>) <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">prefix</span>: <span class="id" type="var">string</span>) : <span class="id" type="var">string</span> := <br/>
-&nbsp;&nbsp;((<span class="id" type="var">List.fold_left</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">accum</span> <span class="id" type="var">atom</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">accum</span> ++ "(" ++ <span class="id" type="var">prefix</span> ++ " " ++ (<span class="id" type="var">show</span> <span class="id" type="var">atom</span>) ++ ", "<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ <span class="id" type="var">show</span> (<span class="id" type="var">f</span> <span class="id" type="var">atom</span>) ++ ") ")<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">l</span> "[") ++ "]")%<span class="id" type="var">string</span>.<br/>
-
-<br/>
-<span class="id" type="keyword">Instance</span> <span class="id" type="var">show_imp_state</span>: <span class="id" type="keyword">Show</span> <span class="id" type="var">imp_state</span> :=<br/>
-&nbsp;&nbsp;{| <span class="id" type="var">show</span> <span class="id" type="var">x</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"imp_state: " ++ (<span class="id" type="var">show_image_given_domain</span> (<span class="id" type="var">imp_st</span> <span class="id" type="var">x</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">imp_dom</span> <span class="id" type="var">x</span>) "")<br/>
-&nbsp;&nbsp;|}.<br/>
+<span class="id" type="var">Remove</span> <span class="id" type="var">Hints</span> <span class="id" type="var">genSaexp</span> : <span class="id" type="var">typeclass_instances</span>.<br/>
+<span class="id" type="var">Remove</span> <span class="id" type="var">Hints</span> <span class="id" type="var">genSbexp</span> : <span class="id" type="var">typeclass_instances</span>.<br/>
 </div>
 </div>
 

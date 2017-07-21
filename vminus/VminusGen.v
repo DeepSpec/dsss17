@@ -19,32 +19,29 @@ Import ListCFG.
 
 (** lbl, uid, addr **)
 
+Definition show_lbl_func x :=
+  ("lbl "%string ++ show (Atom.nat_of x) ++ "")%string.
+
+Definition show_uid_func x := 
+  ("uid "%string ++ show (Atom.nat_of x) ++ "")%string.
+
+Definition show_addr_func x :=
+  ("addr "%string ++ show (Atom.nat_of x) ++ "")%string.
+  
 Instance gen_lbl : Gen lbl :=
   {| arbitrary := gen_fresh fresh_store |}.
 
 Instance shrink_lbl : Shrink lbl := {| shrink x := [] |}.
-
-Instance show_lbl : Show lbl :=
-  {| show x :=
-       ("lbl "%string ++ show x ++ "")%string |}.
   
 Instance gen_uid : Gen uid :=
   {| arbitrary := gen_fresh fresh_store |}.
 
 Instance shrink_uid : Shrink uid := {| shrink x := [] |}.
 
-Instance show_uid : Show uid :=
-  {| show x :=
-       ("uid "%string ++ show x ++ "")%string |}.
-
 Instance gen_addr : Gen addr :=
   {| arbitrary := gen_fresh fresh_store |}.
 
 Instance shrink_addr : Shrink addr := {| shrink x := [] |}.
-
-Instance show_addr : Show addr :=
-  {| show x :=
-       ("addr "%string ++ show x ++ "")%string |}.
 
 (** Values and commands **)
 
@@ -86,7 +83,7 @@ Proof. unfold insn. auto with typeclass_instances. Defined.
 Instance show_insn : Show insn :=
   {| show instr :=
        let '(uid, cmd) := instr in
-       "(uid " ++ show uid ++ ", " ++ show cmd
+       "(" ++ show_uid_func uid ++ ", " ++ show cmd ++ ")"
   |}.
 
 (** Program counters and CFG **)
@@ -101,7 +98,7 @@ Proof. unfold pc. auto with typeclass_instances. Defined.
 Instance show_pc : Show pc :=
   {| show p :=
        let '(lbl, offset) := p in
-       "(blk " ++ (show lbl) ++ ", ofs " 
+       "(blk " ++ (show_lbl_func lbl) ++ ", ofs " 
                ++ show_nat offset ++ ")"
   |}.
 
@@ -127,8 +124,7 @@ Instance show_cfg : Show ListCFG.t :=
                  (List.fold_left
                     (fun accum blk =>
                        let '(lbl, insns) := blk in
-                       "lbl " ++ show lbl ++ ": " ++
-                              (show insns))
+                       show_lbl_func lbl ++ ": " ++ (show insns))
                     blks "")
   |}.
 
