@@ -1,5 +1,6 @@
 *.vo.aux
 *.vo
+*.vio
 *.v.d
 *.glob
 Metalib/html/
@@ -10,3 +11,5 @@ Stlc/extra/stlc-rules.tex
 *.fls
 *.fdb_latexmk
 *.log
+/CAL/.depend-stamp
+/CAL/DSSSMakefile
