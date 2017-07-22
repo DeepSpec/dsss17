@@ -1,3 +1,9 @@
+(**
+ * Container.v
+ *
+ * Primitives to initialize and manage containers.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -859,9 +865,7 @@ Section Container.
 
     Lemma container_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) container_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold container_L. typeclasses eauto. Qed.
 
     Hint Resolve container_intro_link container_link : linking.
 

@@ -1,3 +1,9 @@
+(**
+ * Queue.v
+ *
+ * Low level queue representation.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -50,13 +56,9 @@ Section Queue.
 
     Definition intro_M := node_M ⊕ queue_intro_M.
 
-    Hint Resolve node_pres_inv queue_intro_pres_inv : linking.
-
     Lemma intro_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) intro_L.
-    Proof.
-      apply forallprim_oplus_disjoint; [decision | |]; auto with linking.
-    Qed.
+    Proof. unfold intro_L, node_L, queue_intro_L. typeclasses eauto. Qed.
 
     (** We now require that once initialized, all nodes in range are valid,
       and everything else is undefined. *)
@@ -931,9 +933,7 @@ Section Queue.
 
     Lemma queue_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) queue_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold queue_L. typeclasses eauto. Qed.
 
     Hint Resolve node_link queue_intro_link queue_link : linking.
 

@@ -1,3 +1,9 @@
+(**
+ * ContainerIntro.v
+ *
+ * Getter/setter layer.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -1380,7 +1386,7 @@ Section ContainerIntro.
     Lemma container_intro_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) container_intro_L.
     Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
+      unfold container_intro_L, container_intro_L', boot_L'. typeclasses eauto.
     Qed.
 
   End Linking.

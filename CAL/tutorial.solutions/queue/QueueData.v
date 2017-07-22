@@ -1,3 +1,9 @@
+(**
+ * QueueData.v
+ *
+ * Definitions and properties of queue and node data.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.

@@ -1,3 +1,9 @@
+(**
+ * Node.v
+ *
+ * Node getter/setters.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -886,9 +892,7 @@ Section Node.
 
     Lemma node_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) node_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold node_L. typeclasses eauto. Qed.
 
   End Linking.
 

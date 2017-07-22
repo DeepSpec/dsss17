@@ -1,5 +1,5 @@
-(** Stack.v
- * Authors: Wolf Honore and Lucas Adam Michael Paul
+(**
+ * Stack.v
  *
  * A layer implementing a bounded stack using a bounded counter.
  *)
@@ -728,9 +728,7 @@ int pop() {
 
     Lemma stack_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) stack_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold stack_L. typeclasses eauto. Qed.
 
     Hint Resolve counter_link stack_link : linking.
 

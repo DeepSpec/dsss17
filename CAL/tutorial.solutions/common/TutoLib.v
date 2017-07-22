@@ -1,5 +1,5 @@
-(** TutoLib.v
- * Author: Wolf Honore (adapted from tuto.v by Pierre Wilke)
+(**
+ * TutoLib.v
  *
  * A library of tactics and lemmas used in the layer tutorial.
  *)
@@ -574,6 +574,9 @@ Hint Extern 1 (sim inv ?L ?L) => apply cprimitive_invariant_inv : linking.
 Hint Extern 1 (layer_wf ?L) => constructor : linking.
 Hint Extern 10 (?L1 ⊢ (inv ∘ ?R ∘ inv, ∅): ?L2) =>
   apply link_wrapinv; solve [typeclasses eauto | eauto with linking].
+
+Hint Extern 2 (ForallPrimitive _ _ (_ ⊕ _)) =>
+  eapply forallprim_oplus_disjoint; [decision | |] : typeclass_instances.
 
 Section MathLemmas.
 

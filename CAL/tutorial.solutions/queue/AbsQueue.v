@@ -1,3 +1,9 @@
+(**
+ * AbsQueue.v
+ *
+ * Abstract queue representation.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -31,13 +37,26 @@ Require Import TutoLib.
 Require Import QueueData.
 Require Import Queue.
 
-(** In this file we abstract the linked list queue representation to a Coq
-  [list]. Unlike the other layers up to this point, this layer is purely a
-  refinement; we add no additional code. We only have to define the relation
-  between the representations, give the specifications for [enqueue] and
-  [dequeue] on the high level queue, and then prove the refinement relation. *)
-
 Open Scope Z_scope.
+
+(** In the previous layer (Queue.v), the specification we gave for the
+    queue primitives were abstracted to Coq datatypes, but it still
+    followed the C implementation closely. We had a set of the nodes
+    with next- and prev-indices, but the specification did not
+    directly express that the nodes represent an ordered queue, and
+    the specification for the primitives were in terms of operations
+    like [if decide (tl = MAX_NODES) ...]  which have no intuitive
+    meaning.
+
+    In this file we abstract the linked list queue representation to a
+    Coq [list].
+
+    Unlike the other layers up to this point, this layer is purely a
+    refinement; we add no additional code. We only have to define the
+    relation between the representations, give the specifications for
+    [enqueue] and [dequeue] on the high level queue, and then prove
+    the refinement relation.  *)
+
 
 Section AbsQueue.
 
@@ -47,9 +66,21 @@ Section AbsQueue.
   (** ** Abstract Data *)
   Section AbsData.
 
-    (** The invariants at this level are quite strong. We require that a
-      node is valid if and only if it is in the correct range, and that
-      no node appears in the queue twice. This also rules out cycles. *)
+    (* The data types and invariants are defined in QueueData.v. Here
+       we put them together into the abstract datatype for the
+       abstract queue layer.
+
+       The data consists of a node pool (anpool) and a list of
+       integers (aqueue). The type anpool is similar to the low-level
+       npool, but the nodes no longer have next- and prev-fields,
+       instead each node carries data, and a boolean flag saying
+       whether it is in the list or not.
+
+       The invariants for these say that a node is in the list iff its
+       boolean flag is true (inQ_valid), and that and that no node
+       appears in the queue twice (abs_q_unique). This also rules out
+       cycles. *)
+
     Record abs_queue_inv (d: abs_data) : Prop := {
       npool_valid: forall node,
         init_flag d = true ->
@@ -92,8 +123,21 @@ Section AbsQueue.
   (** ** High Level Specifications *)
   Section HighSpec.
 
-    (** The abstract representation of the queue is backwards, with the tail of
-      the queue being stored at the head of the list. *)
+    (** Now we can define the specifications for the [enqueue] and
+        [dequeue] primitives.  These are simpler and more intuitive than
+        the low-level specification.
+
+        For enqueue, the preconditions now are that the queue is
+        initialized, the node index is in range, and the node we are
+        trying to insert is not already in the list (the ``inQ'' flag
+        is ``false''.
+
+        When these conditions are true we update the state simply by
+        prepending the node index to the list (node :: q), and setting
+        ``inQ'' to ``true''.
+
+        The abstract representation of the queue is backwards, with the tail of
+        the queue being stored at the head of the list. *)
     Definition abs_enqueue_high_spec (node: Z) (abs: abs_queue_layerdata)
         : option abs_queue_layerdata :=
       if init_flag abs
@@ -144,8 +188,13 @@ Section AbsQueue.
         + apply H3. destruct H2; [congruence | auto].
     Defined.
 
-    (** [dequeue] is slightly more complicated due to the more limited
-      set of tools for working with the end of a [list]. *)
+    (** For [dequeue], the precondition is that the layer is initialized
+       and the list is nonempty, and the effect of the call is to
+       delete the last item in it (List.remove zeq hd (tl :: q)).
+       It is slightly more complicated due to the more limited
+       set of tools for working with the end of a [list].
+     *)
+
     Definition abs_dequeue_high_spec (abs: abs_queue_layerdata)
         : option (abs_queue_layerdata * Z) :=
       if init_flag abs
@@ -240,6 +289,15 @@ Section AbsQueue.
   (** ** Layer Relation *)
   Section LowHighSpecRel.
 
+    (** Having defined the high-level specification, we now turn to
+        the refinement proofs, beginning by defining the refinement
+        relations.
+
+        This layer is a pure refinement between abstract states, so
+        the C memory plays no role, and we can use a trivial
+        always-true relation [match_data].  *)
+
+
     Inductive match_data : abs_queue_layerdata -> mem -> Prop :=
     | match_data_intro: forall m abs,
         match_data abs m.
@@ -256,8 +314,39 @@ Section AbsQueue.
           exists nxt prv, ZMap.get nd np = Node dat nxt prv) ->
         relate_npool anp np.
 
-    (** [match_nxt_prv] requires that the nodes appear in the same order in
-      both queue reprsentations. *)
+    (** The next component of the refinement relation is perhaps the
+        most interesting part of the refinement proof---we need to
+        specify what a valid doubly-linked list looks like when it
+        represents a given abstract list. For example, consider an
+        abstract list with three items:
+
+          [4 :: 9 :: 3 :: nil].
+
+        The corresponding doubly-linked list can be drawn graphically as:
+
+<<<
+   tl=4 ----> 4                     9                 3              <---- hd=3
+             +---------------+     +-----------+     +-----------------+
+         X<--|nxt=MAX_NODES  | <---|nxt=4      | <---|nxt=9            |
+             |         prv=9 |---> |     prv=3 |---> |    prv=MAX_NODES|-->X
+             +---------------+     +-----------+     +-----------------+
+>>>
+        Note that we consider the tail to be the front of the list,
+        and use MAX_NODES as the null value in the first and last
+        items. The hd and tl fields of the low-level queue should
+        therefore correspond to the first last item in the list.
+
+        At this point you may want to pause, and try yourself to write
+        down a Coq predicate capturing when a node pool and hd/tl
+        value correctly represent a list of integers. When you are
+        done, you look at the definition we came up with,
+        [match_nxt_prv].
+
+        Clearly, there are many equivalent ways to phrase this in Coq
+        (e.g., as a fixpoint or an inductive definition), and finding
+        one that's convenient to reason about will make a lot of
+        difference on the proof. *)
+
     Fixpoint match_nxt_prv (q: list Z) (hd tl: Z) (next: Z) (np: node_pool) : Prop :=
       match q with
       | nil => hd = MAX_NODES /\ tl = MAX_NODES
@@ -454,7 +543,7 @@ Section AbsQueue.
       inv npool_rel0.
       { rewrite <- H3 in Hanode. rewrite ZMap.gi in Hanode. discriminate. }
       destr_eq tl MAX_NODES; [subst |].
-      { (* tail = MAX_NODES *)
+      { (** tail = MAX_NODES *)
         do 3 eexists; split.
         - repeat constructor.
           unfold enqueue_high_spec.
@@ -885,9 +974,7 @@ Section AbsQueue.
 
     Lemma abs_queue_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) abs_queue_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold abs_queue_L. typeclasses eauto. Qed.
 
     Hint Resolve queue_boot_link abs_queue_link : linking.
 

@@ -1,3 +1,9 @@
+(**
+ * QueueIntro.v
+ *
+ * Queue getter/setters.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -724,9 +730,7 @@ Section QueueIntro.
 
     Lemma queue_intro_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) queue_intro_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold queue_intro_L. typeclasses eauto. Qed.
 
   End Linking.
 

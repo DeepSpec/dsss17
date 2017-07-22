@@ -1,3 +1,9 @@
+(**
+ * AbsQueue.v
+ *
+ * Abstract queue representation.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.
@@ -31,13 +37,33 @@ Require Import TutoLib.
 Require Import QueueData.
 Require Import Queue.
 
-(** In this file we abstract the linked list queue representation to a Coq
-  [list]. Unlike the other layers up to this point, this layer is purely a
-  refinement; we add no additional code. We only have to define the relation
-  between the representations, give the specifications for [enqueue] and
-  [dequeue] on the high level queue, and then prove the refinement relation. *)
-
 Open Scope Z_scope.
+
+(** In the previous layer (Queue.v), the specification we gave for the
+    queue primitives were abstracted to Coq datatypes, but it still
+    followed the C implementation closely. We had a set of the nodes
+    with next- and prev-indices, but the specification did not
+    directly express that the nodes represent an ordered queue, and
+    the specification for the primitives were in terms of operations
+    like [if decide (tl = MAX_NODES) ...]  which have no intuitive
+    meaning.
+
+    In this file we abstract the linked list queue representation to a
+    Coq [list].
+
+    Unlike the other layers up to this point, this layer is purely a
+    refinement; we add no additional code. We only have to define the
+    relation between the representations, give the specifications for
+    [enqueue] and [dequeue] on the high level queue, and then prove
+    the refinement relation.  *)
+
+(** This is a more advanced example than stack or container meant
+  for people who want to get more experience with implementing a layer.
+  The assignment is to implement the [abs_enqueue] primitive. Almost all of the
+  releveant definitions and proofs are left empty aside from some hints in
+  comments. If you get stuck, you can try referring to the corresponding
+  definition for [abs_dequeue], although they are some places where they differ
+  significantly. *)
 
 Section AbsQueue.
 
@@ -47,9 +73,21 @@ Section AbsQueue.
   (** ** Abstract Data *)
   Section AbsData.
 
-    (** The invariants at this level are quite strong. We require that a
-      node is valid if and only if it is in the correct range, and that
-      no node appears in the queue twice. This also rules out cycles. *)
+    (* The data types and invariants are defined in QueueData.v. Here
+       we put them together into the abstract datatype for the
+       abstract queue layer.
+
+       The data consists of a node pool (anpool) and a list of
+       integers (aqueue). The type anpool is similar to the low-level
+       npool, but the nodes no longer have next- and prev-fields,
+       instead each node carries data, and a boolean flag saying
+       whether it is in the list or not.
+
+       The invariants for these say that a node is in the list iff its
+       boolean flag is true (inQ_valid), and that and that no node
+       appears in the queue twice (abs_q_unique). This also rules out
+       cycles. *)
+
     Record abs_queue_inv (d: abs_data) : Prop := {
       npool_valid: forall node,
         init_flag d = true ->
@@ -92,21 +130,27 @@ Section AbsQueue.
   (** ** High Level Specifications *)
   Section HighSpec.
 
-    (** The abstract representation of the queue is backwards, with the tail of
-      the queue being stored at the head of the list. *)
+    (** Now we can define the specifications for the [enqueue] and
+        [dequeue] primitives.  These are simpler and more intuitive than
+        the low-level specification.
+
+        For enqueue, the preconditions now are that the queue is
+        initialized, the node index is in range, and the node we are
+        trying to insert is not already in the list (the ``inQ'' flag
+        is ``false''.
+
+        When these conditions are true we update the state simply by
+        prepending the node index to the list (node :: q), and setting
+        ``inQ'' to ``true''.
+
+        The abstract representation of the queue is backwards, with the tail of
+        the queue being stored at the head of the list. *)
+
+    (** TUTORIAL: Fill in the high level spec using the informal description
+      above as guidance. *)
     Definition abs_enqueue_high_spec (node: Z) (abs: abs_queue_layerdata)
         : option abs_queue_layerdata :=
-      if init_flag abs
-        then if decide (0 <= node < MAX_NODES)
-          then match aqueue abs, ZMap.get node (anpool abs) with
-            | AbsQueue q, AbsNode dat false =>
-                let n := AbsNode dat true in
-                Some abs {aqueue: AbsQueue (node :: q)}
-                         {anpool: ZMap.set node n (anpool abs)}
-            | _, _ => None
-          end
-          else None
-        else None.
+        Some abs.
 
     Definition abs_enqueue_high_sem : cprimitive abs_queue_layerdata :=
       cgensem _ abs_enqueue_high_spec.
@@ -114,38 +158,15 @@ Section AbsQueue.
     Global Instance abs_enqueue_pres_inv :
       GenSemPreservesInvariant abs_queue_layerdata abs_enqueue_high_spec.
     Proof.
-      split; auto.
-      intros ? ? ? ? ? Hsem ? Hinv.
-      inv_generic_sem Hsem.
-      unfold abs_enqueue_high_spec in H2.
-      destruct Hinv.
-      repeat destr_in H2; inv H2.
-      specialize (abs_q_unique0 eq_refl).
-      constructor; cbn; intros; auto; try congruence.
-      - (** In_Q_inQ *)
-        destr_eq node (Int.unsigned i); [subst |].
-        + econstructor.
-          rewrite ZMap.gss; reflexivity.
-          split; intros; cbn; auto.
-        + apply inQ_valid0 in H2; auto; inv H2.
-          econstructor.
-          rewrite ZMap.gso; eauto.
-          split; intros; cbn.
-          * rewrite <- H5. auto.
-          * rewrite H5. destruct H2; [congruence | auto].
-      - (** abs_queue_unique *)
-        inv abs_q_unique0; constructor.
-        rewrite Forall_forall in H3; rewrite Forall_forall.
-        intros; cbn.
-        destruct (zeq (Int.unsigned i) x); [subst |].
-        + eapply NIn_Q_inQ in Heqa1; auto.
-          rewrite count_occ_not_In in Heqa1.
-          eauto.
-        + apply H3. destruct H2; [congruence | auto].
-    Defined.
+    Admitted.
 
-    (** [dequeue] is slightly more complicated due to the more limited
-      set of tools for working with the end of a [list]. *)
+    (** For [dequeue], the precondition is that the layer is initialized
+       and the list is nonempty, and the effect of the call is to
+       delete the last item in it (List.remove zeq hd (tl :: q)).
+       It is slightly more complicated due to the more limited
+       set of tools for working with the end of a [list].
+     *)
+
     Definition abs_dequeue_high_spec (abs: abs_queue_layerdata)
         : option (abs_queue_layerdata * Z) :=
       if init_flag abs
@@ -240,6 +261,15 @@ Section AbsQueue.
   (** ** Layer Relation *)
   Section LowHighSpecRel.
 
+    (** Having defined the high-level specification, we now turn to
+        the refinement proofs, beginning by defining the refinement
+        relations.
+
+        This layer is a pure refinement between abstract states, so
+        the C memory plays no role, and we can use a trivial
+        always-true relation [match_data].  *)
+
+
     Inductive match_data : abs_queue_layerdata -> mem -> Prop :=
     | match_data_intro: forall m abs,
         match_data abs m.
@@ -256,8 +286,40 @@ Section AbsQueue.
           exists nxt prv, ZMap.get nd np = Node dat nxt prv) ->
         relate_npool anp np.
 
-    (** [match_nxt_prv] requires that the nodes appear in the same order in
-      both queue reprsentations. *)
+    (** The next component of the refinement relation is perhaps the
+        most interesting part of the refinement proof---we need to
+        specify what a valid doubly-linked list looks like when it
+        represents a given abstract list. For example, consider an
+        abstract list with three items:
+
+          [4 :: 9 :: 3 :: nil].
+
+        The corresponding doubly-linked list can be drawn graphically as:
+
+<<<
+   tl=4 ----> 4                     9                 3              <---- hd=3
+             +---------------+     +-----------+     +-----------------+
+         X<--|nxt=MAX_NODES  | <---|nxt=4      | <---|nxt=9            |
+             |         prv=9 |---> |     prv=3 |---> |    prv=MAX_NODES|-->X
+             +---------------+     +-----------+     +-----------------+
+>>>
+        Note that we consider the tail to be the front of the list,
+        and use MAX_NODES as the null value in the first and last
+        items. The hd and tl fields of the low-level queue should
+        therefore correspond to the first last item in the list.
+
+        TUTORIAL (optional):
+        At this point you may want to pause, and try yourself to write
+        down a Coq predicate capturing when a node pool and hd/tl
+        value correctly represent a list of integers. When you are
+        done, you look at the definition we came up with,
+        [match_nxt_prv].
+
+        Clearly, there are many equivalent ways to phrase this in Coq
+        (e.g., as a fixpoint or an inductive definition), and finding
+        one that's convenient to reason about will make a lot of
+        difference on the proof. *)
+
     Fixpoint match_nxt_prv (q: list Z) (hd tl: Z) (next: Z) (np: node_pool) : Prop :=
       match q with
       | nil => hd = MAX_NODES /\ tl = MAX_NODES
@@ -431,131 +493,11 @@ Section AbsQueue.
 
     Context `{ce: ClightCompositeEnv}.
 
+    (** TUTORIAL: Fill in the refinement proof for [abs_enqueue]. *)
     Lemma abs_enqueue_refine :
       (enqueue ↦ enqueue_high_sem) ⊢ (inv ∘ abs_queue_R ∘ inv, ∅) : (enqueue ↦ abs_enqueue_high_sem).
     Proof.
-      refine_proof_tac.
-      inv CStep. inv_generic_sem H8.
-      inverse_hyps.
-      inv InvLo.
-      inv cprimitive_inv_init_state_data_inv.
-      inv InvHi.
-      inv cprimitive_inv_init_state_data_inv.
-      inversion MemRel.
-      inv abrel_match_mem_match.
-      inv abrel_match_mem_relate.
-      unfold abs_enqueue_high_spec in H1.
-      repeat destr_in H1; inv H1.
-      rename Heqs into Hi_range;
-      rename a into Hi_rangeP;
-      rename Heqa0 into Haqueue;
-      rename Heqa1 into Hanode.
-      inv queue_rel0.
-      inv npool_rel0.
-      { rewrite <- H3 in Hanode. rewrite ZMap.gi in Hanode. discriminate. }
-      destr_eq tl MAX_NODES; [subst |].
-      { (* tail = MAX_NODES *)
-        do 3 eexists; split.
-        - repeat constructor.
-          unfold enqueue_high_spec.
-          rewrite <- init_rel0, Hi_range, <- H1.
-          eapply H0 in Hanode; auto.
-          destruct Hanode as (nxt & prv & Hanode). rewrite Hanode.
-          destruct (decide (_ = _)); [auto | congruence].
-        - repeat (constructor; auto); cbn; try congruence.
-          + intros. destr_eq nd (Int.unsigned i); [subst |].
-            * rewrite ZMap.gss.
-              rewrite ZMap.gss in H4; inv H4.
-              eauto.
-            * rewrite ZMap.gso; auto.
-              rewrite ZMap.gso in H4; eauto.
-          + assert (q = nil).
-            { destruct q as [| ? [|]]; cbn in H2; auto.
-              - destruct H2 as (? & ? & ? & ?).
-                subst.
-                rewrite npool_range0 in H4; try omega.
-                inv H4.
-              - destruct H2 as (? & ? & ? & ? & ?).
-                subst.
-                rewrite npool_range0 in H3; try omega.
-                inv H3.
-            }
-            subst. rewrite ZMap.gss; eauto.
-      }
-      { (** tail <> MAX_NODES *)
-        assert (Hq: exists nd q', q = nd :: q').
-        { destruct q as [| ? [|]]; cbn in H2; eauto.
-          destruct H2; congruence.
-        }
-        destruct Hq as (nd & q' & Hq); subst.
-        assert (Htl: exists tldat tlnxt tlprv,
-          ZMap.get tl (npool yd) = Node tldat tlnxt tlprv).
-        { rewrite <- H1 in q_valid0.
-          symmetry in init_rel0.
-          specialize (q_valid0 init_rel0).
-          inv q_valid0.
-          assert (Htl_range: 0 <= tl < MAX_NODES) by omega.
-          apply npool_valid0 in Htl_range; auto.
-          destruct Htl_range.
-          eauto.
-        }
-        destruct Htl as (tldat & tlnxt & tlprv & Htl).
-        do 3 eexists; split.
-        - repeat constructor.
-          unfold enqueue_high_spec.
-          rewrite <- init_rel0, Hi_range, <- H1.
-          eapply H0 in Hanode; auto.
-          destruct Hanode as (nxt & prv & Hanode). rewrite Hanode.
-          destruct (decide (_ = _)); [congruence |].
-          rewrite Htl.
-          reflexivity.
-        - repeat (constructor; auto); cbn; try congruence.
-          + intros. destr_eq nd0 (Int.unsigned i); [subst |].
-            * rewrite ZMap.gss.
-              rewrite ZMap.gss in H4; inv H4.
-              eauto.
-            * rewrite ZMap.gso; auto.
-              rewrite ZMap.gso in H4; auto.
-              eapply H0 in H4; auto.
-              destruct H4 as (? & ? & ?).
-              destr_eq nd0 tl; [subst |].
-              -- rewrite ZMap.gss.
-                 rewrite H4 in Htl; inv Htl; eauto.
-              -- rewrite ZMap.gso; eauto.
-          + rewrite ZMap.gss.
-            repeat esplit.
-            destruct q'; cbn in H2.
-            * destruct H2 as (? & ? & ? & ?); subst.
-              repeat split; auto.
-              rewrite H4 in Htl; inv Htl.
-              destr_eq nd (Int.unsigned i); [subst |].
-              -- specialize (inQ_valid0 _ eq_refl Hi_rangeP).
-                 inv inQ_valid0.
-                 cbn in H5; destruct H5.
-                 destruct inQ; [congruence |].
-                 cut (false = true); [discriminate | auto].
-              -- rewrite ZMap.gso; auto.
-                 rewrite ZMap.gss; eauto.
-            * destruct H2 as (? & ? & ? & ? & ?); subst.
-              repeat split; auto.
-              destr_eq nd (Int.unsigned i); [subst |].
-              -- specialize (inQ_valid0 _ eq_refl Hi_rangeP).
-                 inv inQ_valid0.
-                 cbn in H6; destruct H6.
-                 destruct inQ; [congruence |].
-                 cut (false = true); [discriminate | auto].
-              -- rewrite H3 in Htl; inv Htl.
-                 rewrite ZMap.gso; auto.
-                 rewrite ZMap.gss.
-                 repeat esplit.
-                 apply match_nxt_prv_not_in.
-                 apply match_nxt_prv_not_in.
-                 auto.
-                 apply unique_not_in; auto.
-                 cut (~In (Int.unsigned i) (nd :: z :: q')); [cbn; tauto |].
-                 eapply NIn_Q_inQ; eauto.
-            }
-    Qed.
+    Admitted.
 
     Lemma abs_dequeue_refine :
       (dequeue ↦ dequeue_high_sem) ⊢ (inv ∘ abs_queue_R ∘ inv, ∅) : (dequeue ↦ abs_dequeue_high_sem).
@@ -885,9 +827,7 @@ Section AbsQueue.
 
     Lemma abs_queue_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) abs_queue_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold abs_queue_L. typeclasses eauto. Qed.
 
     Hint Resolve queue_boot_link abs_queue_link : linking.
 

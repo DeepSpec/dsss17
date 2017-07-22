@@ -20,7 +20,7 @@ It will be helpful to do as much work in parallel as possible. The provided Make
 
     make -kj 6 quick
 
-After this is finished running, either there will have been an error earlier in the build than expected (some files in the `tutorial/` directory are expected to fail) or you will be ready to begin exploring the `.v` files in `tutorial/` with your Coq IDE of choice.
+After this is finished running, either there will have been an error or you will be ready to begin exploring the `.v` files in `tutorial/` with your Coq IDE of choice.
 
 ## Introduction
 
@@ -95,10 +95,6 @@ A simulation relation[^Lynch1994] is a relation over the states of two automata 
 
 Each layer of abstraction in the CertiKOS kernel defines several relations. Some of these are simulation relations. Simple, functional, deep specifications are proven to simulate more complex, imperative programs. We can then reason about these simpler deep specifications and build other layers on top of them, confident that the behavior of the resulting system will be described by the specifications.
 
-### Layers
-
-(TODO: Ask Jeremie to help come up with a concise definition of what a layer is)
-
 ## Overview
 
 The walkthrough below will take you through the following:
@@ -114,6 +110,11 @@ Work through the `stack/Stack.v` file. Learn how to build a new layer on top of 
 ### Explore a more practical layer from CertiKOS.
 
 Work through the `container` directory. Learn how to represent C code in Coq and then prove things about it.
+
+### Explore a more complicated example.
+
+Work through the `queue` directory. Learn how to build a pure refinement layer
+that abstracts a queue representation without adding additional C code.
 
 ## Walkthrough
 
@@ -317,11 +318,37 @@ It is entirely possible that once you've uncommented the code proofs and removed
 
 Just in case you think you managed to put together a big, unwieldy `Definition` that is a correct representation of the C code, but is nevertheless sufficiently different from the original version that the code proofs can't cope with it, you _could_ try to change the code proofs. It's not what this section is about, but there's no wrong way to tackle the problem if you can indeed find a proof.
 
+### Abstracting a Queue: `queue/`
+
+The Queue layers show how to abstract a C-style doubly-linked-list
+representation of a queue into a Coq list. If, at this point you're tired of
+getter/setter layers, feel free to just skim `Node.v` and `QueueIntro.v` and
+focus on the low level versions of enqueue and dequeue in `Queue.v` and the
+high level ones in `AbsQueue.v`. It would also be worth glancing at
+`QueueData.v` to see the definitions of the data types we're using.
+
+The exercises here are more challenging and give less guidance. They are meant
+for someone who really wants more practice implementing non-trivial layers.
+
+- [ ] Optional. Writing a specification that accurately captures the behaviors
+      you want to allow can sometimes be tricky. Read the comment with the
+      tutorial marker in `Queue.v` and see how far you get in the proofs with
+      the "wrong" spec.
+
+- [ ] Write the specification for `abs_enqueue` in `AbsQueue.v`.
+
+- [ ] Optional. Write a predicate that expresses what it means for a head,
+      tail, and node pool to represent a Coq list. Then compare with
+      `match_nxt_prv`.
+
+- [ ] Fill in the refinement proof for `abs_enqueue`.
+
 ## About this document
 
 Contributors to this document:
 
 * Lucas Adam Michael Paul (<lucas.paul+deepspec2017@yale.edu>)
+* Wolf Honor&eacute; (<wolf.honore+deepspec2017@yale.edu>)
 
 ## References
 

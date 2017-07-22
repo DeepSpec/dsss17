@@ -1,3 +1,9 @@
+(**
+ * ContainerType.v
+ *
+ * Definitions and properties of container data.
+ *)
+
 (** Compcert helper lib *)
 Require Import Coqlib.
 Require Import Maps.

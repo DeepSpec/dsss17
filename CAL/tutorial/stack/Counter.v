@@ -1,7 +1,6 @@
 (**
  * Counter.v
-   Author: Wolf Honore (adapted from tuto.v by Pierre Wilke)
-
+ *
  * A single layer implementing a bounded counter.
  *)
 
@@ -180,9 +179,11 @@ Section Counter.
     Defined.
 
     (** To incorporate this specification in a layer interface, we must wrap it
-      as a [cprimitive]. The [cgensem] function automatically discharges some
-      proof obligations for us, provided that the specification is of a certain
-      form ([SemOf]). *)
+      as a [cprimitive]. A [cprimitive] is merely a relation between inputs
+      (list of arguments and starting memory state) and outputs (return value
+      and resulting memory state), along with some properties. The [cgensem]
+      function automatically discharges some proof obligations for us, provided
+      that the specification is of a certain form ([SemOf]). *)
     Definition get_counter_high_sem : cprimitive counter_layerdata :=
       cgensem counter_layerdata get_counter_high_spec.
 
@@ -247,6 +248,18 @@ Section Counter.
   (** ** Module Implementation *)
   Section Code.
     (** We now provide implementations of our primitives as Clight functions.
+      Functions are encoded in records with their return type in field
+      [fn_return], the types of their parameters, local variables and temporary
+      variables in [fn_params], [fn_vars] and [fn_temps] respectively, and the
+      function body in [fn_body].
+
+      The difference between local and temporaries variables is that the former
+      are stored inside the memory while the latter are part of an abstract
+      semantic environment which is not part of the memory.
+
+      We omit a description of the field [fn_callconv] here, as it is not
+      relevant to this tutorial.
+
       The corresponding C code for each function is also provided. *)
 
     (** [f_get_counter] is implemented as expected. *)
@@ -795,7 +808,6 @@ int decr_counter() {
           extra code is needed to abstract from the low to the high level
           specs. [pjr] is a reflection tactic that can solve goals involving
           [⊕] and [≤]. *)
-          (** TODO: Explain pjr better? Don't mention at all? *)
         unfold counter_Σ.
         apply (vdash_module_le _ _ _ _ _ (∅ ⊕ ∅)).
         constructor.
@@ -832,16 +844,21 @@ int decr_counter() {
       base_L ⊢ (counter_R, counter_M) : counter_L.
     Proof. link_tac counter_Σ. Qed.
 
-    (** TODO: can maybe be automated completely with typeclasses *)
+    (** [ForallPrimitive] allows us to state properties that hold for every
+      primitive in a layer. We want to use it here to check that everything in
+      the layer preserves its invariants. This can be solved automatically with
+      [typeclasses eauto] (assuming of course that an instance of
+      [CPrimitivePreservesInvariant] actually exists for each primitive. A
+      little unfolding might be necessary to help the proof search recognize
+      the structure of the layer. *)
+
     Lemma base_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) base_L.
     Proof. typeclasses eauto. Qed.
 
     Lemma counter_pres_inv :
       ForallPrimitive _ (CPrimitivePreservesInvariant _) counter_L.
-    Proof.
-      repeat (apply forallprim_oplus_disjoint; [decision | |]; try typeclasses eauto).
-    Qed.
+    Proof. unfold counter_L. typeclasses eauto. Qed.
 
     Hint Resolve base_pres_inv counter_pres_inv counter_link : linking.
 
