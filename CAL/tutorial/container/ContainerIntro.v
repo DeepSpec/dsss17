@@ -155,7 +155,7 @@ Section ContainerIntro.
       unfold container_node_init_high_spec in H3.
       repeat destr_in H3; try discriminate. inv H3.
       constructor; cbn. discriminate.
-    Defined.
+    Qed.
 
     Definition container_get_quota_high_spec (id: Z) (abs: container_intro_layerdata)
                                              : option Z :=
@@ -179,7 +179,7 @@ Section ContainerIntro.
       intros ? ? ? ? ? Hsem ? ?.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition container_get_usage_high_spec (id: Z) (abs: container_intro_layerdata)
                                              : option Z :=
@@ -203,7 +203,7 @@ Section ContainerIntro.
       intros ? ? ? ? ? Hsem ? ?.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition container_get_parent_high_spec (id: Z) (abs: container_intro_layerdata)
                                               : option Z :=
@@ -227,7 +227,7 @@ Section ContainerIntro.
       intros ? ? ? ? ? Hsem ? ?.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition container_get_nchildren_high_spec (id: Z) (abs: container_intro_layerdata)
                                                  : option Z :=
@@ -251,7 +251,7 @@ Section ContainerIntro.
       intros ? ? ? ? ? Hsem ? ?.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition container_set_usage_high_spec (id: Z) (usage: Z)
                                              (abs: container_intro_layerdata)
@@ -284,7 +284,7 @@ Section ContainerIntro.
       repeat destr_in H3; try discriminate.
       inv H3.
       constructor; cbn. discriminate.
-    Defined.
+    Qed.
 
     Definition container_set_nchildren_high_spec (id: Z) (next_child: Z)
                                                  (abs: container_intro_layerdata)
@@ -318,7 +318,7 @@ Section ContainerIntro.
       repeat destr_in H3; try discriminate.
       inv H3.
       constructor; cbn. discriminate.
-    Defined.
+    Qed.
 
   End HighSpec.
 
@@ -649,26 +649,47 @@ Section ContainerIntro.
                                      (Vint i :: Vint nxt :: nil, (m, d))
                                      (Vundef, (m', d)).
 
-    Definition container_node_init_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_node_init_step container_node_init_csig. Defined.
+    Program Definition container_node_init_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_node_init_step container_node_init_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_get_quota_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_get_quota_step container_get_quota_csig. Defined.
+    Program Definition container_get_quota_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_get_quota_step container_get_quota_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_get_usage_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_get_usage_step container_get_usage_csig. Defined.
+    Program Definition container_get_usage_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_get_usage_step container_get_usage_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_get_parent_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_get_parent_step container_get_parent_csig. Defined.
+    Program Definition container_get_parent_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_get_parent_step container_get_parent_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_get_nchildren_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_get_nchildren_step container_get_nchildren_csig. Defined.
+    Program Definition container_get_nchildren_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_get_nchildren_step container_get_nchildren_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_set_usage_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_set_usage_step container_set_usage_csig. Defined.
+    Program Definition container_set_usage_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_set_usage_step container_set_usage_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition container_set_nchildren_cprimitive : cprimitive boot_layerdata.
-    Proof. mkcprim_tac container_set_nchildren_step container_set_nchildren_csig. Defined.
+    Program Definition container_set_nchildren_cprimitive : cprimitive boot_layerdata :=
+      mkcprimitive _ container_set_nchildren_step container_set_nchildren_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
   End LowSpec.
 
@@ -1355,7 +1376,7 @@ Section ContainerIntro.
       unfold boot_init_high_spec in H2.
       inv H2.
       constructor; cbn. discriminate.
-    Defined.
+    Qed.
 
     Definition boot_L' : clayer container_intro_layerdata := boot_init ↦ boot_init_high_sem'.
 

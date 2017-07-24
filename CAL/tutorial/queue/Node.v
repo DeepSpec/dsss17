@@ -80,7 +80,7 @@ Section Node.
       intros. destr_eq node (Int.unsigned i); [subst |].
       - rewrite ZMap.gss; right. constructor; omega.
       - rewrite ZMap.gso; auto.
-    Defined.
+    Qed.
 
     Definition get_next_high_spec (node: Z) (abs: intro_layerdata) : option Z :=
       if decide (0 <= node < MAX_NODES)
@@ -100,7 +100,7 @@ Section Node.
       intros ? ? ? ? ? Hsem ? Hinv.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition get_prev_high_spec (node: Z) (abs: intro_layerdata) : option Z :=
       if decide (0 <= node < MAX_NODES)
@@ -120,7 +120,7 @@ Section Node.
       intros ? ? ? ? ? Hsem ? Hinv.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition set_next_high_spec (node: Z) (nxt: Z) (abs: intro_layerdata)
         : option intro_layerdata :=
@@ -154,7 +154,7 @@ Section Node.
         destruct npool_valid as [npool_valid | npool_valid]; inv npool_valid.
         constructor; omega.
       - rewrite ZMap.gso; auto.
-    Defined.
+    Qed.
 
     Definition set_prev_high_spec (node: Z) (prv: Z) (abs: intro_layerdata)
         : option intro_layerdata :=
@@ -188,7 +188,7 @@ Section Node.
         destruct npool_valid as [npool_valid | npool_valid]; inv npool_valid.
         constructor; omega.
       - rewrite ZMap.gso; auto.
-    Defined.
+    Qed.
 
   End HighSpec.
 
@@ -400,20 +400,35 @@ Section Node.
                       (Vint nd :: Vint prv :: nil, (m, d))
                       (Vundef, (m', d)).
 
-    Definition init_node_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac init_node_step init_node_csig. Defined.
+    Program Definition init_node_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ init_node_step init_node_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition get_next_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac get_next_step get_next_csig. Defined.
+    Program Definition get_next_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ get_next_step get_next_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition get_prev_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac get_prev_step get_prev_csig. Defined.
+    Program Definition get_prev_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ get_prev_step get_prev_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition set_next_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac set_next_step set_next_csig. Defined.
+    Program Definition set_next_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ set_next_step set_next_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition set_prev_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac set_prev_step set_prev_csig. Defined.
+    Program Definition set_prev_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ set_prev_step set_prev_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
   End LowSpec.
 

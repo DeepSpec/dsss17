@@ -174,7 +174,7 @@ Section Queue.
           constructor; try omega.
           specialize (q_valid0 eq_refl).
           inv q_valid0; auto.
-    Defined.
+    Qed.
 
     (** [dequeue] also has two cases:
         - Queue has 1 element: set head and tail to [MAX_NODES]
@@ -282,7 +282,7 @@ Section Queue.
             [omega | split]; eauto. }
           apply npool_valid0 in Hz; auto; inv Hz.
           constructor; congruence.
-    Defined.
+      Qed.
 
   End HighSpec.
 
@@ -442,11 +442,17 @@ Section Queue.
                      (nil, (m, d))
                      (Vint nd, (m, d')).
 
-    Definition enqueue_cprim : cprimitive intro_layerdata.
-    Proof. mkcprim_tac enqueue_step enqueue_csig. Defined.
+    Program Definition enqueue_cprim : cprimitive intro_layerdata :=
+      mkcprimitive _ enqueue_step enqueue_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition dequeue_cprim : cprimitive intro_layerdata.
-    Proof. mkcprim_tac dequeue_step dequeue_csig. Defined.
+    Program Definition dequeue_cprim : cprimitive intro_layerdata :=
+      mkcprimitive _ dequeue_step dequeue_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     Global Instance enqueue_cprim_pres_inv : CPrimitivePreservesInvariant _ enqueue_cprim.
     Proof.
@@ -480,7 +486,7 @@ Section Queue.
           - constructor; omega.
         }
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
     Global Instance dequeue_cprim_pres_inv : CPrimitivePreservesInvariant _ dequeue_cprim.
     Proof.
@@ -520,7 +526,7 @@ Section Queue.
             constructor; omega.
         }
       - inv H0; reflexivity.
-    Defined.
+      Qed.
 
   End LowSpec.
 

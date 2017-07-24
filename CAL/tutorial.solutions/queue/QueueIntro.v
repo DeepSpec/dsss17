@@ -75,7 +75,7 @@ Section QueueIntro.
       constructor; cbn; intros; auto; try discriminate.
       pose proof MAX_NODES_range as Hmn_range.
       constructor; omega.
-    Defined.
+    Qed.
 
     Definition get_head_high_spec (abs: intro_layerdata) : option Z :=
       if init_flag abs
@@ -95,7 +95,7 @@ Section QueueIntro.
       intros ? ? ? ? ? Hsem ? Hinv.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition get_tail_high_spec (abs: intro_layerdata) : option Z :=
       if init_flag abs
@@ -115,7 +115,7 @@ Section QueueIntro.
       intros ? ? ? ? ? Hsem ? Hinv.
       inv_generic_sem Hsem.
       assumption.
-    Defined.
+    Qed.
 
     Definition set_head_high_spec (hd: Z) (abs: intro_layerdata)
         : option intro_layerdata :=
@@ -144,7 +144,7 @@ Section QueueIntro.
       constructor; try omega.
       specialize (q_valid H1). rewrite Heqq in q_valid.
       inv q_valid; auto.
-    Defined.
+    Qed.
 
     Definition set_tail_high_spec (tl: Z) (abs: intro_layerdata)
         : option intro_layerdata :=
@@ -173,7 +173,7 @@ Section QueueIntro.
       constructor; try omega.
       specialize (q_valid H1). rewrite Heqq in q_valid.
       inv q_valid; auto.
-    Defined.
+    Qed.
 
   End HighSpec.
 
@@ -326,20 +326,35 @@ Section QueueIntro.
                       (Vint tl :: nil, (m, d))
                       (Vundef, (m', d)).
 
-    Definition init_queue_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac init_queue_step init_queue_csig. Defined.
+    Program Definition init_queue_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ init_queue_step init_queue_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition get_head_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac get_head_step get_head_csig. Defined.
+    Program Definition get_head_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ get_head_step get_head_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition get_tail_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac get_tail_step get_tail_csig. Defined.
+    Program Definition get_tail_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ get_tail_step get_tail_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition set_head_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac set_head_step set_head_csig. Defined.
+    Program Definition set_head_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ set_head_step set_head_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition set_tail_cprim : cprimitive boot_layerdata.
-    Proof. mkcprim_tac set_tail_step set_tail_csig. Defined.
+    Program Definition set_tail_cprim : cprimitive boot_layerdata :=
+      mkcprimitive _ set_tail_step set_tail_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
   End LowSpec.
 

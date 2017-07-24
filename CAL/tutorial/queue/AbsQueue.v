@@ -254,7 +254,7 @@ Section AbsQueue.
             assert (Hin: In x (z0 :: l)) by (cbn; auto).
             rewrite count_occ_remove_neq; auto.
             erewrite <- count_occ_cons_neq; eauto.
-    Defined.
+    Qed.
 
   End HighSpec.
 

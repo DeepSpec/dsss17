@@ -76,7 +76,7 @@ Section Stack.
     Proof.
       repeat constructor.
       cbn; omega.
-    Defined.
+    Qed.
 
     Definition stack_layerdata : layerdata :=
       {|
@@ -103,7 +103,7 @@ Section Stack.
       inv_monad H2.
       inv H2.
       assumption.
-    Defined.
+    Qed.
 
     Definition get_size_high_sem : cprimitive stack_layerdata :=
       cgensem stack_layerdata get_size_high_spec.
@@ -135,7 +135,7 @@ Section Stack.
       unfold push_high_spec in Hsem.
       inv_generic_sem Hsem. inv H2.
       destruct (decide (length (stack d) < MAX_COUNTER)%nat); inv H3; auto.
-    Defined.
+    Qed.
 
     Definition push_high_sem : cprimitive stack_layerdata :=
       cgensem stack_layerdata push_high_spec.
@@ -161,7 +161,7 @@ Section Stack.
       cbn in *.
       rewrite Hstck in Hinv.
       cbn in Hinv; omega.
-    Defined.
+    Qed.
 
     Definition pop_high_sem : cprimitive stack_layerdata :=
       cgensem stack_layerdata pop_high_spec.
@@ -327,14 +327,23 @@ int pop() {
         Mem.load Mint32 m sb (4 * Int.unsigned idx) = Some (Vint x) ->
         pop_step pop_csig (nil, (m, d)) (Vint x, (m, d')).
 
-    Definition get_size_cprimitive : cprimitive counter_layerdata.
-    Proof. mkcprim_tac get_size_step get_size_csig. Defined.
+    Program Definition get_size_cprimitive : cprimitive counter_layerdata :=
+      mkcprimitive _ get_size_step get_size_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition push_cprimitive : cprimitive counter_layerdata.
-    Proof. mkcprim_tac push_step push_csig. Defined.
+    Program Definition push_cprimitive : cprimitive counter_layerdata :=
+      mkcprimitive _ push_step push_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition pop_cprimitive : cprimitive counter_layerdata.
-    Proof. mkcprim_tac pop_step pop_csig. Defined.
+    Program Definition pop_cprimitive : cprimitive counter_layerdata :=
+      mkcprimitive _ pop_step pop_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     (** We will find out later in this file that the code proof of [pop] will
       make use of the invariants of the counter layer. This will require that
@@ -346,7 +355,7 @@ int pop() {
       constructor; intros.
       - inv H0. inv H1. constructor; auto.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
     Global Instance push_cprim_pres_inv :
       CPrimitivePreservesInvariant _ push_cprimitive.
@@ -364,7 +373,7 @@ int pop() {
           apply cprimitive_inv_init_state_valid in HSb.
           eauto.
       - inv H0. eapply Mem.nextblock_store in H11. rewrite H11; reflexivity.
-    Defined.
+    Qed.
 
     Global Instance pop_cprim_pres_inv :
       CPrimitivePreservesInvariant _ pop_cprimitive.
@@ -376,7 +385,7 @@ int pop() {
         constructor; auto; cbn.
         omega.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
   End LowSpec.
 
@@ -533,7 +542,7 @@ int pop() {
           intros. red.
           exists STACK; eexists. cbn; split; auto.
       - decision.
-    Defined.
+    Qed.
 
     Definition abrel_stack_counter : abrel stack_layerdata counter_layerdata :=
       {|

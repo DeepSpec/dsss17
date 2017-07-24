@@ -1,5 +1,7 @@
 # Written by Lucas Adam Michael Paul <lucas.paul+certikos@yale.edu>
 
+COQDOCFLAGS := -interpolate -utf8 -parse-comments
+
 DSSSMakefile: DSSSCoqProject compcert/Makefile.config
 	-mv -f $@ $@.bak
 	"$(COQBIN)coq_makefile" -f $< -o $@

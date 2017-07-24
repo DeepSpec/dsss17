@@ -111,7 +111,7 @@ Section Container.
       constructor; cbn.
       - apply container_init_valid.
       - discriminate.
-    Defined.
+    Qed.
 
     (** [can_consume] checks whether the difference between [quota] and [usage]
       is at least [n]. *)
@@ -142,7 +142,7 @@ Section Container.
       intros ? ? ? ? ? Hsem ? ?.
       inv_generic_sem Hsem. inv_monad H2. inv H2.
       assumption.
-    Defined.
+    Qed.
 
     (** [alloc] increments the usage by 1. *)
     Definition container_alloc_high_spec (id: Z) (abs: container_layerdata)
@@ -414,8 +414,11 @@ Section Container.
         container_node_init_high_spec 0 ROOT_QUOTA 0 d1 = Some d' ->
         container_init_step container_init_csig (nil, (m, d)) (Vundef, (m, d')).
 
-    Definition container_init_cprimitive : cprimitive container_intro_layerdata.
-    Proof. mkcprim_tac container_init_step container_init_csig. Defined.
+    Program Definition container_init_cprimitive : cprimitive container_intro_layerdata :=
+      mkcprimitive _ container_init_step container_init_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     Global Instance container_init_cprim_pres_inv :
       CPrimitivePreservesInvariant container_intro_layerdata container_init_cprimitive.
@@ -428,7 +431,7 @@ Section Container.
         repeat constructor; auto; cbn.
         discriminate.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
     Definition container_can_consume_csig :=
       mkcsig (type_of_list_type (tuint :: tuint :: nil)) tuint.
@@ -441,8 +444,11 @@ Section Container.
                                    (Vint id :: Vint n :: nil, (m, d))
                                    (Vint (Int.repr (Z.b2z ret)), (m, d)).
 
-    Definition container_can_consume_cprimitive : cprimitive container_intro_layerdata.
-    Proof. mkcprim_tac container_can_consume_step container_can_consume_csig. Defined.
+    Program Definition container_can_consume_cprimitive : cprimitive container_intro_layerdata :=
+      mkcprimitive _ container_can_consume_step container_can_consume_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     Global Instance container_can_consume_cprim_pres_inv :
       CPrimitivePreservesInvariant container_intro_layerdata container_can_consume_cprimitive.
@@ -452,7 +458,7 @@ Section Container.
         inv H1. inv cprimitive_inv_init_state_data_inv.
         repeat constructor; auto; cbn.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
     Definition container_alloc_csig :=
       mkcsig (type_of_list_type (tuint :: nil)) tuint.
@@ -465,8 +471,11 @@ Section Container.
                              (Vint id :: nil, (m, d))
                              (Vint (Int.repr (Z.b2z ret)), (m, d')).
 
-    Definition container_alloc_cprimitive : cprimitive container_intro_layerdata.
-    Proof. mkcprim_tac container_alloc_step container_alloc_csig. Defined.
+    Program Definition container_alloc_cprimitive : cprimitive container_intro_layerdata :=
+      mkcprimitive _ container_alloc_step container_alloc_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     Global Instance container_alloc_cprim_pres_inv :
       CPrimitivePreservesInvariant container_intro_layerdata container_alloc_cprimitive.
@@ -478,7 +487,7 @@ Section Container.
         repeat destr_in H4; try discriminate; inv H4; cbn;
         repeat constructor; auto; cbn; congruence.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
     Definition container_split_csig :=
       mkcsig (type_of_list_type (tuint :: tuint :: nil)) tuint.
@@ -491,8 +500,11 @@ Section Container.
                              (Vint id :: Vint q :: nil, (m, d))
                              (Vint (Int.repr chid), (m, d')).
 
-    Definition container_split_cprimitive : cprimitive container_intro_layerdata.
-    Proof. mkcprim_tac container_split_step container_split_csig. Defined.
+    Program Definition container_split_cprimitive : cprimitive container_intro_layerdata :=
+      mkcprimitive _ container_split_step container_split_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
     Global Instance container_split_cprim_pres_inv :
       CPrimitivePreservesInvariant container_intro_layerdata container_split_cprimitive.
@@ -504,7 +516,7 @@ Section Container.
         repeat destr_in H4; try discriminate. inv H4.
         repeat constructor; cbn; auto; discriminate.
       - inv H0; reflexivity.
-    Defined.
+    Qed.
 
   End LowSpec.
 

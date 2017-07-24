@@ -101,7 +101,7 @@ Section Counter.
     (** Now, we prove some properties of the aforementioned predicates. This is
        trivial in our case since we chose [True]. *)
     Instance base_data : AbstractData unit.
-    Proof. repeat constructor. Defined.
+    Proof. repeat constructor. Qed.
 
     (** We now pack those into a [layerdata] record. *)
     Definition base_layerdata : layerdata :=
@@ -138,7 +138,7 @@ Section Counter.
     Proof.
       repeat constructor.
       cbv; omega.
-    Defined.
+    Qed.
 
     Definition counter_layerdata : layerdata :=
       {|
@@ -174,7 +174,7 @@ Section Counter.
       inv_monad H2.
       inv H2.
       assumption.
-    Defined.
+    Qed.
 
     (** To incorporate this specification in a layer interface, we must wrap it
       as a [cprimitive]. A [cprimitive] is merely a relation between inputs
@@ -214,7 +214,7 @@ Section Counter.
         cbn.
         omega.
       - discriminate H4.
-    Defined.
+    Qed.
 
     Definition incr_counter_high_sem : cprimitive counter_layerdata :=
       cgensem counter_layerdata incr_counter_high_spec.
@@ -243,7 +243,7 @@ Section Counter.
         cbn.
         omega.
       - discriminate H4.
-    Defined.
+    Qed.
 
     Definition decr_counter_high_sem : cprimitive counter_layerdata :=
       cgensem counter_layerdata decr_counter_high_spec.
@@ -440,21 +440,24 @@ int decr_counter() {
     (** As with the high-level specifications, to use the low-level specs in a
       layer definition, we must wrap it in a [cprimitive] using the
       [mkcprimitive] function. This generates a proof obligation that says the
-      return value has the appropriate type. Since this obligation is fairly
-      trivial we use a custom tactic to discharge it for all but the first
-      primitive. *)
-    Definition get_counter_cprimitive : cprimitive base_layerdata.
-    Proof.
-      refine (mkcprimitive _ get_counter_step get_counter_csig _).
-      intros ? ? ? ? Hstep.
-      inv Hstep. cbn. trivial.
-    Defined.
+      return value has the appropriate type. *)
+    Program Definition get_counter_cprimitive : cprimitive base_layerdata :=
+      mkcprimitive _ get_counter_step get_counter_csig _.
+    Next Obligation.
+      inv H0. cbn. trivial.
+    Qed.
 
-    Definition incr_counter_cprimitive : cprimitive base_layerdata.
-    Proof. mkcprim_tac incr_counter_step incr_counter_csig. Defined.
+    Program Definition incr_counter_cprimitive : cprimitive base_layerdata :=
+      mkcprimitive _ incr_counter_step incr_counter_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
-    Definition decr_counter_cprimitive : cprimitive base_layerdata.
-    Proof. mkcprim_tac decr_counter_step decr_counter_csig. Defined.
+    Program Definition decr_counter_cprimitive : cprimitive base_layerdata :=
+      mkcprimitive _ decr_counter_step decr_counter_csig _.
+    Next Obligation.
+      now inv H0.
+    Qed.
 
   End LowSpec.
 

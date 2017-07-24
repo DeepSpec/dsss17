@@ -1,5 +1,7 @@
 # CertiKOS Layer Tutorial
 
+The `coqdoc` html for this project is available at https://certikos.github.io/tutorial-coqdoc/toc.html.
+
 ## Before you begin
 
 It takes about 20 minutes for the Coq files we will be using to compile on _really nice_ hardware. On somewhat less powerful hardware, it can take closer to 30-35 minutes or longer. If you intend to follow along with the exercises, it'd be a good idea to get the build process started. If you don't intend to do the exercises or would rather read more about this tutorial before starting the build, feel free to skip this section for now and come back later.
@@ -131,8 +133,6 @@ Some real easy stuff just to get warmed up:
 - [ ] Read `Section AbsData.` There isn't much to do in this section because we want it to be a firm example to build on later.
 
 The AbsData section defines the abstract data representation of the layer upon which we will build Counter (the underlay) and the abstract data representation that the Counter layer will present to its clients (the overlay). Since there are no layers beneath Counter to speak of (save the C language itself), the underlay is essentially empty.
-
-A note on the difference between `Qed` and `Defined`: There is one. Most often, we want to be using `Qed`. But there are times when we may wish to unfold proof values later, in order to show facts about their construction. At those times, we use `Defined` in order to make these proof values transparent.
 
 - [ ] Read `Section HighSpec.` This section defines the abstract behavior of Counter.
 
