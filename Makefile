@@ -1,4 +1,4 @@
-EASYDIRS = SF/lf SF/vfa compiler vminus
+EASYDIRS = SF/lf SF/vfa compiler vminus auto
 
 MOREDIRS = $(EASYDIRS) Stlc qc Metalib Stlc
 

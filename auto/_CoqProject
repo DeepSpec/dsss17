@@ -1,0 +1,2 @@
+-R ../SF/lf LF -R . compiler
+IntroToProofScripting.v Sequences.v Semantics.v Compiler.v

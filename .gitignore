@@ -13,3 +13,4 @@ Stlc/extra/stlc-rules.tex
 *.log
 /CAL/.depend-stamp
 /CAL/DSSSMakefile
+Makefile.bak
