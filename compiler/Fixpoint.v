@@ -1,4 +1,4 @@
-Require Import Bool Arith Omega List Wellfounded Coq.Program.Wf.
+Require Import Recdef Bool Arith Omega List Wellfounded Coq.Program.Wf.
 Require Import MSets.
 Require Import Maps Imp.
 Require Import Sequences Semantics Deadcode.
@@ -38,49 +38,81 @@ Hypothesis bot_smallest: forall x, le bot x.
 Variable F: A -> A.
 Hypothesis F_mon: forall x y, le x y -> le (F x) (F y).
 
-(** We iterate [F] starting from a pre-fixpoint [x]. 
-
-The [iterate] function takes as argument not just [x], but also two proofs:
-- that [x] is a pre-fixpoint, i.e. [le x (F x)]
-- that [x] is below any post-fixpoint [z].
-
-Likewise, it returns as result not just the fixpoint [y], but also two proofs:
-- that [y] is a fixpoint, i.e. [eq y (F y)]
-- that [y] is below any post-fixpoint [z].
+(** Terminology: an element [x] of [A] is
+- a fixpoint if [eq x (F x)] i.e. [F x = x] up to the equality [eq];
+- a pre-fixpoint if [le (F x) x] i.e. [F x] is below [x] in the [le] ordering;
+- a post-fixpoint if [le x (F x)] i.e. [F x] is above [x] in the [le] ordering.
 *)
 
-Program Fixpoint iterate 
-    (x: A) (PRE: le x (F x)) (SMALL: forall z, le (F z) z -> le x z)
-    {wf gt x} 
-    : {y : A | eq y (F y) /\ forall z, le (F z) z -> le y z } :=
+(** We iterate [F] starting from a post-fixpoint [x] until we reach a fixpoint.
+
+  The [iterate] function takes as argument not just [x], but also a
+  proof that [x] is a post-fixpoint, i.e. [le x (F x)].  This proof is
+  needed to show that [x] increases strictly during iteration, thus
+  ensuring termination. *)
+
+(* To define [iterate], we use Coq's [Function] mechanism, which supports
+  nonstructural recursion whose termination is ensured by a well-founded
+  ordering.  [Function] also produces a convenient induction principle,
+  accessible via the [functional induction] tactic, which mimics the
+  case analysis and recursive calls made by the function. *)
+
+Function iterate (x: A) (P: le x (F x)) {wf gt x} : A :=
   let x' := F x in
-  match beq x x' with
-  | true  => x
-  | false => iterate x' _ _
-  end.
-Next Obligation.
+  if beq x x' then x else iterate x' (F_mon x (F x) P).
+Proof.
+- (* show that [gt (F x) x] in the recursive case, i.e. if [beq x (F x) = false]. *)
   split.
-  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto. 
   auto.
+  generalize (beq_correct x (F x)). rewrite teq. auto.
+- (* show that the [gt] ordering is well-founded *)
+  apply gt_wf.
 Qed.
-Next Obligation.
-  apply le_trans with (F z); auto. 
-Qed.
-Next Obligation.
-  red. split. auto. 
-  generalize (beq_correct x (F x)). rewrite <- Heq_anonymous. auto.
-Qed.
+
+(** In the recursive case, [F_mon x (F x) P] is a proof term that shows
+  [le (F x) (F (F x))], i.e. [le x' (F x')]. *)
+
+(** [Function] produces some proof obligations, which it leaves for us to prove
+  in interactive proof mode.  One of these obligations is that the [gt] ordering
+  used to guarantee termination is indeed well-founded.  The other obligations
+  (here, just one) are to show that arguments to recursive calls are in the [gt]
+  relation with the current [x], thus guaranteeing termination. *)
 
 (** The fixpoint is obtained by iterating from [bot]. *)
 
-Program Definition fixpoint : A := iterate bot _ _.
+Definition fixpoint : A := iterate bot (bot_smallest (F bot)).
 
-(** It is therefore both a fixpoint and the smallest post-fixpoint. *)
+(** We now show that [fixpoint] is a fixpoint. *)
 
 Theorem fixpoint_correct:
-  eq fixpoint (F fixpoint) /\ forall z, le (F z) z -> le fixpoint z.
+  eq fixpoint (F fixpoint).
 Proof.
-  unfold fixpoint. apply proj2_sig. 
+  assert (REC: forall x P, eq (iterate x P) (F (iterate x P))).
+  {
+    intros x P. functional induction (iterate x P).
+  - (* base case [beq x (F x) = true] *)
+    generalize (beq_correct x (F x)); rewrite e. auto.
+  - (* recursive case [beq x (F x) = false] *)
+    apply IHa. 
+  }
+  apply REC.
+Qed.
+
+(** Moreove, [fixpoint] is smaller or equal to any pre-fixpoint. *)
+
+Theorem fixpoint_smallest:
+  forall z, le (F z) z -> le fixpoint z.
+Proof.
+  intros z PREFIXPOINT.
+  assert (REC: forall x P, le x z -> le (iterate x P) z).
+  {
+    intros x P. functional induction (iterate x P).
+  - (* base case [beq x (F x) = true] *)
+    auto.
+  - (* recursive case [beq x (F x) = false] *)
+    intros. apply IHa. apply le_trans with (F z). apply F_mon; auto. auto. 
+  }
+  apply REC. apply bot_smallest.
 Qed.
 
 End FIXPOINT.
@@ -88,7 +120,7 @@ End FIXPOINT.
 (** *** Exercise (3 stars, optional) *)
 (** The code above computes the smallest fixpoint of the functional [F].
     How would you modify it so that it computes the greatest fixpoint instead?
-    Hint: you need to iterate starting from post-fixpoints [x] (such that
+    Hint: you need to iterate starting from pre-fixpoints [x] (satisfying
     [le (F x) x]), creating a descending chain.  Hence, you need to make
     sure that all strictly descending chains are finite. *)
 
@@ -123,7 +155,7 @@ Definition contained (x: vset) : VS.Subset (carrier x) U := proj2_sig x.
 Definition vset_union(x y: vset) : vset := make_vset (VS.union (carrier x) (carrier y)) ???.
 *)
 
-(* The [Program] mechanism helps:
+(** The [Program Definition] mechanism helps:
 - by automatically inserting projections and constructors for subset types;
 - by letting us write [_] (underscore) for the proof terms and dropping us
   into interactive proof mode to fill these holes ("proof obligations").
@@ -131,7 +163,6 @@ Definition vset_union(x y: vset) : vset := make_vset (VS.union (carrier x) (carr
 
 Program Definition vset_union(x y: vset) : vset := VS.union x y.
 Next Obligation.
-  (** Proving [forall x y : vset, VS.Subset (VS.union (proj1_sig x) (proj1_sig y)) U] *)
   intros. apply VSP.union_subset_3; apply contained.
 Qed.
 
@@ -179,7 +210,7 @@ Lemma vset_measure_decreases:
 Proof.
   intros. unfold vset_measure. red in H. 
   set (X := proj1_sig x) in *. set (Y := proj1_sig y) in *. 
-  (** Find an element that is in [y] but not in [x]. *)
+  (* Find an element that is in [y] but not in [x]. *)
   destruct (VS.choose (VS.diff Y X)) as [a | ] eqn:CHOICE.
 - assert (VS.In a (VS.diff Y X)) by (apply VS.choose_spec1; auto).
   assert (VS.In a Y) by (eapply VS.diff_spec; eauto).
@@ -188,7 +219,7 @@ Proof.
   fsetdec.
   apply VS.diff_spec. split; auto. eapply contained; eauto.
   fsetdec.
-- (** Show contradiction if no such element exists *)
+- (* Show contradiction if no such element exists *)
   assert (VS.Empty (VS.diff Y X)) by (apply VS.choose_spec2; auto). 
   elim H0. red. rewrite VSP.double_inclusion. split; auto.
   fold X Y. fsetdec.
@@ -222,15 +253,18 @@ Definition monotone (F: vset -> vset) : Prop :=
 
 Definition vset_fixpoint (F: vset -> vset) (M: monotone F) : vset :=
   fixpoint vset vset_eq vset_beq vset_beq_correct
-           vset_le vset_le_trans 
-           vset_gt_wf vset_empty vset_empty_le F M.
+           vset_le vset_gt_wf vset_empty vset_empty_le F M.
 
 Lemma vset_fixpoint_correct:
-  forall F (M: monotone F), 
-  vset_eq (vset_fixpoint F M) (F (vset_fixpoint F M))
-  /\ forall z, vset_le (F z) z -> vset_le (vset_fixpoint F M) z.
+  forall F (M: monotone F), vset_eq (vset_fixpoint F M) (F (vset_fixpoint F M)).
 Proof.
-  intros. unfold vset_fixpoint; apply fixpoint_correct. 
+  intros. unfold vset_fixpoint; apply fixpoint_correct.
+Qed.
+
+Lemma vset_fixpoint_smallest:
+  forall F (M: monotone F) z, vset_le (F z) z -> vset_le (vset_fixpoint F M) z.
+Proof.
+  intros. unfold vset_fixpoint; apply fixpoint_smallest; eauto using vset_le_trans.
 Qed.
 
 (** Moreover, if an operator [F1] is pointwise below another operator [F2],
@@ -241,12 +275,10 @@ Lemma vset_fixpoint_le:
   (forall x, vset_le (F1 x) (F2 x)) ->
   vset_le (vset_fixpoint F1 M1) (vset_fixpoint F2 M2).
 Proof.
-  intros. 
-  destruct (vset_fixpoint_correct F1 M1) as [EQ1 LEAST1].
-  destruct (vset_fixpoint_correct F2 M2) as [EQ2 LEAST2].
-  unfold vset_le, vset_eq in *.
-  apply LEAST1. 
-  eapply VSP.subset_trans. apply H. apply VSP.subset_equal. apply VSP.equal_sym. apply EQ2.
+  intros.
+  apply vset_fixpoint_smallest. 
+  eapply VSP.subset_trans. apply H.
+  apply VSP.subset_equal. apply VSP.equal_sym. apply vset_fixpoint_correct.
 Qed.
 
 (** * 3. IMP programs whose free variables are in [U]. *)

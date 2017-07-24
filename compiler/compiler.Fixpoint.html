@@ -13,7 +13,7 @@
 <body onload="hideAll('proofscript')">
 <h1 class="title">Module Fixpoint</h1>
 <div class="coq">
-<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html">Bool</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Arith.Arith.html">Arith</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.omega.Omega.html">Omega</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Lists.List.html">List</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Wellfounded.Wellfounded.html">Wellfounded</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Program.Wf.html">Coq.Program.Wf</a></span>.<br/>
+<span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.funind.Recdef.html">Recdef</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Bool.Bool.html">Bool</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Arith.Arith.html">Arith</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.omega.Omega.html">Omega</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Lists.List.html">List</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Wellfounded.Wellfounded.html">Wellfounded</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Program.Wf.html">Coq.Program.Wf</a></span>.<br/>
 <span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.MSets.MSets.html">MSets</a></span>.<br/>
 <span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="../SF/lf/Maps.html">Maps</a></span> <span class="id"><a href="../SF/lf/Imp.html">Imp</a></span>.<br/>
 <span class="kwd">Require</span> <span class="kwd">Import</span> <span class="id"><a href="compiler.Sequences.html">Sequences</a></span> <span class="id"><a href="compiler.Semantics.html">Semantics</a></span> <span class="id"><a href="compiler.Deadcode.html">Deadcode</a></span>.<br/>
@@ -53,63 +53,86 @@
 <span class="kwd">Variable</span> <span class="id"><a name="FIXPOINT.F">F</a></span>: <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span>.<br/>
 <span class="kwd">Hypothesis</span> <span class="id"><a name="FIXPOINT.F_mon">F_mon</a></span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>).<br/>
 <br/>
-<div class="doc">We iterate <span class="bracket"><span class="id">F</span></span> starting from a pre-fixpoint <span class="bracket"><span class="id">x</span></span>. 
-The <span class="bracket"><span class="id">iterate</span></span> function takes as argument not just <span class="bracket"><span class="id">x</span></span>, but also two proofs:
+<div class="doc">Terminology: an element <span class="bracket"><span class="id">x</span></span> of <span class="bracket"><span class="id">A</span></span> is
 <ul>
 <li>
- that <span class="bracket"><span class="id">x</span></span> is a pre-fixpoint, i.e. <span class="bracket"><span class="id">le</span> <span class="id">x</span> (<span class="id">F</span> <span class="id">x</span>)</span>
+ a fixpoint if <span class="bracket"><span class="id">eq</span> <span class="id">x</span> (<span class="id">F</span> <span class="id">x</span>)</span> i.e. <span class="bracket"><span class="id">F</span> <span class="id">x</span> = <span class="id">x</span></span> up to the equality <span class="bracket"><span class="id">eq</span></span>;
 </li>
 <li>
- that <span class="bracket"><span class="id">x</span></span> is below any post-fixpoint <span class="bracket"><span class="id">z</span></span>.
-</li>
-</ul>
-Likewise, it returns as result not just the fixpoint <span class="bracket"><span class="id">y</span></span>, but also two proofs:
-<ul>
-<li>
- that <span class="bracket"><span class="id">y</span></span> is a fixpoint, i.e. <span class="bracket"><span class="id">eq</span> <span class="id">y</span> (<span class="id">F</span> <span class="id">y</span>)</span>
+ a pre-fixpoint if <span class="bracket"><span class="id">le</span> (<span class="id">F</span> <span class="id">x</span>) <span class="id">x</span></span> i.e. <span class="bracket"><span class="id">F</span> <span class="id">x</span></span> is below <span class="bracket"><span class="id">x</span></span> in the <span class="bracket"><span class="id">le</span></span> ordering;
 </li>
 <li>
- that <span class="bracket"><span class="id">y</span></span> is below any post-fixpoint <span class="bracket"><span class="id">z</span></span>.
+ a post-fixpoint if <span class="bracket"><span class="id">le</span> <span class="id">x</span> (<span class="id">F</span> <span class="id">x</span>)</span> i.e. <span class="bracket"><span class="id">F</span> <span class="id">x</span></span> is above <span class="bracket"><span class="id">x</span></span> in the <span class="bracket"><span class="id">le</span></span> ordering.
 </li>
 </ul>
 </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Fixpoint</span> <span class="id"><a name="iterate">iterate</a></span> <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">x</span>: <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span>) (<span class="id">PRE</span>: <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>)) (<span class="id">SMALL</span>: <span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;{<span class="kwd">wf</span> <span class="id"><a href="compiler.Fixpoint.html#gt">gt</a></span> <span class="id">x</span>} <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;: {<span class="id">y</span> : <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span> | <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.eq">eq</a></span> <span class="id">y</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">y</span>) /\ <span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id">y</span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> } :=<br/>
-&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">x</span>' := <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">x</span> <span class="kwd">in</span><br/>
-&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq">beq</a></span> <span class="id">x</span> <span class="id">x</span>' <span class="kwd">with</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>  =&gt; <span class="id">x</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false">false</a></span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id">x</span>' <span class="id">_</span> <span class="id">_</span><br/>
-&nbsp;&nbsp;<span class="kwd">end</span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof52')">Next Obligation.</div>
+<div class="doc">We iterate <span class="bracket"><span class="id">F</span></span> starting from a post-fixpoint <span class="bracket"><span class="id">x</span></span> until we reach a fixpoint.
+  The <span class="bracket"><span class="id">iterate</span></span> function takes as argument not just <span class="bracket"><span class="id">x</span></span>, but also a
+  proof that <span class="bracket"><span class="id">x</span></span> is a post-fixpoint, i.e. <span class="bracket"><span class="id">le</span> <span class="id">x</span> (<span class="id">F</span> <span class="id">x</span>)</span>.  This proof is
+  needed to show that <span class="bracket"><span class="id">x</span></span> increases strictly during iteration, thus
+  ensuring termination. </div>
+<br/>
+<br/>
+<span class="id">Function</span> <span class="id">iterate</span> (<span class="id">x</span>: <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span>) (<span class="id">P</span>: <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>)) {<span class="kwd">wf</span> <span class="id"><a href="compiler.Fixpoint.html#gt">gt</a></span> <span class="id">x</span>} : <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">x</span>' := <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq">beq</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id">x</span>' <span class="kwd">then</span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="kwd">else</span> <span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id">x</span>' (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F_mon">F_mon</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>) <span class="id"><a href="compiler.Fixpoint.html#P">P</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof52')">Proof.</div>
 <div class="proofscript" id="proof52">
+- <span class="comment">(*&nbsp;show&nbsp;that&nbsp;[gt&nbsp;(F&nbsp;x)&nbsp;x]&nbsp;in&nbsp;the&nbsp;recursive&nbsp;case,&nbsp;i.e.&nbsp;if&nbsp;[beq&nbsp;x&nbsp;(F&nbsp;x)&nbsp;=&nbsp;false].&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="tactic">split</span>.<br/>
-&nbsp;&nbsp;<span class="tactic">generalize</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq_correct">beq_correct</a></span> <span class="id">x</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">x</span>)). <span class="tactic">rewrite</span> &lt;- <span class="id">Heq_anonymous</span>. <span class="tactic">auto</span>. <br/>
 &nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">generalize</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq_correct">beq_correct</a></span> <span class="id">x</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">x</span>)). <span class="tactic">rewrite</span> <span class="id">teq</span>. <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;show&nbsp;that&nbsp;the&nbsp;[gt]&nbsp;ordering&nbsp;is&nbsp;well-founded&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.gt_wf">gt_wf</a></span>.<br/>
 Qed.</div>
-<div class="toggleproof" onclick="toggleDisplay('proof53')">Next Obligation.</div>
-<div class="proofscript" id="proof53">
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le_trans">le_trans</a></span> <span class="kwd">with</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">z</span>); <span class="tactic">auto</span>. <br/>
-Qed.</div>
-<div class="toggleproof" onclick="toggleDisplay('proof54')">Next Obligation.</div>
-<div class="proofscript" id="proof54">
-&nbsp;&nbsp;<span class="tactic">red</span>. <span class="tactic">split</span>. <span class="tactic">auto</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">generalize</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq_correct">beq_correct</a></span> <span class="id">x</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">x</span>)). <span class="tactic">rewrite</span> &lt;- <span class="id">Heq_anonymous</span>. <span class="tactic">auto</span>.<br/>
-Qed.</div>
+<br/>
+<div class="doc">In the recursive case, <span class="bracket"><span class="id">F_mon</span> <span class="id">x</span> (<span class="id">F</span> <span class="id">x</span>) <span class="id">P</span></span> is a proof term that shows
+  <span class="bracket"><span class="id">le</span> (<span class="id">F</span> <span class="id">x</span>) (<span class="id">F</span> (<span class="id">F</span> <span class="id">x</span>))</span>, i.e. <span class="bracket"><span class="id">le</span> <span class="id">x</span>' (<span class="id">F</span> <span class="id">x</span>')</span>. </div>
+<br/>
+<div class="doc"><span class="bracket"><span class="id">Function</span></span> produces some proof obligations, which it leaves for us to prove
+  in interactive proof mode.  One of these obligations is that the <span class="bracket"><span class="id">gt</span></span> ordering
+  used to guarantee termination is indeed well-founded.  The other obligations
+  (here, just one) are to show that arguments to recursive calls are in the <span class="bracket"><span class="id">gt</span></span>
+  relation with the current <span class="bracket"><span class="id">x</span></span>, thus guaranteeing termination. </div>
 <br/>
 <div class="doc">The fixpoint is obtained by iterating from <span class="bracket"><span class="id">bot</span></span>. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="fixpoint">fixpoint</a></span> : <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span> := <span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.bot">bot</a></span> <span class="id">_</span> <span class="id">_</span>.<br/>
+<span class="kwd">Definition</span> <span class="id"><a name="fixpoint">fixpoint</a></span> : <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.A">A</a></span> := <span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.bot">bot</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.bot_smallest">bot_smallest</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.bot">bot</a></span>)).<br/>
 <br/>
-<div class="doc">It is therefore both a fixpoint and the smallest post-fixpoint. </div>
+<div class="doc">We now show that <span class="bracket"><span class="id">fixpoint</span></span> is a fixpoint. </div>
 <br/>
 <span class="kwd">Theorem</span> <span class="id"><a name="fixpoint_correct">fixpoint_correct</a></span>:<br/>
-&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.eq">eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span>) /\ <span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof55')">Proof.</div>
-<div class="proofscript" id="proof55">
-&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span>. <span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj2_sig">proj2_sig</a></span>. <br/>
+&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.eq">eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof53')">Proof.</div>
+<div class="proofscript" id="proof53">
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">REC</span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">P</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.eq">eq</a></span> (<span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#P">P</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> (<span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#P">P</a></span>))).<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">x</span> <span class="id">P</span>. <span class="id">functional</span> <span class="tactic">induction</span> (<span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id">x</span> <span class="id">P</span>).<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;base&nbsp;case&nbsp;[beq&nbsp;x&nbsp;(F&nbsp;x)&nbsp;=&nbsp;true]&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">generalize</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.beq_correct">beq_correct</a></span> <span class="id">x</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">x</span>)); <span class="tactic">rewrite</span> <span class="id">e</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;recursive&nbsp;case&nbsp;[beq&nbsp;x&nbsp;(F&nbsp;x)&nbsp;=&nbsp;false]&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">IHa</span>. <br/>
+&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">REC</span>.<br/>
+Qed.</div>
+<br/>
+<div class="doc">Moreove, <span class="bracket"><span class="id">fixpoint</span></span> is smaller or equal to any pre-fixpoint. </div>
+<br/>
+<span class="kwd">Theorem</span> <span class="id"><a name="fixpoint_smallest">fixpoint_smallest</a></span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof54')">Proof.</div>
+<div class="proofscript" id="proof54">
+&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">z</span> <span class="id">PREFIXPOINT</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">REC</span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">P</span>, <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id">z</span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le">le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#P">P</a></span>) <span class="id">z</span>).<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">intros</span> <span class="id">x</span> <span class="id">P</span>. <span class="id">functional</span> <span class="tactic">induction</span> (<span class="id"><a href="compiler.Fixpoint.html#iterate">iterate</a></span> <span class="id">x</span> <span class="id">P</span>).<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;base&nbsp;case&nbsp;[beq&nbsp;x&nbsp;(F&nbsp;x)&nbsp;=&nbsp;true]&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;recursive&nbsp;case&nbsp;[beq&nbsp;x&nbsp;(F&nbsp;x)&nbsp;=&nbsp;false]&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">IHa</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.le_trans">le_trans</a></span> <span class="kwd">with</span> (<span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F">F</a></span> <span class="id">z</span>). <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.F_mon">F_mon</a></span>; <span class="tactic">auto</span>. <span class="tactic">auto</span>. <br/>
+&nbsp;&nbsp;}<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">REC</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT.bot_smallest">bot_smallest</a></span>.<br/>
 Qed.</div>
 <br/>
 <span class="kwd">End</span> <span class="id"><a href="compiler.Fixpoint.html#FIXPOINT">FIXPOINT</a></span>.<br/>
@@ -117,7 +140,7 @@ Qed.</div>
 <h3> Exercise (3 stars, optional) </h3>
 <div class="doc">The code above computes the smallest fixpoint of the functional <span class="bracket"><span class="id">F</span></span>.
     How would you modify it so that it computes the greatest fixpoint instead?
-    Hint: you need to iterate starting from post-fixpoints <span class="bracket"><span class="id">x</span></span> (such that
+    Hint: you need to iterate starting from pre-fixpoints <span class="bracket"><span class="id">x</span></span> (satisfying
     <span class="bracket"><span class="id">le</span> (<span class="id">F</span> <span class="id">x</span>) <span class="id">x</span></span>), creating a descending chain.  Hence, you need to make
     sure that all strictly descending chains are finite. </div>
 <br/>
@@ -155,136 +178,147 @@ Qed.</div>
 </div>
 <br/>
 <br/>
+<div class="doc">The <span class="bracket"><span class="kwd">Program</span> <span class="kwd">Definition</span></span> mechanism helps:
+<ul>
+<li>
+ by automatically inserting projections and constructors for subset types;
+</li>
+<li>
+ by letting us write <span class="bracket"><span class="id">_</span></span> (underscore) for the proof terms and dropping us
+  into interactive proof mode to fill these holes ("proof obligations").
+</li>
+</ul>
+</div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_union">vset_union</a></span>(<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> := <span class="id"><a href="compiler.Deadcode.html#VS.union">VS.union</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof56')">Next Obligation.</div>
-<div class="proofscript" id="proof56">
-<div class="doc">Proving <span class="bracket"><span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span> : <span class="id">vset</span>, <span class="id">VS.Subset</span> (<span class="id">VS.union</span> (<span class="id">proj1_sig</span> <span class="id">x</span>) (<span class="id">proj1_sig</span> <span class="id">y</span>)) <span class="id">U</span></span> </div>
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_3">VSP.union_subset_3</a></span>; <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#contained">contained</a></span>.<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_union</span>(<span class="id">x</span> <span class="id">y</span>: <span class="id">vset</span>) : <span class="id">vset</span> := <span class="id">VS.union</span> <span class="id">x</span> <span class="id">y</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof55')">Next Obligation.</div>
+<div class="proofscript" id="proof55">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">VSP.union_subset_3</span>; <span class="tactic">apply</span> <span class="id">contained</span>.<br/>
 Qed.</div>
 <br/>
 <div class="doc">We equip the type <span class="bracket"><span class="id">vset</span></span> with a decidable equality (= same elements)
   and the subset ordering. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_eq">vset_eq</a></span> (<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="kwd">Prop</span> := <span class="id"><a href="compiler.Deadcode.html#VS.Equal">VS.Equal</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_eq</span> (<span class="id">x</span> <span class="id">y</span>: <span class="id">vset</span>) : <span class="kwd">Prop</span> := <span class="id">VS.Equal</span> <span class="id">x</span> <span class="id">y</span>.<br/>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_beq">vset_beq</a></span> (<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#bool">bool</a></span> := <span class="id"><a href="compiler.Deadcode.html#VS.equal">VS.equal</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_beq</span> (<span class="id">x</span> <span class="id">y</span>: <span class="id">vset</span>) : <span class="id"><a name="vset_eq">bool</a></span> := <span class="id">VS.equal</span> <span class="id">x</span> <span class="id">y</span>.<br/>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_beq_correct">vset_beq_correct</a></span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="kwd">if</span> <span class="id"><a href="compiler.Fixpoint.html#vset_beq">vset_beq</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> <span class="kwd">then</span> <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> <span class="kwd">else</span> ~<span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof57')">Proof.</div>
-<div class="proofscript" id="proof57">
-&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_beq">vset_beq</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span>; <span class="tactic">intros</span>. <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#VS.equal">VS.equal</a></span> (<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">x</span>) (<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">y</span>)) <span class="id">eqn</span>:<span class="id">EQ</span>.<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.equal_spec">VS.equal_spec</a></span>; <span class="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id"><a href="compiler.Deadcode.html#VS.equal_spec">VS.equal_spec</a></span>. <span class="tactic">congruence</span>.<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_beq_correct</span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="kwd">if</span> <span class="id">vset_beq</span> <span class="id">x</span> <span class="id">y</span> <span class="kwd">then</span> <span class="id">vset_eq</span> <span class="id">x</span> <span class="id">y</span> <span class="kwd">else</span> ~<span class="id">vset_eq</span> <span class="id"><a href="compiler.Fixpoint.html#y">x</a></span> <span class="id">y</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof56')">Proof.</div>
+<div class="proofscript" id="proof56">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id">vset_beq</span>, <span class="id">vset_eq</span>; <span class="tactic">intros</span>. <span class="tactic">destruct</span> (<span class="id">VS.equal</span> (<span class="id">proj1_sig</span> <span class="id">x</span>) (<span class="id">proj1_sig</span> <span class="id">y</span>)) <span class="id">eqn</span>:<span class="id">EQ</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VS.equal_spec</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">rewrite</span> &lt;- <span class="id">VS.equal_spec</span>. <span class="tactic">congruence</span>.<br/>
 Qed.</div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_le">vset_le</a></span> (<span class="id">x</span> <span class="id">y</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="kwd">Prop</span> := <span class="id"><a href="compiler.Deadcode.html#VS.Subset">VS.Subset</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_le</span> (<span class="id">x</span> <span class="id">y</span>: <span class="id">vset</span>) : <span class="kwd">Prop</span> := <span class="id">VS.Subset</span> <span class="id">x</span> <span class="id">y</span>.<br/>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_le_trans">vset_le_trans</a></span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof58')">Proof.</div>
-<div class="proofscript" id="proof58">
-&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>; <span class="tactic">intros</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_trans">VSP.subset_trans</a></span>; <span class="tactic">eauto</span>.<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_le_trans</span>: <span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span> <span class="id">z</span>, <span class="id">vset_le</span> <span class="id">x</span> <span class="id">y</span> -&gt; <span class="id">vset_le</span> <span class="id">y</span> <span class="id">z</span> -&gt; <span class="id">vset_le</span> <span class="id">x</span> <span class="id">z</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof57')">Proof.</div>
+<div class="proofscript" id="proof57">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id">vset_le</span>; <span class="tactic">intros</span>. <span class="tactic">eapply</span> <span class="id">VSP.subset_trans</span>; <span class="tactic">eauto</span>.<br/>
 Qed.</div>
 <br/>
 <div class="doc">The empty set is a smallest element. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_empty">vset_empty</a></span> : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> := <span class="id"><a href="compiler.Deadcode.html#VS.empty">VS.empty</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof59')">Next Obligation.</div>
-<div class="proofscript" id="proof59">
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_empty">VSP.subset_empty</a></span>.<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_empty</span> : <span class="id">vset</span> := <span class="id">VS.empty</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof58')">Next Obligation.</div>
+<div class="proofscript" id="proof58">
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.subset_empty</span>.<br/>
 Qed.</div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_empty_le">vset_empty_le</a></span>: <span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof60')">Proof.</div>
-<div class="proofscript" id="proof60">
-&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span>. <span class="tactic">simpl</span>. <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_empty">VSP.subset_empty</a></span>. <br/>
+<span class="kwd">Lemma</span> <span class="id">vset_empty_le</span>: <span class="kwd">forall</span> <span class="id"><a href="compiler.Deadcode.html#VS.empty">x</a></span>, <span class="id">vset_le</span> <span class="id">vset_empty</span> <span class="id">x</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof59')">Proof.</div>
+<div class="proofscript" id="proof59">
+&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id">vset_le</span>, <span class="id">vset_empty</span>. <span class="tactic">simpl</span>. <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">VSP.subset_empty</span>. <br/>
 Qed.</div>
 <br/>
 <div class="doc">To show that the strict order induced by <span class="bracket"><span class="id">vset_eq</span></span> and <span class="bracket"><span class="id">vset_le</span></span> is well-founded,
   we first define a nonnegative measure over the type <span class="bracket"><span class="id">vset</span></span>, which is the cardinal
   of the complement of the set. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id"><a name="vset_measure">vset_measure</a></span> (<span class="id">x</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">nat</a></span> := <span class="id"><a href="compiler.Deadcode.html#VS.cardinal">VS.cardinal</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.diff">VS.diff</a></span> <span class="id"><a href="compiler.Fixpoint.html#VARS.U">U</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>).<br/>
+<span class="kwd">Program</span> <span class="kwd">Definition</span> <span class="id">vset_measure</span> (<span class="id">x</span>: <span class="id">vset</span>) : <span class="id">nat</span> := <span class="id">VS.cardinal</span> (<span class="id">VS.diff</span> <span class="id">U</span> <span class="id">x</span>).<br/>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_measure_decreases">vset_measure_decreases</a></span>:<br/>
-&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; ~<span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> &lt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>.<br/>
-<div class="toggleproof" onclick="toggleDisplay('proof61')">Proof.</div>
-<div class="proofscript" id="proof61">
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span>. <span class="tactic">red</span> <span class="kwd">in</span> <span class="id">H</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">set</span> (<span class="id">X</span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">x</span>) <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">Y</span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">y</span>) <span class="kwd">in</span> *. <br/>
-<div class="doc">Find an element that is in <span class="bracket"><span class="id">y</span></span> but not in <span class="bracket"><span class="id">x</span></span>. </div>
-&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#VS.choose">VS.choose</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.diff">VS.diff</a></span> <span class="id">Y</span> <span class="id">X</span>)) <span class="kwd">as</span> [<span class="id">a</span> | ] <span class="id">eqn</span>:<span class="id">CHOICE</span>.<br/>
-- <span class="tactic">assert</span> (<span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id">a</span> (<span class="id"><a href="compiler.Deadcode.html#VS.diff">VS.diff</a></span> <span class="id">Y</span> <span class="id">X</span>)) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.choose_spec1">VS.choose_spec1</a></span>; <span class="tactic">auto</span>).<br/>
-&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id">a</span> <span class="id">Y</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VS.diff_spec">VS.diff_spec</a></span>; <span class="tactic">eauto</span>).<br/>
-&nbsp;&nbsp;<span class="tactic">assert</span> (~<span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id">a</span> <span class="id">X</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VS.diff_spec">VS.diff_spec</a></span>; <span class="tactic">eauto</span>).<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_cardinal_lt">VSP.subset_cardinal_lt</a></span> <span class="kwd">with</span> <span class="id">a</span>.<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_measure_decreases</span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id"><a href="compiler.Fixpoint.html#vset">vset_le</a></span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">x</a></span> <span class="id">y</span> -&gt; ~<span class="id">vset_eq</span> <span class="id">x</span> <span class="id">y</span> -&gt; <span class="id">vset_measure</span> <span class="id">y</span> &lt; <span class="id">vset_measure</span> <span class="id">x</span>.<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof60')">Proof.</div>
+<div class="proofscript" id="proof60">
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_measure</span>. <span class="tactic">red</span> <span class="kwd">in</span> <span class="id">H</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">set</span> (<span class="id">X</span> := <span class="id">proj1_sig</span> <span class="id"><a href="compiler.Fixpoint.html#vset_measure">x</a></span>) <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">Y</span> := <span class="id">proj1_sig</span> <span class="id">y</span>) <span class="kwd">in</span> *. <br/>
+&nbsp;Find&nbsp;an&nbsp;element&nbsp;that&nbsp;is&nbsp;in&nbsp;[y]&nbsp;but&nbsp;not&nbsp;in&nbsp;[x].&nbsp;*)</span>&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">VS.choose</a></span> (<span class="id">VS.diff</span> <span class="id">Y</span> <span class="id">X</span>)) <span class="kwd">as</span> [<span class="id">a</span> | ] <span class="id">eqn</span>:<span class="id">CHOICE</span>.<br/>
+- <span class="tactic">assert</span> (<span class="id">VS.In</span> <span class="id">a</span> (<span class="id">VS.diff</span> <span class="id">Y</span> <span class="id">X</span>)) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id">VS.choose_spec1</span>; <span class="tactic">auto</span>).<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">VS.In</span> <span class="id">a</span> <span class="id">Y</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id">VS.diff_spec</span>; <span class="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (~<span class="id">VS.In</span> <span class="id">a</span> <span class="id">X</span>) <span class="tactic">by</span> (<span class="tactic">eapply</span> <span class="id">VS.diff_spec</span>; <span class="tactic">eauto</span>).<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.subset_cardinal_lt</span> <span class="kwd">with</span> <span class="id">a</span>.<br/>
 &nbsp;&nbsp;<span class="id">fsetdec</span>.<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.diff_spec">VS.diff_spec</a></span>. <span class="tactic">split</span>; <span class="tactic">auto</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Fixpoint.html#contained">contained</a></span>; <span class="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VS.diff_spec</span>. <span class="tactic">split</span>; <span class="tactic">auto</span>. <span class="tactic">eapply</span> <span class="id">contained</span>; <span class="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id">fsetdec</span>.<br/>
-- <span class="comment">(**&nbsp;Show&nbsp;contradiction&nbsp;if&nbsp;no&nbsp;such&nbsp;element&nbsp;exists&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id"><a href="compiler.Deadcode.html#VS.Empty">VS.Empty</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.diff">VS.diff</a></span> <span class="id">Y</span> <span class="id">X</span>)) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.choose_spec2">VS.choose_spec2</a></span>; <span class="tactic">auto</span>). <br/>
-&nbsp;&nbsp;<span class="tactic">elim</span> <span class="id">H0</span>. <span class="tactic">red</span>. <span class="tactic">rewrite</span> <span class="id"><a href="compiler.Deadcode.html#VSP.double_inclusion">VSP.double_inclusion</a></span>. <span class="tactic">split</span>; <span class="tactic">auto</span>.<br/>
+- <span class="comment">(*&nbsp;Show&nbsp;contradiction&nbsp;if&nbsp;no&nbsp;such&nbsp;element&nbsp;exists&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="tactic">assert</span> (<span class="id">VS.Empty</span> (<span class="id">VS.diff</span> <span class="id">Y</span> <span class="id">X</span>)) <span class="tactic">by</span> (<span class="tactic">apply</span> <span class="id">VS.choose_spec2</span>; <span class="tactic">auto</span>). <br/>
+&nbsp;&nbsp;<span class="tactic">elim</span> <span class="id">H0</span>. <span class="tactic">red</span>. <span class="tactic">rewrite</span> <span class="id">VSP.double_inclusion</span>. <span class="tactic">split</span>; <span class="tactic">auto</span>.<br/>
 &nbsp;&nbsp;<span class="id">fold</span> <span class="id">X</span> <span class="id">Y</span>. <span class="id">fsetdec</span>.<br/>
 Qed.</div>
 <br/>
 <div class="doc">It follows that the induced strict order is well-founded, because the
   <span class="bracket">&gt;</span> ordering over natural numbers is well-founded. </div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_measure_wf">vset_measure_wf</a></span>:<br/>
-&nbsp;&nbsp;<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Wf.html#well_founded">well_founded</a></span> (<span class="kwd">fun</span> <span class="id">x</span> <span class="id">y</span> : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> &lt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>).<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_measure_wf</span>:<br/>
+&nbsp;&nbsp;<span class="id">well_founded</span> (<span class="kwd">fun</span> <span class="id">x</span> <span class="id">y</span> : <span class="id">vset</span> =&gt; <span class="id">vset_measure</span> <span class="id">x</span> &lt; <span class="id">vset_measure</span> <span class="id">y</span>).<br/>
+<div class="toggleproof" onclick="toggleDisplay('proof61')">Proof.</div>
+<div class="proofscript" id="proof61">
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">well_founded_ltof</span>.<br/>
+Qed.</div>
+<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_gt_incl_measure</span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id">gt</span> <span class="id">_</span> <span class="id">vset_eq</span> <span class="id">vset_le</span> <span class="id">x</span> <span class="id">y</span> -&gt; <span class="id">vset_measure</span> <span class="id">x</span> &lt; <span class="id">vset_measure</span> <span class="id">y</span>.<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof62')">Proof.</div>
 <div class="proofscript" id="proof62">
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Arith.Wf_nat.html#well_founded_ltof">well_founded_ltof</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> <span class="id"><a href="compiler.Fixpoint.html#gt">H</a></span>. <span class="tactic">apply</span> <span class="id">vset_measure_decreases</span>; <span class="tactic">auto</span>.<br/>
 Qed.</div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_gt_incl_measure">vset_gt_incl_measure</a></span>:<br/>
-&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id"><a href="compiler.Fixpoint.html#gt">gt</a></span> <span class="id">_</span> <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> &lt; <span class="id"><a href="compiler.Fixpoint.html#vset_measure">vset_measure</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>.<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_gt_wf</span>:<br/>
+&nbsp;&nbsp;<span class="id">well_founded</span> (<span class="id">gt</span> <span class="id">_</span> <span class="id">vset_eq</span> <span class="id">vset_le</span>).<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof63')">Proof.</div>
 <div class="proofscript" id="proof63">
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">destruct</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#vset_measure_decreases">vset_measure_decreases</a></span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id">wf_incl</span>. <span class="tactic">red</span>. <span class="tactic">apply</span> <span class="id"><a name="vset_gt_wf">vset_gt_incl_measure</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#gt">vset_measure_wf</a></span>.<br/>
 Qed.</div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_gt_wf">vset_gt_wf</a></span>:<br/>
-&nbsp;&nbsp;<span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Wf.html#well_founded">well_founded</a></span> (<span class="id"><a href="compiler.Fixpoint.html#gt">gt</a></span> <span class="id">_</span> <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>).<br/>
+<div class="doc">We can therefore take fixpoints of monotone operators over <span class="bracket"><span class="id"><a href="compiler.Fixpoint.html#vset_measure_wf">vset</a></span></span>. </div>
+<br/>
+<span class="kwd">Definition</span> <span class="id">monotone</span> (<span class="id">F</span>: <span class="id">vset</span> -&gt; <span class="id">vset</span>) : <span class="kwd">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id">vset_le</span> <span class="id">x</span> <span class="id">y</span> -&gt; <span class="id">vset_le</span> (<span class="id">F</span> <span class="id">x</span>) (<span class="id">F</span> <span class="id">y</span>).<br/>
+<br/>
+<span class="kwd">Definition</span> <span class="id">vset_fixpoint</span> (<span class="id">F</span>: <span class="id">vset</span> -&gt; <span class="id">vset</span>) (<span class="id">M</span>: <span class="id">monotone</span> <span class="id">F</span>) : <span class="id">vset</span> :=<br/>
+&nbsp;&nbsp;<span class="id">fixpoint</span> <span class="id"><a href="compiler.Fixpoint.html#F">vset</a></span> <span class="id">vset_eq</span> <span class="id">vset_beq</span> <span class="id">vset_beq_correct</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vset_le</span> <span class="id">vset_gt_wf</span> <span class="id">vset_empty</span> <span class="id">vset_empty_le</span> <span class="id">F</span> <span class="id">M</span>.<br/>
+<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_fixpoint_correct</span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">F</span> (<span class="id">M</span>: <span class="id">monotone</span> <span class="id">F</span>), <span class="id">vset_eq</span> (<span class="id">vset_fixpoint</span> <span class="id">F</span> <span class="id">M</span>) (<span class="id">F</span> (<span class="id">vset_fixpoint</span> <span class="id">F</span> <span class="id">M</span>)).<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof64')">Proof.</div>
 <div class="proofscript" id="proof64">
-&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Wellfounded.Inclusion.html#wf_incl">wf_incl</a></span>. <span class="tactic">red</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#vset_gt_incl_measure">vset_gt_incl_measure</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#vset_measure_wf">vset_measure_wf</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_fixpoint</span>; <span class="tactic">apply</span> <span class="id">fixpoint_correct</span>.<br/>
 Qed.</div>
 <br/>
-<div class="doc">We can therefore take fixpoints of monotone operators over <span class="bracket"><span class="id">vset</span></span>. </div>
-<br/>
-<span class="kwd">Definition</span> <span class="id"><a name="monotone">monotone</a></span> (<span class="id">F</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="kwd">Prop</span> :=<br/>
-&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">x</span> <span class="id">y</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#y">y</a></span>).<br/>
-<br/>
-<span class="kwd">Definition</span> <span class="id"><a name="vset_fixpoint">vset_fixpoint</a></span> (<span class="id">F</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) (<span class="id">M</span>: <span class="id"><a href="compiler.Fixpoint.html#monotone">monotone</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span>) : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> :=<br/>
-&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#fixpoint">fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_beq">vset_beq</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_beq_correct">vset_beq_correct</a></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_le_trans">vset_le_trans</a></span> <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_gt_wf">vset_gt_wf</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span> <span class="id"><a href="compiler.Fixpoint.html#vset_empty_le">vset_empty_le</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#M">M</a></span>.<br/>
-<br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_fixpoint_correct">vset_fixpoint_correct</a></span>:<br/>
-&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">F</span> (<span class="id">M</span>: <span class="id"><a href="compiler.Fixpoint.html#monotone">monotone</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span>), <br/>
-&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#M">M</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#M">M</a></span>))<br/>
-&nbsp;&nbsp;/\ <span class="kwd">forall</span> <span class="id">z</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#F">F</a></span> <span class="id"><a href="compiler.Fixpoint.html#M">M</a></span>) <span class="id"><a href="compiler.Fixpoint.html#z">z</a></span>.<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_fixpoint_smallest</span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">F</span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">M</a></span>: <span class="id">monotone</span> <span class="id">F</span>) <span class="id">z</span>, <span class="id">vset_le</span> (<span class="id">F</span> <span class="id">z</span>) <span class="id">z</span> -&gt; <span class="id">vset_le</span> (<span class="id">vset_fixpoint</span> <span class="id">F</span> <span class="id">M</span>) <span class="id">z</span>.<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof65')">Proof.</div>
 <div class="proofscript" id="proof65">
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span>; <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#fixpoint_correct">fixpoint_correct</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_fixpoint</span>; <span class="tactic">apply</span> <span class="id">fixpoint_smallest</span>; <span class="tactic">eauto</span> <span class="kwd">using</span> <span class="id">vset_le_trans</span>.<br/>
 Qed.</div>
 <br/>
 <div class="doc">Moreover, if an operator <span class="bracket"><span class="id">F1</span></span> is pointwise below another operator <span class="bracket"><span class="id">F2</span></span>,
   <span class="bracket"><span class="id">F1</span></span>'s fixpoint is below <span class="bracket"><span class="id">F2</span></span>'s fixpoint. </div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="vset_fixpoint_le">vset_fixpoint_le</a></span>:<br/>
-&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">F1</span> <span class="id">F2</span> (<span class="id">M1</span>: <span class="id"><a href="compiler.Fixpoint.html#monotone">monotone</a></span> <span class="id"><a href="compiler.Fixpoint.html#F1">F1</a></span>) (<span class="id">M2</span>: <span class="id"><a href="compiler.Fixpoint.html#monotone">monotone</a></span> <span class="id"><a href="compiler.Fixpoint.html#F2">F2</a></span>),<br/>
-&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">x</span>, <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#F1">F1</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#F2">F2</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>)) -&gt;<br/>
-&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#F1">F1</a></span> <span class="id"><a href="compiler.Fixpoint.html#M1">M1</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> <span class="id"><a href="compiler.Fixpoint.html#F2">F2</a></span> <span class="id"><a href="compiler.Fixpoint.html#M2">M2</a></span>).<br/>
+<span class="kwd">Lemma</span> <span class="id">vset_fixpoint_le</span>:<br/>
+&nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">F1</span> <span class="id">F2</span> (<span class="id">M1</span>: <span class="id">monotone</span> <span class="id">F1</span>) (<span class="id">M2</span>: <span class="id">monotone</span> <span class="id">F2</span>),<br/>
+&nbsp;&nbsp;(<span class="kwd">forall</span> <span class="id">x</span>, <span class="id">vset_le</span> (<span class="id">F1</span> <span class="id">x</span>) (<span class="id">F2</span> <span class="id">x</span>)) -&gt;<br/>
+&nbsp;&nbsp;<span class="id">vset_le</span> (<span class="id">vset_fixpoint</span> <span class="id"><a href="compiler.Fixpoint.html#F1">F1</a></span> <span class="id">M1</span>) (<span class="id">vset_fixpoint</span> <span class="id">F2</span> <span class="id">M2</span>).<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof66')">Proof.</div>
 <div class="proofscript" id="proof66">
-&nbsp;&nbsp;<span class="tactic">intros</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint_correct">vset_fixpoint_correct</a></span> <span class="id">F1</span> <span class="id">M1</span>) <span class="kwd">as</span> [<span class="id">EQ1</span> <span class="id">LEAST1</span>].<br/>
-&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint_correct">vset_fixpoint_correct</a></span> <span class="id">F2</span> <span class="id">M2</span>) <span class="kwd">as</span> [<span class="id">EQ2</span> <span class="id">LEAST2</span>].<br/>
-&nbsp;&nbsp;<span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> <span class="kwd">in</span> *.<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">LEAST1</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_trans">VSP.subset_trans</a></span>. <span class="tactic">apply</span> <span class="id">H</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_equal">VSP.subset_equal</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.equal_sym">VSP.equal_sym</a></span>. <span class="tactic">apply</span> <span class="id">EQ2</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#x">vset_fixpoint_smallest</a></span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id">VSP.subset_trans</span>. <span class="tactic">apply</span> <span class="id">H</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.subset_equal</span>. <span class="tactic">apply</span> <span class="id">VSP.equal_sym</span>. <span class="tactic">apply</span> <span class="id">vset_fixpoint_correct</span>.<br/>
 Qed.</div>
 <br/>
 <h1> 3. IMP programs whose free variables are in <span class="bracket"><span class="id">U</span></span>. </h1>
@@ -292,51 +326,51 @@ Qed.</div>
 <div class="doc">We redefine the abstract syntax of IMP to ensure that all
   variables mentioned in the program are taken from <span class="bracket"><span class="id">U</span></span>. </div>
 <br/>
-<span class="kwd">Inductive</span> <span class="id"><a name="aexp">aexp</a></span> : <span class="kwd">Type</span> := <br/>
-&nbsp;&nbsp;| <span class="id"><a name="ANum">ANum</a></span> : <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat">nat</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="AId">AId</a></span> : <span class="kwd">forall</span> (<span class="id">x</span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>), <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#VARS.U">U</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span>        <span class="docright">(* &lt;--- NEW  *)</span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="APlus">APlus</a></span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="AMinus">AMinus</a></span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="AMult">AMult</a></span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span>.<br/>
+<span class="kwd">Inductive</span> <span class="id">aexp</span> : <span class="kwd">Type</span> := <br/>
+&nbsp;&nbsp;| <span class="id">ANum</span> : <span class="id">nat</span> -&gt; <span class="id">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id">AId</span> : <span class="kwd">forall</span> (<span class="id">x</span>: <span class="id">id</span>), <span class="id">VS.In</span> <span class="id">x</span> <span class="id">U</span> -&gt; <span class="id">aexp</span>        <span class="docright">(* &lt;--- NEW  *)</span><br/>
+&nbsp;&nbsp;| <span class="id">APlus</span> : <span class="id">aexp</span> -&gt; <span class="id">aexp</span> -&gt; <span class="id">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id">AMinus</span> : <span class="id">aexp</span> -&gt; <span class="id">aexp</span> -&gt; <span class="id">aexp</span><br/>
+&nbsp;&nbsp;| <span class="id">AMult</span> : <span class="id">aexp</span> -&gt; <span class="id">aexp</span> -&gt; <span class="id">aexp</span>.<br/>
 <br/>
-<span class="kwd">Inductive</span> <span class="id"><a name="bexp">bexp</a></span> : <span class="kwd">Type</span> := <br/>
-&nbsp;&nbsp;| <span class="id"><a name="BTrue">BTrue</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="BFalse">BFalse</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="BEq">BEq</a></span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="BLe">BLe</a></span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="BNot">BNot</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="BAnd">BAnd</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span>.<br/>
+<span class="kwd">Inductive</span> <span class="id">bexp</span> : <span class="kwd">Type</span> := <br/>
+&nbsp;&nbsp;| <span class="id">BTrue</span> : <span class="id">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#aexp">BFalse</a></span> : <span class="id"><a name="AMult">bexp</a></span><br/>
+&nbsp;&nbsp;| <span class="id">BEq</span> : <span class="id">aexp</span> -&gt; <span class="id">aexp</span> -&gt; <span class="id">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id">BLe</span> : <span class="id">aexp</span> -&gt; <span class="id">aexp</span> -&gt; <span class="id">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id">BNot</span> : <span class="id"><a name="BFalse">bexp</a></span> -&gt; <span class="id">bexp</span><br/>
+&nbsp;&nbsp;| <span class="id">BAnd</span> : <span class="id"><a href="compiler.Fixpoint.html#aexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span>.<br/>
 <br/>
-<span class="kwd">Inductive</span> <span class="id"><a name="com">com</a></span> : <span class="kwd">Type</span> :=<br/>
-&nbsp;&nbsp;| <span class="id"><a name="CSkip">CSkip</a></span> : <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="CAss">CAss</a></span> : <span class="kwd">forall</span> (<span class="id">x</span>: <span class="id"><a href="../SF/lf/Maps.html#id">id</a></span>), <span class="id"><a href="compiler.Deadcode.html#VS.In">VS.In</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span> <span class="id"><a href="compiler.Fixpoint.html#VARS.U">U</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span>   <span class="docright">(* &lt;--- NEW  *)</span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="CSeq">CSeq</a></span> : <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="CIf">CIf</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a name="CWhile">CWhile</a></span> : <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span>.<br/>
+<span class="kwd">Inductive</span> <span class="id">com</span> : <span class="kwd">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id">CSkip</span> : <span class="id">com</span><br/>
+&nbsp;&nbsp;| <span class="id">CAss</span> : <span class="kwd">forall</span> (<span class="id">x</span>: <span class="id">id</span>), <span class="id">VS.In</span> <span class="id">x</span> <span class="id">U</span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#bexp">aexp</a></span> -&gt; <span class="id">com</span>   <span class="docright">(* &lt;--- NEW  *)</span><br/>
+&nbsp;&nbsp;| <span class="id"><a name="CSkip">CSeq</a></span> : <span class="id">com</span> -&gt; <span class="id">com</span> -&gt; <span class="id">com</span><br/>
+&nbsp;&nbsp;| <span class="id">CIf</span> : <span class="id">bexp</span> -&gt; <span class="id">com</span> -&gt; <span class="id">com</span> -&gt; <span class="id">com</span><br/>
+&nbsp;&nbsp;| <span class="id">CWhile</span> : <span class="id">bexp</span> -&gt; <span class="id">com</span> -&gt; <span class="id">com</span>.<br/>
 <br/>
-<div class="doc">As a consequence, the <span class="bracket"><span class="id">fv_</span></span> operations always return an element of type <span class="bracket"><span class="id">vset</span></span>. </div>
+<div class="doc">As a consequence, the <span class="bracket"><span class="id"><a href="compiler.Fixpoint.html#bexp">fv_</a></span></span> operations always return an element of type <span class="bracket"><span class="id">vset</span></span>. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Fixpoint</span> <span class="id"><a name="fv_aexp">fv_aexp</a></span> (<span class="id">a</span>: <span class="id"><a href="compiler.Fixpoint.html#aexp">aexp</a></span>) : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> :=<br/>
-&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Fixpoint.html#a">a</a></span> <span class="kwd">with</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#ANum">ANum</a></span> <span class="id">n</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#AId">AId</a></span> <span class="id">v</span> <span class="id">_</span> =&gt; <span class="id"><a href="compiler.Deadcode.html#VS.singleton">VS.singleton</a></span> <span class="id">v</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#APlus">APlus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#AMinus">AMinus</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#AMult">AMult</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+<span class="kwd">Program</span> <span class="kwd">Fixpoint</span> <span class="id">fv_aexp</span> (<span class="id">a</span>: <span class="id">aexp</span>) : <span class="id">vset</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id">a</span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">ANum</span> <span class="id">n</span> =&gt; <span class="id">vset_empty</span><br/>
+&nbsp;&nbsp;| <span class="id">AId</span> <span class="id">v</span> <span class="id">_</span> =&gt; <span class="id">VS.singleton</span> <span class="id">v</span><br/>
+&nbsp;&nbsp;| <span class="id">APlus</span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_aexp</span> <span class="id">a1</span>) (<span class="id">fv_aexp</span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id">AMinus</span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_aexp</span> <span class="id">a1</span>) (<span class="id">fv_aexp</span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id">AMult</span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_aexp</span> <span class="id">a1</span>) (<span class="id">fv_aexp</span> <span class="id">a2</span>)<br/>
 &nbsp;&nbsp;<span class="kwd">end</span>.<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof67')">Next Obligation.</div>
 <div class="proofscript" id="proof67">
-&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.singleton_spec">VS.singleton_spec</a></span> <span class="kwd">in</span> <span class="id">H</span>. <span class="tactic">congruence</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">VS.singleton_spec</span> <span class="kwd">in</span> <span class="id">H</span>. <span class="tactic">congruence</span>. <br/>
 Qed.</div>
 <br/>
-<span class="kwd">Fixpoint</span> <span class="id"><a name="fv_bexp">fv_bexp</a></span> (<span class="id">b</span>: <span class="id"><a href="compiler.Fixpoint.html#bexp">bexp</a></span>) : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> :=<br/>
-&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Fixpoint.html#b">b</a></span> <span class="kwd">with</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BTrue">BTrue</a></span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BFalse">BFalse</a></span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_empty">vset_empty</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BEq">BEq</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BLe">BLe</a></span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a2</span>)<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BNot">BNot</a></span> <span class="id">b1</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id">b1</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#BAnd">BAnd</a></span> <span class="id">b1</span> <span class="id">b2</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id">b1</span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id">b2</span>)<br/>
+<span class="kwd">Fixpoint</span> <span class="id">fv_bexp</span> (<span class="id">b</span>: <span class="id">bexp</span>) : <span class="id">vset</span> :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id">b</span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">BTrue</span> =&gt; <span class="id">vset_empty</span><br/>
+&nbsp;&nbsp;| <span class="id">BFalse</span> =&gt; <span class="id">vset_empty</span><br/>
+&nbsp;&nbsp;| <span class="id">BEq</span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_aexp</span> <span class="id">a1</span>) (<span class="id"><a href="compiler.Fixpoint.html#BTrue">fv_aexp</a></span> <span class="id">a2</span>)<br/>
+&nbsp;&nbsp;| <span class="id">BLe</span> <span class="id">a1</span> <span class="id">a2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_aexp</span> <span class="id"><a href="compiler.Fixpoint.html#BEq">a1</a></span>) (<span class="id">fv_aexp</span> <span class="id"><a href="compiler.Fixpoint.html#vset_union">a2</a></span>)<br/>
+&nbsp;&nbsp;| <span class="id">BNot</span> <span class="id">b1</span> =&gt; <span class="id">fv_bexp</span> <span class="id">b1</span><br/>
+&nbsp;&nbsp;| <span class="id">BAnd</span> <span class="id">b1</span> <span class="id">b2</span> =&gt; <span class="id">vset_union</span> (<span class="id">fv_bexp</span> <span class="id">b1</span>) (<span class="id">fv_bexp</span> <span class="id">b2</span>)<br/>
 &nbsp;&nbsp;<span class="kwd">end</span>.<br/>
 <br/>
 <h1> 4. Application to liveness analysis </h1>
@@ -347,23 +381,23 @@ Qed.</div>
   In order to be able to take fixpoints within its definition, we
   must also return a proof that <span class="bracket"><span class="id">dlive</span> <span class="id">c</span></span> is a monotone function. </div>
 <br/>
-<span class="kwd">Program</span> <span class="kwd">Fixpoint</span> <span class="id"><a name="dlive">dlive</a></span> (<span class="id">c</span>: <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span>) : { <span class="id">f</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> -&gt; <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> | <span class="id"><a href="compiler.Fixpoint.html#monotone">monotone</a></span> <span class="id">f</span> } :=<br/>
-&nbsp;&nbsp;<span class="kwd">match</span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span> <span class="kwd">with</span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#CSkip">CSkip</a></span> =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) =&gt; <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#CAss">CAss</a></span> <span class="id">x</span> <span class="id">_</span> <span class="id">a</span> =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">then</span> <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Deadcode.html#VS.remove">VS.remove</a></span> <span class="id">x</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#fv_aexp">fv_aexp</a></span> <span class="id">a</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">else</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span><br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#CSeq">CSeq</a></span> <span class="id">c1</span> <span class="id">c2</span> =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) =&gt; <span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id">c1</span> (<span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>)<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#CIf">CIf</a></span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span> =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) (<span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id">c1</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id">c2</span> <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>))<br/>
-&nbsp;&nbsp;| <span class="id"><a href="compiler.Fixpoint.html#CWhile">CWhile</a></span> <span class="id">b</span> <span class="id">c</span> =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) =&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">L</span>' := <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id">b</span>) <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span> <span class="kwd">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint">vset_fixpoint</a></span> (<span class="kwd">fun</span> <span class="id">x</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> <span class="id">L</span>' (<span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span> <span class="id"><a href="compiler.Fixpoint.html#x">x</a></span>)) <span class="id">_</span><br/>
+<span class="kwd">Program</span> <span class="kwd">Fixpoint</span> <span class="id">dlive</span> (<span class="id">c</span>: <span class="id">com</span>) : { <span class="id">f</span>: <span class="id">vset</span> -&gt; <span class="id">vset</span> | <span class="id">monotone</span> <span class="id">f</span> } :=<br/>
+&nbsp;&nbsp;<span class="kwd">match</span> <span class="id">c</span> <span class="kwd">with</span><br/>
+&nbsp;&nbsp;| <span class="id">CSkip</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id">vset</span>) =&gt; <span class="id">L</span><br/>
+&nbsp;&nbsp;| <span class="id">CAss</span> <span class="id">x</span> <span class="id"><a href="compiler.Fixpoint.html#vset">_</a></span> <span class="id">a</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id">vset</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">if</span> <span class="id">VS.mem</span> <span class="id">x</span> <span class="id">L</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">then</span> <span class="id"><a href="compiler.Fixpoint.html#vset">vset_union</a></span> (<span class="id">VS.remove</span> <span class="id">x</span> <span class="id">L</span>) (<span class="id">fv_aexp</span> <span class="id">a</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">else</span> <span class="id">L</span><br/>
+&nbsp;&nbsp;| <span class="id">CSeq</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem">c1</a></span> <span class="id">c2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id">vset</span>) =&gt; <span class="id">dlive</span> <span class="id">c1</span> (<span class="id">dlive</span> <span class="id"><a href="compiler.Fixpoint.html#L">c2</a></span> <span class="id">L</span>)<br/>
+&nbsp;&nbsp;| <span class="id">CIf</span> <span class="id">b</span> <span class="id">c1</span> <span class="id">c2</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id">vset</span>) =&gt; <span class="id">vset_union</span> (<span class="id">fv_bexp</span> <span class="id">b</span>) (<span class="id">vset_union</span> (<span class="id">dlive</span> <span class="id"><a href="compiler.Fixpoint.html#L">c1</a></span> <span class="id">L</span>) (<span class="id"><a href="compiler.Fixpoint.html#CIf">dlive</a></span> <span class="id">c2</span> <span class="id">L</span>))<br/>
+&nbsp;&nbsp;| <span class="id">CWhile</span> <span class="id">b</span> <span class="id">c</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">fun</span> (<span class="id">L</span>: <span class="id">vset</span>) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kwd">let</span> <span class="id">L</span>' := <span class="id">vset_union</span> (<span class="id">fv_bexp</span> <span class="id">b</span>) <span class="id">L</span> <span class="kwd">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vset_fixpoint</span> (<span class="kwd">fun</span> <span class="id">x</span> =&gt; <span class="id"><a href="compiler.Fixpoint.html#vset">vset_union</a></span> <span class="id">L</span>' (<span class="id">dlive</span> <span class="id">c</span> <span class="id">x</span>)) <span class="id"><a href="compiler.Fixpoint.html#vset_union">_</a></span><br/>
 &nbsp;&nbsp;<span class="kwd">end</span>.<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof68')">Next Obligation.</div>
 <div class="proofscript" id="proof68">
@@ -371,18 +405,18 @@ Qed.</div>
 Qed.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof69')">Next Obligation.</div>
 <div class="proofscript" id="proof69">
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_remove_3">VSP.subset_remove_3</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#contained">contained</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.subset_remove_3</span>. <span class="tactic">apply</span> <span class="id">contained</span>.<br/>
 Qed.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof70')">Next Obligation.</div>
 <div class="proofscript" id="proof70">
-&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span> <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">X</span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">x0</span>) <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">Y</span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> <span class="id">y</span>) <span class="kwd">in</span> *.<br/>
-&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id">X</span>) <span class="id">eqn</span>:<span class="id">xlive1</span>.<br/>
-- <span class="tactic">replace</span> (<span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id">Y</span>) <span class="kwd">with</span> <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#true">true</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_le</span> <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">X</span> := <span class="id">proj1_sig</span> <span class="id">x0</span>) <span class="kwd">in</span> *. <span class="tactic">set</span> (<span class="id">Y</span> := <span class="id">proj1_sig</span> <span class="id">y</span>) <span class="kwd">in</span> *.<br/>
+&nbsp;&nbsp;<span class="tactic">destruct</span> (<span class="id">VS.mem</span> <span class="id">x</span> <span class="id">X</span>) <span class="id">eqn</span>:<span class="id">xlive1</span>.<br/>
+- <span class="tactic">replace</span> (<span class="id">VS.mem</span> <span class="id">x</span> <span class="id">Y</span>) <span class="kwd">with</span> <span class="id">true</span>.<br/>
 + <span class="tactic">simpl</span>. <span class="id">fsetdec</span>. <br/>
-+ <span class="tactic">symmetry</span>; <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem_spec">VS.mem_spec</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem_spec">VS.mem_spec</a></span> <span class="kwd">in</span> <span class="id">xlive1</span>. <span class="id">fsetdec</span>.<br/>
-- <span class="tactic">destruct</span> (<span class="id"><a href="compiler.Deadcode.html#VS.mem">VS.mem</a></span> <span class="id">x</span> <span class="id">Y</span>) <span class="id">eqn</span>:<span class="id">xlive2</span>; <span class="tactic">simpl</span>.<br/>
-+ <span class="id">fold</span> <span class="id">X</span>. <span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_trans">VSP.subset_trans</a></span>. 2: <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_1">VSP.union_subset_1</a></span>.<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem_spec">VS.mem_spec</a></span> <span class="kwd">in</span> <span class="id">xlive2</span>. <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.remove_spec">VS.remove_spec</a></span>. <span class="tactic">split</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VS.mem_spec">VS.mem_spec</a></span> <span class="kwd">in</span> <span class="id">H0</span>. <span class="tactic">congruence</span>.<br/>
++ <span class="tactic">symmetry</span>; <span class="tactic">apply</span> <span class="id">VS.mem_spec</span>. <span class="tactic">apply</span> <span class="id">VS.mem_spec</span> <span class="kwd">in</span> <span class="id">xlive1</span>. <span class="id">fsetdec</span>.<br/>
+- <span class="tactic">destruct</span> (<span class="id">VS.mem</span> <span class="id">x</span> <span class="id">Y</span>) <span class="id">eqn</span>:<span class="id">xlive2</span>; <span class="tactic">simpl</span>.<br/>
++ <span class="id">fold</span> <span class="id">X</span>. <span class="tactic">eapply</span> <span class="id">VSP.subset_trans</span>. 2: <span class="tactic">apply</span> <span class="id">VSP.union_subset_1</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VS.mem_spec</span> <span class="kwd">in</span> <span class="id">xlive2</span>. <span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">VS.remove_spec</span>. <span class="tactic">split</span>. <span class="id">fsetdec</span>. <span class="tactic">apply</span> <span class="id">VS.mem_spec</span> <span class="kwd">in</span> <span class="id">H0</span>. <span class="tactic">congruence</span>.<br/>
 + <span class="tactic">auto</span>.<br/>
 Qed.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof71')">Next Obligation.</div>
@@ -391,41 +425,41 @@ Qed.</div>
 Defined.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof72')">Next Obligation.</div>
 <div class="proofscript" id="proof72">
-&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span>; <span class="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_5">VSP.union_subset_5</a></span>. <br/>
-&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.subset_trans">VSP.subset_trans</a></span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_4">VSP.union_subset_4</a></span>. <span class="tactic">apply</span> <span class="id">m</span>. <span class="tactic">eauto</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_5">VSP.union_subset_5</a></span>. <span class="tactic">apply</span> <span class="id">m0</span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_le</span>, <span class="id">vset_union</span>; <span class="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.union_subset_5</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">eapply</span> <span class="id">VSP.subset_trans</span>. <span class="tactic">apply</span> <span class="id">VSP.union_subset_4</span>. <span class="tactic">apply</span> <span class="id">m</span>. <span class="tactic">eauto</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.union_subset_5</span>. <span class="tactic">apply</span> <span class="id">m0</span>. <span class="tactic">auto</span>.<br/>
 Defined.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof73')">Next Obligation.</div>
 <div class="proofscript" id="proof73">
-&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span>; <span class="tactic">simpl</span>. <br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_5">VSP.union_subset_5</a></span>. <span class="tactic">apply</span> <span class="id">m</span>; <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_le</span>, <span class="id">vset_union</span>; <span class="tactic">simpl</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.union_subset_5</span>. <span class="tactic">apply</span> <span class="id">m</span>; <span class="tactic">auto</span>.<br/>
 Defined.</div>
 <div class="toggleproof" onclick="toggleDisplay('proof74')">Next Obligation.</div>
 <div class="proofscript" id="proof74">
-&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint_le">vset_fixpoint_le</a></span>. <br/>
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#vset_le">vset_le</a></span>, <span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span>; <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_4">VSP.union_subset_4</a></span>. <br/>
-&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id"><a href="compiler.Deadcode.html#VSP.union_subset_5">VSP.union_subset_5</a></span>. <span class="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="tactic">red</span>; <span class="tactic">intros</span>. <span class="tactic">apply</span> <span class="id">vset_fixpoint_le</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">vset_le</span>, <span class="id">vset_union</span>; <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id">VSP.union_subset_4</span>. <br/>
+&nbsp;&nbsp;<span class="tactic">apply</span> <span class="id">VSP.union_subset_5</span>. <span class="tactic">auto</span>.<br/>
 Defined.</div>
 <br/>
 <div class="doc"><span class="bracket"><span class="id">live</span> <span class="id">c</span> <span class="id">L</span></span> returns the set of variables live "before" command <span class="bracket"><span class="id">c</span></span>,
   given the set <span class="bracket"><span class="id">L</span></span> of variables live "after". </div>
 <br/>
-<span class="kwd">Definition</span> <span class="id"><a name="live">live</a></span> (<span class="id">c</span>: <span class="id"><a href="compiler.Fixpoint.html#com">com</a></span>) (<span class="id">L</span>: <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span>) : <span class="id"><a href="compiler.Fixpoint.html#vset">vset</a></span> := <span class="id"><a href="http://coq.inria.fr/library/Coq.Init.Specif.html#proj1_sig">proj1_sig</a></span> (<span class="id"><a href="compiler.Fixpoint.html#dlive">dlive</a></span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span>) <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>.<br/>
+<span class="kwd">Definition</span> <span class="id">live</span> (<span class="id">c</span>: <span class="id">com</span>) (<span class="id">L</span>: <span class="id">vset</span>) : <span class="id">vset</span> := <span class="id">proj1_sig</span> (<span class="id">dlive</span> <span class="id">c</span>) <span class="id">L</span>.<br/>
 <br/>
 <div class="doc">The <span class="bracket"><span class="id">live</span></span> function satisfies the dataflow equations for liveness analysis,
   in particular: </div>
 <br/>
-<span class="kwd">Lemma</span> <span class="id"><a name="live_while">live_while</a></span>:<br/>
+<span class="kwd">Lemma</span> <span class="id">live_while</span>:<br/>
 &nbsp;&nbsp;<span class="kwd">forall</span> <span class="id">b</span> <span class="id">c</span> <span class="id">L</span>,<br/>
-&nbsp;&nbsp;<span class="id"><a href="compiler.Fixpoint.html#vset_eq">vset_eq</a></span> (<span class="id"><a href="compiler.Fixpoint.html#live">live</a></span> (<span class="id"><a href="compiler.Fixpoint.html#CWhile">CWhile</a></span> <span class="id"><a href="compiler.Fixpoint.html#b">b</a></span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span>) <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#vset_union">vset_union</a></span> (<span class="id"><a href="compiler.Fixpoint.html#fv_bexp">fv_bexp</a></span> <span class="id"><a href="compiler.Fixpoint.html#b">b</a></span>) <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>) (<span class="id"><a href="compiler.Fixpoint.html#live">live</a></span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span> (<span class="id"><a href="compiler.Fixpoint.html#live">live</a></span> (<span class="id"><a href="compiler.Fixpoint.html#CWhile">CWhile</a></span> <span class="id"><a href="compiler.Fixpoint.html#b">b</a></span> <span class="id"><a href="compiler.Fixpoint.html#c">c</a></span>) <span class="id"><a href="compiler.Fixpoint.html#L">L</a></span>))).<br/>
+&nbsp;&nbsp;<span class="id">vset_eq</span> (<span class="id">live</span> (<span class="id">CWhile</span> <span class="id">b</span> <span class="id">c</span>) <span class="id">L</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id">vset_union</span> (<span class="id">vset_union</span> (<span class="id">fv_bexp</span> <span class="id">b</span>) <span class="id">L</span>) (<span class="id">live</span> <span class="id">c</span> (<span class="id"><a href="compiler.Fixpoint.html#vset_eq">live</a></span> (<span class="id">CWhile</span> <span class="id">b</span> <span class="id"><a href="compiler.Fixpoint.html#CWhile">c</a></span>) <span class="id">L</span>))).<br/>
 <div class="toggleproof" onclick="toggleDisplay('proof75')">Proof.</div>
 <div class="proofscript" id="proof75">
-&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id"><a href="compiler.Fixpoint.html#live">live</a></span>. <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id"><a href="compiler.Fixpoint.html#vset_fixpoint_correct">vset_fixpoint_correct</a></span>.<br/>
+&nbsp;&nbsp;<span class="tactic">intros</span>. <span class="tactic">unfold</span> <span class="id">live</span>. <span class="tactic">simpl</span>. <span class="tactic">apply</span> <span class="id">vset_fixpoint_correct</span>.<br/>
 Qed.</div>
 <br/>
-<span class="kwd">End</span> <span class="id"><a href="compiler.Fixpoint.html#VARS">VARS</a></span>.<br/>
+<span class="kwd">End</span> <span class="id"><a href="compiler.Fixpoint.html#b">VARS</a></span>.<br/>
 <br/>
 <br/>
 <br/>
