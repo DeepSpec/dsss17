@@ -107,7 +107,9 @@ endif
 VFILES:=IntroToProofScripting.v\
   Sequences.v\
   Semantics.v\
-  Compiler.v
+  Compiler.v\
+  SymbolicExecution.v\
+  ReflectivePermutation.v
 
 ifneq ($(filter-out archclean clean cleanall printenv,$(MAKECMDGOALS)),)
 -include $(addsuffix .d,$(VFILES))
