@@ -149,7 +149,7 @@ Definition t_update {A:Type} (m : total_map A)
     [fun x' => ...] that behaves like the desired map.
 
     For example, we can build a map taking [id]s to [bool]s, where [Id
-    "foo"] is mapped to [true] and every other key is mapped to [false],
+    "bar"] is mapped to [true] and every other key is mapped to [false],
     like this: *)
 
 Definition examplemap :=
