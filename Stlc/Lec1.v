@@ -120,7 +120,7 @@ version of that output. (For comparison, the raw output is in [Stlc_inf.v].)
 (** * The simply-typed lambda calculus in Coq. *)
 (*************************************************************************)
 
-
+Require Import Coq.Strings.String.
 
 (** First, we import a number of definitions from the Metatheory library
     (see Metatheory.v).  The following command makes those definitions

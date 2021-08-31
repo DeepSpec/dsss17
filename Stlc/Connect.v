@@ -26,6 +26,7 @@
     This result is the [simulate_step] lemma near the end of this file.
 
  *)
+Require Import Coq.Strings.String.
 
 Require Import Metalib.Metatheory.
 
@@ -440,6 +441,8 @@ Inductive scoped_heap (D : atoms) : heap -> Prop :=
     use it to finish the [apply_heap_get] lemma below.  *)
 
 (* FILL IN HERE *)
+
+
 
 Lemma apply_heap_get :  forall h D x e,
     scoped_heap D h ->

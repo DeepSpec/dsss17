@@ -4,6 +4,7 @@
 (**                                                                      *)
 (*************************************************************************)
 
+Require Import Coq.Strings.String.
 Require Import Metalib.Metatheory.
 Require Import Stlc.Definitions.
 Import StlcNotations.
